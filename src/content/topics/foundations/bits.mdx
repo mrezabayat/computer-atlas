@@ -1,0 +1,49 @@
+---
+title: Bit
+aliases: ["bits", "binary digit"]
+category: foundations
+kind: concept
+summary: A bit is the smallest unit of information in computing — a single value that is either 0 or 1.
+level: beginner
+status: reviewed
+tags: ["binary", "information"]
+related: ["binary-numbers", "boolean-logic"]
+nextSteps: ["binary-numbers"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **bit** is a single answer to a yes/no question. It can be `0` or `1`, off or on, false or true. Every piece of data inside a computer — text, pictures, music, programs — is ultimately a long line of these tiny choices.
+
+## More detail
+
+The word "bit" is a contraction of **bi**nary digi**t**. In hardware it is usually a voltage that is either high or low. In math and logic it is just a value from the two-element set `{0, 1}`.
+
+Bits are grouped to represent richer things:
+
+- 4 bits = a **nibble** (one hexadecimal digit)
+- 8 bits = a **byte** (the smallest addressable unit in most machines)
+- 16 / 32 / 64 bits = the **word** size of common CPUs
+
+`n` bits can represent `2^n` distinct values, so a byte can hold one of 256 possible patterns.
+
+## Why it matters
+
+Bits are the alphabet of computing. Once you accept that every kind of information can be encoded as a sequence of bits, you have the key idea that lets the same machine play music, render a video game, and run a spreadsheet.
+
+## Real-world examples
+
+- A light switch holds one bit of state.
+- A pixel in a black-and-white image is one bit.
+- An ASCII character is 7 bits (packed into 1 byte).
+- A modern processor moves billions of bits per second across its buses.
+
+## Common misconceptions
+
+- **"A bit is the same as a byte."** No — a byte is 8 bits. File sizes are usually in bytes (MB, GB); network speeds are usually in bits per second (Mbps, Gbps), which is why 100 Mbps is only about 12 MB/s.
+- **"Bits are physical things."** Bits are an abstraction. The physical carrier can be voltage, light, magnetism, or anything with two distinguishable states.
+
+## Learn next
+
+Move on to [binary numbers](/t/binary-numbers) to see how bits combine to represent any whole number, then to [boolean logic](/t/boolean-logic) to see how they combine to make decisions.

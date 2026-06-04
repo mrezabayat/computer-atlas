@@ -1,0 +1,58 @@
+---
+title: SQL
+aliases: ["structured query language"]
+category: data-and-databases
+kind: language
+summary: A declarative language for querying and manipulating relational databases — you say what you want, the database figures out how.
+level: intermediate
+status: draft
+tags: ["sql", "database"]
+prerequisites: ["database"]
+related: ["database"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+SQL is the language you use to talk to most databases. Instead of writing loops, you describe the data you want and the database does the work of finding it.
+
+## More detail
+
+A SQL query is built from a few core clauses:
+
+```sql
+SELECT title, author
+FROM   posts
+WHERE  published_at >= '2026-01-01'
+ORDER  BY published_at DESC
+LIMIT  10;
+```
+
+Beyond `SELECT`, SQL has:
+
+- **`INSERT` / `UPDATE` / `DELETE`** for changing data
+- **Joins** for combining tables
+- **Transactions** (`BEGIN` / `COMMIT` / `ROLLBACK`) for atomic groups of changes
+- **DDL** (`CREATE TABLE`, `ALTER TABLE`, ...) for schema
+- **Views**, **CTEs** (`WITH`), and **window functions** for higher-level queries
+
+The same SQL is mostly portable between PostgreSQL, MySQL, SQLite, and others — though dialects do drift.
+
+## Why it matters
+
+Knowing SQL well is the single highest-leverage skill for working with most application data. It also doubles as a thinking tool: a SQL query is often the clearest specification of "what do I actually want?".
+
+## Real-world examples
+
+- A web app builds a list of posts with a `SELECT` per request.
+- An analyst computes a monthly revenue report with window functions and CTEs.
+- A migration adds an index to speed up an existing query.
+
+## Common misconceptions
+
+- **"SQL is slow."** A bad query is slow; a well-written one against good indexes is extraordinarily fast.
+- **"ORM means I never need SQL."** Knowing SQL is what lets you debug an ORM when it generates something pathological.
+
+## Learn next
+
+Indexing, query plans, and the trade-offs between [database](/t/database) engines.

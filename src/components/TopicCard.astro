@@ -1,0 +1,42 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { topicUrl } from "~/lib/graph";
+import { categoryLabel, type CategorySlug } from "~/lib/categories";
+import StatusBadge from "./StatusBadge.astro";
+import KindBadge from "./KindBadge.astro";
+import LevelBadge from "./LevelBadge.astro";
+
+interface Props {
+  topic: CollectionEntry<"topics">;
+  showCategory?: boolean;
+}
+
+const { topic, showCategory = true } = Astro.props;
+const { title, summary, kind, level, status, category } = topic.data;
+---
+
+<a
+  href={topicUrl(topic.id)}
+  class="group block rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)] transition-colors"
+>
+  <div class="flex items-start justify-between gap-3">
+    <h3
+      class="text-base font-semibold text-[var(--color-atlas-ink)] group-hover:text-[var(--color-atlas-accent)]"
+    >
+      {title}
+    </h3>
+    {status !== "reviewed" && <StatusBadge status={status} />}
+  </div>
+  <p class="mt-1 text-sm text-[var(--color-atlas-muted)] line-clamp-3">
+    {summary}
+  </p>
+  <div class="mt-3 flex flex-wrap items-center gap-1.5">
+    <LevelBadge level={level} />
+    <KindBadge kind={kind} />
+    {showCategory && (
+      <span class="text-xs text-[var(--color-atlas-muted)]">
+        in {categoryLabel(category as CategorySlug)}
+      </span>
+    )}
+  </div>
+</a>

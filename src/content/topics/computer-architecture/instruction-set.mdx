@@ -1,0 +1,53 @@
+---
+title: Instruction Set
+aliases: ["ISA", "instruction set architecture"]
+category: computer-architecture
+kind: concept
+summary: The contract between a CPU and the programs that run on it — the menu of operations a processor can perform.
+level: intermediate
+status: draft
+tags: ["isa", "architecture"]
+prerequisites: ["cpu"]
+related: ["logic-gates"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An **instruction set** is the list of operations a particular CPU understands. "Add these two numbers", "load a byte from this address", "jump if the result was zero" — each is one instruction. Two CPUs with the same instruction set can run the same compiled programs.
+
+## More detail
+
+A CPU's instruction set architecture (ISA) defines:
+
+- The available **instructions** (arithmetic, memory, control flow, I/O).
+- The **registers** they operate on.
+- The **encoding** (how instructions are represented as bytes).
+- The visible **state** (memory model, special registers).
+
+Major ISAs in 2026:
+
+| ISA       | Origin     | Where it lives                                |
+|-----------|------------|-----------------------------------------------|
+| x86-64    | Intel/AMD  | Most laptops, desktops, servers               |
+| ARM64     | ARM Ltd    | Phones, Apple Silicon Macs, many cloud servers|
+| RISC-V    | Open       | Embedded, increasingly elsewhere              |
+
+Programs compiled for one ISA do not run on another without emulation or a portable intermediate (JVM, WebAssembly, etc.).
+
+## Why it matters
+
+The ISA is the boundary between hardware and software. Picking it is one of the most consequential decisions a chip designer makes: it locks in decades of compatibility and constrains every compiler that targets the chip.
+
+## Real-world examples
+
+- Apple switched its Macs from x86-64 (Intel) to ARM64 in 2020 — every app had to be recompiled or emulated.
+- WebAssembly is a portable, virtual ISA designed for the web.
+
+## Common misconceptions
+
+- **"ISA = microarchitecture."** The ISA is the contract; the microarchitecture is one implementation of it. Two chips can implement the same ISA with completely different internals.
+
+## Learn next
+
+The next step is operating systems and how the [operating system](/t/operating-system) uses the ISA to multiplex many programs onto one CPU.

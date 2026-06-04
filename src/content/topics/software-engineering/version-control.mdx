@@ -1,0 +1,48 @@
+---
+title: Version Control
+aliases: ["VCS", "source control"]
+category: software-engineering
+kind: concept
+summary: Tracking changes to code (and other files) over time, so teams can collaborate without trampling each other's work.
+level: beginner
+status: draft
+tags: ["vcs", "git", "tooling"]
+related: ["git"]
+nextSteps: ["git"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Version control is "Track Changes" for code. It remembers every saved snapshot of your files, who made each change, and lets many people work on the same project in parallel without overwriting each other.
+
+## More detail
+
+A version control system (VCS) gives you:
+
+- A **history** of every committed change.
+- The ability to **branch** — make an independent line of work — and later **merge** it back.
+- A way to **collaborate** by sharing those branches with other people, usually via a remote server.
+- **Blame/annotate** views so you can see why a particular line is the way it is.
+
+Two model families exist:
+
+- **Centralised** (Subversion, Perforce) — one canonical server holds the history.
+- **Distributed** (Git, Mercurial) — every working copy has the full history. Git won this race.
+
+## Why it matters
+
+Without version control, software development at any meaningful scale falls apart. Even solo projects benefit from the safety net.
+
+## Real-world examples
+
+- Almost every open-source project on GitHub, GitLab, or Bitbucket uses Git.
+- Game studios and some film/CG shops still use Perforce because it handles huge binary files well.
+
+## Common misconceptions
+
+- **"Git and GitHub are the same."** Git is the version control tool. GitHub is a website that hosts Git repositories and adds collaboration features.
+
+## Learn next
+
+Learn the dominant tool: [Git](/t/git).

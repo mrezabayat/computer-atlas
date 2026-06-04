@@ -1,0 +1,55 @@
+---
+title: Git
+category: software-engineering
+kind: tool
+summary: The dominant distributed version control system. Tracks snapshots of a project's files and supports lightweight branching.
+level: beginner
+status: draft
+tags: ["git", "vcs", "tooling"]
+prerequisites: ["version-control"]
+related: ["version-control"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Git is the most-used tool for tracking changes to code. You take snapshots ("commits"), give them messages, group them on branches, and share them with other people through a remote server like GitHub or GitLab.
+
+## More detail
+
+Git was created by Linus Torvalds in 2005 to coordinate development of the Linux kernel. Its key ideas:
+
+- A repository is a **directed graph of commits**. Each commit points to the snapshot it captured and to one or more parents.
+- **Branches** are just movable pointers into that graph.
+- Every clone has the **full history**, not just the latest revision.
+- Most operations are local and fast.
+
+The day-to-day commands you use most:
+
+| Command                       | Roughly does                              |
+|-------------------------------|-------------------------------------------|
+| `git clone <url>`             | Copy a remote repo locally                |
+| `git status` / `git diff`     | See what is changed                       |
+| `git add <files>` / `git commit -m "..."` | Stage and record changes      |
+| `git push` / `git pull`       | Sync with the remote                      |
+| `git checkout -b <branch>`    | Make and switch to a new branch           |
+| `git merge` / `git rebase`    | Combine branches                          |
+
+## Why it matters
+
+Git is the lingua franca of modern software development. Almost any open-source contribution today flows through it.
+
+## Real-world examples
+
+- The Linux kernel.
+- Practically every open-source library on GitHub.
+- This very project.
+
+## Common misconceptions
+
+- **"`git push --force` is fine."** It is fine on your own branch; it rewrites public history on shared branches and is one of the most reliable ways to upset your teammates.
+- **"`git pull` is harmless."** `git pull` is `fetch + merge`. It can leave you with merge commits or conflicts you didn't expect.
+
+## Learn next
+
+GitHub, code review, branching strategies (trunk-based development, GitHub flow, etc.).

@@ -1,0 +1,45 @@
+---
+title: IP Address
+aliases: ["ip", "ipv4", "ipv6"]
+category: networks-and-internet
+kind: concept
+summary: A numeric identifier for a network interface — how computers find each other on the internet.
+level: beginner
+status: draft
+tags: ["ip", "networking"]
+related: ["dns"]
+nextSteps: ["dns"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An IP address is the number a computer is reachable at on a network. The internet uses two flavours: IPv4 (looks like `192.168.1.1`) and IPv6 (looks like `2001:0db8::1`).
+
+## More detail
+
+- **IPv4** is 32 bits, written as four decimal numbers separated by dots. Total address space: about 4.3 billion — long since exhausted.
+- **IPv6** is 128 bits, written in hexadecimal blocks. The address space is essentially unlimited for practical purposes.
+
+A modern computer often has both, plus a **private** address inside your network (handed out by your router) and a **public** address that the rest of the world sees (your ISP's gateway). Translating between them is **NAT** (network address translation).
+
+IP addresses route by **prefix**: routers look at the leading bits and forward packets toward the destination network, hop by hop.
+
+## Why it matters
+
+Everything on the internet is named by IP underneath. Names like `wikipedia.org` only exist because we don't want to memorise numbers.
+
+## Real-world examples
+
+- `127.0.0.1` (and `::1`) — your own machine.
+- `8.8.8.8` — one of Google's public DNS servers.
+- `192.168.x.x`, `10.x.x.x` — typical home-router private ranges.
+
+## Common misconceptions
+
+- **"My IP address never changes."** Many ISPs assign dynamic addresses that change on reconnect. Even "static" cloud IPs can be reassigned if you release them.
+- **"An IP address identifies a person."** It identifies a network endpoint, often shared via NAT. Tying it to a person needs more evidence.
+
+## Learn next
+
+Names are easier than numbers — see [DNS](/t/dns).

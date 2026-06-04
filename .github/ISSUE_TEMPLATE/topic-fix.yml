@@ -1,0 +1,50 @@
+name: Report a fix
+description: Something is wrong, missing, or unclear on a topic page.
+title: "[Fix] <topic slug>"
+labels: ["fix", "triage"]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: Topic page
+      description: URL or slug of the topic that needs fixing.
+      placeholder: "/t/cpu  or  cpu"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of fix?
+      options:
+        - factual error
+        - missing prerequisite or relationship
+        - unclear explanation
+        - typo / formatting
+        - broken link
+        - out of date
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What is wrong, and what should it say?
+      description: Be specific. Quote the current text if relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources or references
+      description: Authoritative sources help reviewers.
+
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of conduct
+      options:
+        - label: I have read the topic page and confirmed the issue still applies.
+          required: true

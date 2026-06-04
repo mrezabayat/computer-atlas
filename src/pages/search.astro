@@ -1,0 +1,98 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Search"
+  description="Search Computer Atlas for topics, protocols, technologies, and concepts."
+>
+  <div class="mx-auto max-w-3xl px-4 py-10">
+    <h1
+      class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]"
+    >
+      Search the atlas
+    </h1>
+    <p class="mt-3 text-[var(--color-atlas-muted)]">
+      Filter by category, kind, level, or status. Index is generated at build
+      time.
+    </p>
+
+    <div id="search" class="mt-6"></div>
+    <noscript>
+      <p
+        class="mt-4 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3 text-sm text-[var(--color-atlas-muted)]"
+      >
+        Search requires JavaScript. You can still browse by
+        <a href="/" class="no-underline hover:underline">category</a>
+        or follow a
+        <a href="/paths" class="no-underline hover:underline">learning path</a>.
+      </p>
+    </noscript>
+  </div>
+</BaseLayout>
+
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+<script is:inline src="/pagefind/pagefind-ui.js"></script>
+
+<script is:inline>
+  (function () {
+    function init() {
+      var PagefindUI = window.PagefindUI;
+      if (!PagefindUI) {
+        setTimeout(init, 50);
+        return;
+      }
+      new PagefindUI({
+        element: "#search",
+        showImages: false,
+        showSubResults: false,
+        excerptLength: 24,
+        resetStyles: false,
+        autofocus: true,
+        showEmptyFilters: false,
+        translations: {
+          placeholder:
+            "Search topics, e.g. 'cpu', 'dns', 'algorithms'…",
+        },
+      });
+      var initialQuery =
+        new URL(window.location.href).searchParams.get("q") || "";
+      if (initialQuery) {
+        var input = document.querySelector("#search input[type=text]");
+        if (input) {
+          input.value = initialQuery;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>
+
+<style is:global>
+  :root {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--color-atlas-accent);
+    --pagefind-ui-text: var(--color-atlas-ink);
+    --pagefind-ui-background: var(--color-atlas-surface);
+    --pagefind-ui-border: var(--color-atlas-line);
+    --pagefind-ui-tag: var(--color-atlas-accent-soft);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 0.5rem;
+    --pagefind-ui-image-border-radius: 0.5rem;
+    --pagefind-ui-image-box-ratio: 3 / 2;
+    --pagefind-ui-font: var(--font-sans, system-ui, sans-serif);
+  }
+
+  .pagefind-ui__result {
+    padding: 0.75rem 0;
+  }
+
+  .pagefind-ui__filter-panel {
+    margin-top: 0.5rem;
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+interface Props {
+  level: "beginner" | "intermediate" | "advanced";
+}
+
+const { level } = Astro.props;
+
+const styles: Record<Props["level"], string> = {
+  beginner:
+    "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-900",
+  intermediate:
+    "bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-200 dark:border-sky-900",
+  advanced:
+    "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-950/40 dark:text-violet-200 dark:border-violet-900",
+};
+---
+
+<span
+  class:list={[
+    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+    styles[level],
+  ]}
+  title={`Level: ${level}`}
+>
+  {level}
+</span>

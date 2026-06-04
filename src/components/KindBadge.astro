@@ -1,0 +1,35 @@
+---
+interface Props {
+  kind:
+    | "concept"
+    | "technology"
+    | "protocol"
+    | "language"
+    | "tool"
+    | "field"
+    | "person"
+    | "organization"
+    | "historical-event";
+}
+
+const { kind } = Astro.props;
+
+const labels: Record<Props["kind"], string> = {
+  concept: "concept",
+  technology: "technology",
+  protocol: "protocol",
+  language: "language",
+  tool: "tool",
+  field: "field",
+  person: "person",
+  organization: "organization",
+  "historical-event": "historical event",
+};
+---
+
+<span
+  class="inline-flex items-center gap-1 rounded-full border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-atlas-muted)]"
+  title={`Kind: ${labels[kind]}`}
+>
+  {labels[kind]}
+</span>

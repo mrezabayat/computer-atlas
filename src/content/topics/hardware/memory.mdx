@@ -1,0 +1,54 @@
+---
+title: Memory
+aliases: ["RAM", "main memory"]
+category: hardware
+kind: technology
+summary: Fast, temporary storage where a running program keeps the data it is actively using.
+level: beginner
+status: reviewed
+tags: ["ram", "storage"]
+prerequisites: ["cpu"]
+related: ["storage"]
+nextSteps: ["storage"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Memory is a computer's short-term workspace. It is much faster than disk and much smaller. When a program is running, its code and the data it is currently working on live in memory.
+
+## More detail
+
+When people say "memory" they usually mean **RAM** (Random Access Memory). It is *random access* because the CPU can read or write any address in roughly the same amount of time, unlike a tape or a spinning disk.
+
+Computers actually have a **memory hierarchy** that trades capacity for speed:
+
+| Level         | Typical size  | Typical access time |
+|---------------|---------------|---------------------|
+| CPU registers | bytes         | < 1 ns              |
+| L1 cache      | tens of KB    | ~1 ns               |
+| L2 / L3 cache | MBs           | ~10 ns              |
+| Main memory   | GBs           | ~100 ns             |
+| SSD storage   | hundreds of GB to TBs | tens of µs |
+| HDD storage   | TBs           | ~10 ms              |
+
+Modern RAM is **volatile**: turn the power off and it forgets everything. That is why long-term data lives in [storage](/t/storage).
+
+## Why it matters
+
+Most performance problems in modern software are really memory problems — the CPU is fast, but waiting for data to come from RAM (or worse, from disk) is slow. Understanding the memory hierarchy is the foundation of writing fast code.
+
+## Real-world examples
+
+- A laptop with "16 GB of RAM" has 16 GB of main memory.
+- A browser tab using "200 MB" is taking 200 MB of memory.
+- The "out of memory" error happens when a program asks for more RAM than the system can provide.
+
+## Common misconceptions
+
+- **"Memory and storage are the same thing."** Memory is fast and forgets when the power goes off; storage is slower and remembers.
+- **"More RAM always makes a computer faster."** Only up to the point where you stop running out. Past that, more RAM mostly does nothing.
+
+## Learn next
+
+For data that has to survive a power cycle, look at [storage](/t/storage).

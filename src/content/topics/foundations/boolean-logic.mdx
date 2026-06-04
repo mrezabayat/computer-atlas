@@ -1,0 +1,50 @@
+---
+title: Boolean Logic
+aliases: ["boolean algebra"]
+category: foundations
+kind: concept
+summary: The algebra of true and false — the simple rules (AND, OR, NOT) from which every digital decision is built.
+level: beginner
+status: reviewed
+tags: ["logic", "algebra"]
+prerequisites: ["bits"]
+related: ["binary-numbers", "logic-gates"]
+nextSteps: ["logic-gates"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Boolean logic is arithmetic for `true` and `false`. Three basic operations — **AND**, **OR**, and **NOT** — let you combine yes/no questions into more interesting yes/no answers.
+
+## More detail
+
+Named after George Boole, boolean algebra works on two values (`true`/`false`, or `1`/`0`):
+
+| A | B | A AND B | A OR B | NOT A |
+|---|---|---------|--------|-------|
+| 0 | 0 |    0    |   0    |   1   |
+| 0 | 1 |    0    |   1    |   1   |
+| 1 | 0 |    0    |   1    |   0   |
+| 1 | 1 |    1    |   1    |   0   |
+
+From these three operations you can derive every other one (`XOR`, `NAND`, `NOR`, ...). The remarkable fact, due to Claude Shannon, is that **electrical circuits** can implement the same algebra — which is the foundation of every digital computer.
+
+## Why it matters
+
+Boolean logic is how programs decide. Every `if` statement, every loop condition, every database `WHERE` clause is boolean logic. Underneath, every CPU instruction that compares or branches is boolean logic implemented in hardware.
+
+## Real-world examples
+
+- `if (user.isLoggedIn && !user.isBanned) { ... }`
+- A search query like `cats AND (kittens OR puppies)` is boolean logic.
+- A smoke alarm: `siren = smoke_detected AND power_on AND NOT silenced`.
+
+## Common misconceptions
+
+- **"Boolean logic is the same as math."** It is a kind of math, but it operates on only two values, not numbers in general.
+- **"Boolean logic only matters for programmers."** It is also how the hardware itself works — see [logic gates](/t/logic-gates).
+
+## Learn next
+
+See how boolean logic becomes physical hardware in [logic gates](/t/logic-gates).

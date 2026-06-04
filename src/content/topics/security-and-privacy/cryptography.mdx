@@ -1,0 +1,53 @@
+---
+title: Cryptography
+aliases: ["crypto", "cryptographic"]
+category: security-and-privacy
+kind: concept
+summary: The science of keeping information secret and verifying it has not been tampered with — built from math and careful engineering.
+level: intermediate
+status: draft
+tags: ["crypto", "security"]
+related: ["public-key-cryptography"]
+nextSteps: ["public-key-cryptography"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Cryptography is the toolbox we use to keep secrets and prove identity online. It scrambles data so only the intended reader can unscramble it, and it lets one party prove "this message really came from me, untouched."
+
+## More detail
+
+The three primitives most engineers use:
+
+- **Symmetric encryption** (e.g. AES) — same key encrypts and decrypts. Fast.
+- **Asymmetric encryption** (e.g. RSA, elliptic-curve) — public/private keypair. Slower but solves key distribution.
+- **Hash functions** (e.g. SHA-256, BLAKE3) — one-way fingerprints of data.
+
+Higher-level constructions combine these:
+
+- **Authenticated encryption** (AEAD) like AES-GCM or ChaCha20-Poly1305.
+- **Digital signatures** (Ed25519, ECDSA).
+- **Message authentication codes** (HMAC).
+- **Key derivation** (HKDF, Argon2id for passwords).
+
+There is one rule above all others: **don't roll your own**. Use well-tested libraries (libsodium, the platform standard) and accept the recommended defaults.
+
+## Why it matters
+
+Without cryptography, there is no e-commerce, no online banking, no secure messaging, no software updates you can trust. It also underpins newer infrastructure: TLS, end-to-end encrypted messaging, signed commits, code signing, and most modern authentication.
+
+## Real-world examples
+
+- HTTPS uses TLS, which uses AEAD ciphers plus public-key cryptography.
+- `git` signs commits using GPG or SSH keys.
+- Apple's iMessage uses end-to-end encryption with per-device keys.
+
+## Common misconceptions
+
+- **"Bigger keys = more secure."** Past a point, more bits buy nothing useful. Algorithm choice matters more than key size at the top end.
+- **"Encrypted means anonymous."** Encryption hides content; the existence and timing of communication is often still visible.
+
+## Learn next
+
+See [public-key cryptography](/t/public-key-cryptography) for the asymmetric half of the toolbox.

@@ -1,0 +1,49 @@
+---
+title: Web Browser
+aliases: ["browser"]
+category: applications
+kind: technology
+summary: A program that fetches web pages over HTTP, parses HTML/CSS/JavaScript, and renders them as the interactive sites you see.
+level: beginner
+status: draft
+tags: ["web", "browser"]
+prerequisites: ["http"]
+related: ["http", "dns"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A web browser is the program you use to look at websites. It takes a URL, fetches the page, and turns the text it receives into the colourful, clickable thing on your screen.
+
+## More detail
+
+A modern browser is one of the most complex pieces of consumer software in the world. Inside, it has at least:
+
+- A **networking stack** that speaks HTTP/1.1, HTTP/2, HTTP/3, TLS, DNS-over-HTTPS, WebSockets, etc.
+- An **HTML parser** that builds a DOM tree from the bytes the server returned.
+- A **CSS engine** that resolves styles and computes layout.
+- A **JavaScript engine** (V8 in Chrome/Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari) that runs page scripts.
+- A **rendering pipeline** that turns the styled, scripted page into pixels on a GPU.
+- A **sandbox** that isolates each site from your machine and from other sites.
+
+The dominant engines are **Blink** (Chrome, Edge, Brave, Opera, Arc), **WebKit** (Safari), and **Gecko** (Firefox).
+
+## Why it matters
+
+The browser is the most important application platform of the last twenty years — it is how billions of people use software every day. It is also, in effect, an operating system in its own right: it sandboxes programs (web apps), manages permissions, talks to hardware, and runs continuously.
+
+## Real-world examples
+
+- Chrome, Safari, Firefox, Edge.
+- An Electron app is a Chromium browser bundled with a Node.js runtime.
+- Many "native" mobile apps embed a system web view to render parts of their UI.
+
+## Common misconceptions
+
+- **"All browsers render the same."** They mostly do — but engine differences, especially around new CSS features and JS APIs, are real.
+- **"Incognito mode hides me from websites."** It hides traces from your local device. The site, your ISP, and any third-party trackers can still see you.
+
+## Learn next
+
+Look at the underlying transport: [HTTP](/t/http) and [DNS](/t/dns).

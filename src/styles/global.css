@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  --color-atlas-bg: #fafaf7;
+  --color-atlas-surface: #ffffff;
+  --color-atlas-ink: #15171a;
+  --color-atlas-muted: #5a6068;
+  --color-atlas-line: #e6e4dd;
+  --color-atlas-accent: #1f6feb;
+  --color-atlas-accent-soft: #e8f0fe;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-atlas-bg: #0f1115;
+    --color-atlas-surface: #161a21;
+    --color-atlas-ink: #e7eaf0;
+    --color-atlas-muted: #9098a4;
+    --color-atlas-line: #2a313c;
+    --color-atlas-accent: #5b9bff;
+    --color-atlas-accent-soft: #1a2433;
+  }
+
+  html {
+    background-color: var(--color-atlas-bg);
+    color: var(--color-atlas-ink);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--color-atlas-accent);
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-mono);
+  }
+}

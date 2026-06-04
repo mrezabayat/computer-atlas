@@ -1,0 +1,50 @@
+---
+title: Pixel
+aliases: ["picture element"]
+category: graphics-and-media
+kind: concept
+summary: The smallest addressable element of a digital image — a tiny coloured square that, together with billions of others, makes up what you see on a screen.
+level: beginner
+status: draft
+tags: ["graphics", "image"]
+related: ["bits"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A pixel ("picture element") is one tiny dot of colour on a screen. A picture is a grid of pixels. The more pixels there are per inch, the sharper the picture looks.
+
+## More detail
+
+A pixel's colour is stored as numbers — typically three: how much **red**, **green**, and **blue** it has. With 8 bits per channel that's 256 levels each and about 16.7 million possible colours per pixel. Many displays now use 10 bits per channel ("HDR") for smoother gradients.
+
+A common pixel layout in memory:
+
+| Bytes | Channel        |
+|-------|----------------|
+| 0     | Red            |
+| 1     | Green          |
+| 2     | Blue           |
+| 3     | Alpha (opacity)|
+
+An "image" is then a width × height grid of these. At 4K (3840 × 2160), that's just over 8 million pixels per frame; at 60 frames per second it's half a billion pixels per second. That is why GPUs exist.
+
+## Why it matters
+
+Pixels are the unit of digital images — every photo you take, every video you watch, every UI you tap on. Understanding them is the entry point to graphics, compression, and display tech.
+
+## Real-world examples
+
+- A 12-megapixel phone camera produces images that are 4032 × 3024 pixels.
+- A 4K monitor packs 3840 × 2160 ≈ 8.3 million pixels.
+- JPEG and PNG are different ways of compressing those pixels into smaller files.
+
+## Common misconceptions
+
+- **"Pixels are little dots of light on the screen."** They are an abstraction in your image. The actual screen subpixels (red/green/blue stripes) are different from the logical pixels in your file.
+- **"More megapixels = better camera."** Sensor size, lens quality, and processing usually matter more.
+
+## Learn next
+
+How those pixels are stored, compressed, and transmitted — image formats and codecs.

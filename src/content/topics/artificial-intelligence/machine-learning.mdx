@@ -1,0 +1,53 @@
+---
+title: Machine Learning
+aliases: ["ML"]
+category: artificial-intelligence
+kind: field
+summary: Building systems that improve at a task by learning from data instead of being explicitly programmed for every case.
+level: intermediate
+status: draft
+tags: ["ml", "ai"]
+related: ["algorithms", "neural-network"]
+nextSteps: ["neural-network"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Machine learning is a way of teaching a computer to do something by **showing it examples** instead of writing the rules by hand. You feed it data, it adjusts internal numbers to fit, and afterward it can make predictions on new data.
+
+## More detail
+
+The three classical settings:
+
+- **Supervised learning** — examples come with labels ("this image is a cat"). The model learns to predict the label.
+- **Unsupervised learning** — no labels; find structure (clusters, low-dim embeddings).
+- **Reinforcement learning** — an agent acts in an environment and is rewarded; learn the actions that maximise reward.
+
+Common ingredients:
+
+- A **model** (linear, decision tree, neural network, ...).
+- A **loss function** that measures how wrong the predictions are.
+- An **optimisation algorithm** (gradient descent and friends) that nudges the model's parameters to reduce the loss.
+
+The dominant flavour of ML in 2026 is **deep learning** with [neural networks](/t/neural-network), especially **transformer**-based language and vision models.
+
+## Why it matters
+
+Machine learning is how modern speech recognition, recommender systems, fraud detection, search ranking, image generation, and large language models all work.
+
+## Real-world examples
+
+- Spam filters in email.
+- Recommendation engines on streaming platforms.
+- The autocomplete in your text editor or IDE.
+- ChatGPT / Claude / Gemini / Mistral and similar LLM products.
+
+## Common misconceptions
+
+- **"More data always beats a better model."** Up to a point — past that, data quality and architecture matter more than raw volume.
+- **"ML systems are objective."** They reflect the data they were trained on, including its biases and errors.
+
+## Learn next
+
+The dominant architecture of modern ML — see [neural network](/t/neural-network).

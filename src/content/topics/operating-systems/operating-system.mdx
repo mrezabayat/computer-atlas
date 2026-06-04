@@ -1,0 +1,53 @@
+---
+title: Operating System
+aliases: ["OS", "operating-systems"]
+category: operating-systems
+kind: concept
+summary: The system software that manages hardware and provides services and abstractions to all other programs.
+level: beginner
+status: reviewed
+tags: ["os", "kernel"]
+prerequisites: ["cpu", "memory"]
+related: ["storage"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An operating system is the program that runs all the other programs. It hides the messy details of the hardware and gives every app a clean, shared environment to live in.
+
+## More detail
+
+The job of an operating system is to manage three scarce things — CPU time, memory, and devices — and share them safely between many programs.
+
+Its main responsibilities include:
+
+- **Processes and scheduling** — deciding which program runs on the CPU and when
+- **Memory management** — giving each program the illusion of its own private address space
+- **File systems** — turning raw [storage](/t/storage) into named files and directories
+- **Device drivers** — speaking to keyboards, displays, network cards, GPUs
+- **Networking** — implementing protocols so programs can talk over a network
+- **Security** — enforcing who can do what to whom
+
+The core of an OS is called the **kernel**. It runs in a privileged mode where it can talk to hardware directly. Normal applications run in **user mode** and have to ask the kernel for help via **system calls**.
+
+Examples of operating systems include **Linux**, **macOS**, **Windows**, **iOS**, **Android**, and embedded OSes like **FreeRTOS**.
+
+## Why it matters
+
+Without an OS you would have to write every program from scratch — including the code to talk to the screen, the disk, the network, and the keyboard. The OS is what makes a computer a *general-purpose* machine.
+
+## Real-world examples
+
+- Linux runs the majority of the world's servers and (via Android) most phones.
+- macOS and iOS share a Unix-based kernel called Darwin.
+- A microwave's controller runs a tiny real-time OS measuring kilobytes, not gigabytes.
+
+## Common misconceptions
+
+- **"The OS and the desktop are the same."** The desktop you see is a *user interface* running on top of the OS. The OS underneath is mostly invisible.
+- **"You can install any program on any OS."** Programs are usually compiled for a specific OS and CPU architecture and will not run elsewhere without a compatibility layer.
+
+## Learn next
+
+From here you can dive into specific OS subsystems — processes, virtual memory, file systems — or jump into [networks](/c/networks-and-internet) to see how operating systems cooperate across machines.

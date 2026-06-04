@@ -1,0 +1,59 @@
+---
+title: HTTP
+aliases: ["hypertext transfer protocol", "https"]
+category: networks-and-internet
+kind: protocol
+summary: The request/response protocol that powers the web — how browsers and servers talk to each other.
+level: beginner
+status: draft
+tags: ["http", "web", "protocol"]
+prerequisites: ["dns", "ip-address"]
+related: ["dns"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+HTTP is the language web browsers and web servers use to talk. The browser sends a **request** ("give me this page"), the server sends back a **response** ("here you go, and here's the status").
+
+## More detail
+
+An HTTP request has:
+
+- A **method** (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, ...).
+- A **URL** that identifies the resource.
+- **Headers** with metadata (content type, cookies, caching directives, auth, ...).
+- An optional **body** (for `POST`, `PUT`, ...).
+
+An HTTP response has:
+
+- A **status code** — `200 OK`, `301 Moved Permanently`, `404 Not Found`, `500 Internal Server Error`, ...
+- **Headers**.
+- A **body**, often HTML, JSON, or an image.
+
+Versions matter:
+
+- **HTTP/1.1** — text-based, one request at a time per connection (mostly).
+- **HTTP/2** — binary, multiplexed over a single connection.
+- **HTTP/3** — built on QUIC over UDP, faster on lossy networks.
+
+**HTTPS** is HTTP over TLS — the same protocol with end-to-end encryption and server identity verification.
+
+## Why it matters
+
+HTTP is the universal API of the modern internet. Web sites, mobile apps, microservices, webhooks — they almost all speak it.
+
+## Real-world examples
+
+- Loading `https://wikipedia.org` is one HTTP `GET` request (followed by many more for assets).
+- A REST API responds to `GET /api/users/42` with a JSON body.
+- A webhook is just an HTTP `POST` from one service to another.
+
+## Common misconceptions
+
+- **"HTTPS encrypts who I'm talking to."** It encrypts the payload, but the destination IP and (often) hostname are still visible.
+- **"`POST` is for new data, `PUT` is for updates."** Closer to: `POST` is "do something with this", `PUT` is "make this resource look exactly like this". Conventions vary by API.
+
+## Learn next
+
+Look at the web platform on top: HTML, the [web browser](/t/web-browser), and REST/GraphQL APIs.

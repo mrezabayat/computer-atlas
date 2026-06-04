@@ -1,0 +1,74 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import { getAllPaths, pathUrl } from "~/lib/graph";
+
+const paths = await getAllPaths();
+
+const byAudience = ["beginner", "intermediate", "advanced"].map((audience) => ({
+  audience,
+  paths: paths
+    .filter((p) => p.data.audience === audience)
+    .sort((a, b) => a.data.title.localeCompare(b.data.title)),
+}));
+---
+
+<BaseLayout
+  title="Learning paths"
+  description="Curated, ordered tours through computer science topics."
+>
+  <div class="mx-auto max-w-5xl px-4 py-8">
+    <nav class="text-xs text-[var(--color-atlas-muted)]" aria-label="Breadcrumb">
+      <a href="/" class="no-underline hover:underline">Atlas</a>
+    </nav>
+    <header class="mt-2">
+      <h1
+        class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]"
+      >
+        Learning paths
+      </h1>
+      <p class="mt-3 text-lg text-[var(--color-atlas-muted)] max-w-3xl">
+        Curated, ordered tours through the atlas. Each path is a sequence of
+        topics that build on each other.
+      </p>
+    </header>
+
+    {paths.length === 0 ? (
+      <p class="mt-8 text-sm text-[var(--color-atlas-muted)]">
+        No learning paths have been added yet.
+      </p>
+    ) : (
+      <div class="mt-8 space-y-8">
+        {byAudience.map(
+          (group) =>
+            group.paths.length > 0 && (
+              <section>
+                <h2 class="text-base font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+                  For {group.audience}s
+                </h2>
+                <ul class="mt-3 grid gap-3 sm:grid-cols-2">
+                  {group.paths.map((p) => (
+                    <li>
+                      <a
+                        href={pathUrl(p.id)}
+                        class="block rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)]"
+                      >
+                        <h3 class="text-base font-semibold text-[var(--color-atlas-ink)]">
+                          {p.data.title}
+                        </h3>
+                        <p class="mt-1 text-sm text-[var(--color-atlas-muted)] line-clamp-3">
+                          {p.data.summary}
+                        </p>
+                        <p class="mt-2 text-xs text-[var(--color-atlas-muted)]">
+                          {p.data.topics.length} topics
+                        </p>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ),
+        )}
+      </div>
+    )}
+  </div>
+</BaseLayout>

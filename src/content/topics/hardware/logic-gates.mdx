@@ -1,0 +1,60 @@
+---
+title: Logic Gates
+aliases: ["gate", "digital logic"]
+category: hardware
+kind: concept
+summary: Tiny electronic circuits that implement boolean operations — the physical building blocks of every digital chip.
+level: beginner
+status: reviewed
+tags: ["digital-logic", "circuits"]
+prerequisites: ["boolean-logic"]
+related: ["bits"]
+partOf: ["cpu"]
+nextSteps: ["cpu"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A logic gate is a tiny circuit, usually made from a handful of transistors, that takes one or two electrical signals as input and produces an electrical signal as output — following a rule like AND, OR, or NOT.
+
+## More detail
+
+The common gates correspond directly to boolean operations:
+
+| Gate | Symbol idea | Output is 1 when…                  |
+|------|-------------|-------------------------------------|
+| NOT  | `¬A`        | input is 0                          |
+| AND  | `A · B`     | both inputs are 1                   |
+| OR   | `A + B`     | either input is 1                   |
+| NAND | `¬(A · B)`  | NOT of AND                          |
+| NOR  | `¬(A + B)`  | NOT of OR                           |
+| XOR  | `A ⊕ B`     | inputs differ                       |
+
+Gates can be wired together to build:
+
+- **Adders** that compute binary sums
+- **Flip-flops** that remember a bit (the basis of memory and registers)
+- **Multiplexers** that pick one of several inputs
+- Eventually, the **CPU** itself
+
+A modern processor packs billions of gates onto a fingernail-sized chip.
+
+## Why it matters
+
+Logic gates are the bridge between physics and information. They are where electricity stops being voltage and starts being computation.
+
+## Real-world examples
+
+- A single 7400-series chip from the 1970s contains four NAND gates.
+- An FPGA is a chip whose gates can be rewired in software.
+- The CPU in your phone is, structurally, a very large and very clever pile of logic gates.
+
+## Common misconceptions
+
+- **"Each gate uses one transistor."** A CMOS NAND gate uses four transistors. Even a basic NOT (inverter) uses two.
+- **"Logic gates are obsolete."** They are everywhere — they just live inside larger building blocks.
+
+## Learn next
+
+Gates combine into a [CPU](/t/cpu).

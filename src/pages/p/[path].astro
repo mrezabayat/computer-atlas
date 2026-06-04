@@ -1,0 +1,21 @@
+---
+import { getCollection, render } from "astro:content";
+import PathLayout from "~/layouts/PathLayout.astro";
+
+export async function getStaticPaths() {
+  const paths = await getCollection("paths");
+  return paths.map((path) => ({
+    params: { path: path.id },
+    props: { path },
+  }));
+}
+
+const { path } = Astro.props as {
+  path: Awaited<ReturnType<typeof getCollection<"paths">>>[number];
+};
+const { Content } = await render(path);
+---
+
+<PathLayout path={path}>
+  <Content />
+</PathLayout>

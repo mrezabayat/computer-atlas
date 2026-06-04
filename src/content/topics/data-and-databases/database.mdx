@@ -1,0 +1,49 @@
+---
+title: Database
+category: data-and-databases
+kind: concept
+summary: An organised collection of data with a system around it that lets you store, retrieve, update, and query it efficiently.
+level: beginner
+status: draft
+tags: ["database", "storage"]
+prerequisites: ["storage"]
+related: ["sql"]
+nextSteps: ["sql"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A database is a place to put data so you can find it again — and a system that helps you do that. It is more structured than a folder of files and more durable than memory.
+
+## More detail
+
+Databases come in many flavours, but the dominant split is **relational** vs **non-relational**:
+
+- **Relational** (PostgreSQL, MySQL, SQLite, SQL Server, Oracle) — data is organised into tables with rows and columns. Queries use SQL. Strong consistency, joins, and ACID transactions.
+- **Document** (MongoDB, Couchbase) — JSON-like documents grouped into collections.
+- **Key-value** (Redis, DynamoDB) — a giant lookup table.
+- **Wide-column** (Cassandra, ScyllaDB) — rows with many possible columns, designed for very large data.
+- **Graph** (Neo4j, JanusGraph) — nodes and edges, with query languages built for traversal.
+- **Search/analytics** (OpenSearch, ClickHouse, BigQuery) — read-heavy, often columnar.
+
+A database engine cares about three things at once: getting the right answer, getting it quickly, and not losing it when something goes wrong.
+
+## Why it matters
+
+Almost every non-trivial application reads and writes to a database. Choosing one shapes how you store data, how fast you can change schema, and how the system behaves under failure.
+
+## Real-world examples
+
+- A blog post lives in a row in a `posts` table.
+- A shopping cart might live in Redis for speed.
+- Bank transactions live in a relational database for ACID guarantees.
+
+## Common misconceptions
+
+- **"NoSQL means no schema."** Most NoSQL stores still have an implicit schema — it just lives in your code instead of the database.
+- **"Databases are interchangeable."** They are not; switching the engine often requires changing data model and access patterns.
+
+## Learn next
+
+Learn how to ask a relational database questions — see [SQL](/t/sql).

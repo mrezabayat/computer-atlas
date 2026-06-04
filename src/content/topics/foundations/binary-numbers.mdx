@@ -1,0 +1,55 @@
+---
+title: Binary Numbers
+aliases: ["base 2", "binary"]
+category: foundations
+kind: concept
+summary: A way of writing whole numbers using only two digits, 0 and 1 — the native number system of digital computers.
+level: beginner
+status: reviewed
+tags: ["binary", "numbers"]
+prerequisites: ["bits"]
+related: ["boolean-logic"]
+nextSteps: ["boolean-logic"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Binary is a way of writing numbers using only **two** symbols, `0` and `1`, instead of the usual ten (`0`–`9`). Each position is worth twice the one to its right, the same way each position in normal numbers is worth ten times the one to its right.
+
+## More detail
+
+In **decimal** (base 10), the number `203` means:
+
+```
+2 * 100 + 0 * 10 + 3 * 1
+```
+
+In **binary** (base 2), the number `1101` means:
+
+```
+1 * 8 + 1 * 4 + 0 * 2 + 1 * 1  =  13
+```
+
+Place values double as you move left: `1, 2, 4, 8, 16, 32, 64, 128, …`. Every whole number has exactly one binary representation, and arithmetic (add, subtract, multiply) follows the same rules as decimal — there are just fewer digits to carry.
+
+To represent negative numbers, computers usually use **two's complement**. To represent fractions, they use a binary version of scientific notation called **floating point**.
+
+## Why it matters
+
+Computers are built from devices with two stable states, so binary is what they natively store and compute. Every integer in a program, every byte in a file, every pixel of every image is binary underneath.
+
+## Real-world examples
+
+- The number `42` in an 8-bit byte is `00101010`.
+- IPv4 addresses are 32 bits — four 8-bit chunks shown in decimal, like `192.168.1.1`.
+- Colours on the web are written in hexadecimal (`#1f6feb`), which is just binary grouped four bits at a time.
+
+## Common misconceptions
+
+- **"Binary is hard for computers."** It is the opposite — binary is easy for computers and slightly awkward for humans. We use decimal for our convenience.
+- **"Binary can only represent small numbers."** Binary can represent any whole number; you just need more bits for larger numbers.
+
+## Learn next
+
+With binary you can store values. To make decisions about those values, learn [boolean logic](/t/boolean-logic).

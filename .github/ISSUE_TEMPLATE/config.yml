@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open a discussion
+    url: https://github.com/your-org/computer-atlas/discussions
+    about: Have a broader question or want to propose a learning path? Start a discussion.

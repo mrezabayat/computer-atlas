@@ -1,0 +1,80 @@
+import { defineCollection, reference, z } from "astro:content";
+import { glob } from "astro/loaders";
+import { CATEGORIES } from "~/lib/categories";
+
+const TOPIC_KINDS = [
+  "concept",
+  "technology",
+  "protocol",
+  "language",
+  "tool",
+  "field",
+  "person",
+  "organization",
+  "historical-event",
+] as const;
+
+const LEVELS = ["beginner", "intermediate", "advanced"] as const;
+
+const stripDirAndExt = (entry: string): string =>
+  entry.replace(/\.mdx?$/, "").split("/").pop() ?? entry;
+
+const topics = defineCollection({
+  loader: glob({
+    pattern: "**/*.mdx",
+    base: "./src/content/topics",
+    generateId: ({ entry }) => stripDirAndExt(entry),
+  }),
+  schema: z.object({
+    title: z.string().min(1),
+    aliases: z.array(z.string()).default([]),
+
+    category: z.enum(CATEGORIES),
+
+    kind: z.enum(TOPIC_KINDS).default("concept"),
+
+    summary: z.string().min(1).max(280),
+    level: z.enum(LEVELS),
+    status: z.enum(["stub", "draft", "reviewed"]).default("draft"),
+    tags: z.array(z.string()).default([]),
+
+    prerequisites: z.array(reference("topics")).default([]),
+    related: z.array(reference("topics")).default([]),
+    partOf: z.array(reference("topics")).default([]),
+    nextSteps: z.array(reference("topics")).default([]),
+
+    updated: z.coerce.date(),
+  }),
+});
+
+const categories = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/categories",
+    generateId: ({ entry }) => stripDirAndExt(entry),
+  }),
+  schema: z.object({
+    title: z.string(),
+    slug: z.enum(CATEGORIES),
+    summary: z.string().max(400),
+    order: z.number().int().nonnegative(),
+    icon: z.string().optional(),
+  }),
+});
+
+const paths = defineCollection({
+  loader: glob({
+    pattern: "**/*.mdx",
+    base: "./src/content/paths",
+    generateId: ({ entry }) => stripDirAndExt(entry),
+  }),
+  schema: z.object({
+    title: z.string().min(1),
+    summary: z.string().min(1).max(280),
+    audience: z.enum(LEVELS),
+    topics: z.array(reference("topics")).min(2),
+    updated: z.coerce.date(),
+  }),
+});
+
+export const collections = { topics, categories, paths };

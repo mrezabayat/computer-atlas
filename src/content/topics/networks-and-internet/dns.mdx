@@ -1,0 +1,59 @@
+---
+title: DNS
+aliases: ["domain name system"]
+category: networks-and-internet
+kind: protocol
+summary: The phone book of the internet — translates human-readable names like example.com into IP addresses.
+level: intermediate
+status: reviewed
+tags: ["dns", "networking", "internet"]
+related: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+DNS (Domain Name System) is what turns a name you can remember, like `wikipedia.org`, into a number a computer can use to find the right server, like `208.80.154.224`. Without DNS, you would have to memorise IP addresses for every site you visit.
+
+## More detail
+
+DNS is a globally distributed, hierarchical database. The hierarchy is read **right to left** in a domain name:
+
+```
+www . example . com .
+ │     │        │   │
+ │     │        │   └── root
+ │     │        └────── top-level domain (TLD): com
+ │     └─────────────── second-level domain:    example
+ └───────────────────── subdomain:              www
+```
+
+A lookup typically involves four kinds of server:
+
+1. **Stub resolver** — built into your operating system; asks the next server up.
+2. **Recursive resolver** — usually your ISP, your router, or a public resolver like `1.1.1.1` or `8.8.8.8`. Does the actual hunting and caches results.
+3. **Root servers** — point the resolver toward the right TLD server.
+4. **Authoritative servers** — know the real answer for a specific domain.
+
+Records come in types: **A** (IPv4), **AAAA** (IPv6), **MX** (mail), **CNAME** (alias), **TXT** (free-form, often used for verification), **NS** (delegation).
+
+Modern DNS adds **DNSSEC** for cryptographic integrity and **DNS-over-HTTPS / DNS-over-TLS** for privacy.
+
+## Why it matters
+
+DNS is invisible until it breaks — and when it does, "the internet is down" for users even though the underlying network is fine. It is the single most-relied-upon name service on the planet.
+
+## Real-world examples
+
+- Typing `https://github.com` triggers DNS lookups for `github.com` before any HTTP request can be made.
+- A misconfigured `MX` record routes email to the wrong server.
+- A long DNS cache (high TTL) makes changes slow to roll out; a short one increases query load.
+
+## Common misconceptions
+
+- **"DNS uses HTTP."** Classic DNS uses its own protocol on UDP/TCP port 53. DoH adds an HTTPS transport for privacy, but the underlying queries are still DNS.
+- **"DNS is centralised."** It is hierarchical and operated by many organisations, but it is deeply distributed and cached at every level.
+
+## Learn next
+
+Look at HTTP, IP addresses, and routing to see what happens *after* the name is resolved.

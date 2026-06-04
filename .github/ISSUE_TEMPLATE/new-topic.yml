@@ -1,0 +1,117 @@
+name: Suggest a new topic
+description: Propose a new topic for the Computer Atlas.
+title: "[Topic] <topic name>"
+labels: ["new-topic", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping the Atlas grow. Please fill in as much as you can — but missing fields are fine.
+
+  - type: input
+    id: title
+    attributes:
+      label: Topic title
+      description: The display name, e.g. "Virtual Memory".
+      placeholder: "Virtual Memory"
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: Proposed slug
+      description: |
+        URL slug. Lowercase, hyphenated, no punctuation. Will be the page URL `/t/<slug>`.
+        Slugs must be unique across the whole Atlas.
+      placeholder: "virtual-memory"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: One of the 16 top-level categories.
+      options:
+        - foundations
+        - hardware
+        - computer-architecture
+        - operating-systems
+        - programming-languages
+        - software-engineering
+        - data-and-databases
+        - networks-and-internet
+        - distributed-systems-and-cloud
+        - security-and-privacy
+        - human-computer-interaction
+        - graphics-and-media
+        - artificial-intelligence
+        - applications
+        - history-and-society
+        - operations-and-reliability
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      description: What sort of thing is this topic?
+      options:
+        - concept
+        - technology
+        - protocol
+        - language
+        - tool
+        - field
+        - person
+        - organization
+        - historical-event
+    validations:
+      required: true
+
+  - type: dropdown
+    id: level
+    attributes:
+      label: Level
+      options:
+        - beginner
+        - intermediate
+        - advanced
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: One-sentence summary
+      description: Max 280 characters. Plain language, no jargon if possible.
+      placeholder: |
+        A technique that gives each program the illusion of its own
+        contiguous, private memory, by mapping virtual to physical addresses.
+    validations:
+      required: true
+
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: Likely prerequisites
+      description: Slugs of topics already in the Atlas that should be read first.
+      placeholder: |
+        memory
+        operating-system
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes, sources, or anything else
+      description: Links, references, why this matters, etc.
+
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of conduct
+      options:
+        - label: I have searched existing issues to make sure this is not a duplicate.
+          required: true

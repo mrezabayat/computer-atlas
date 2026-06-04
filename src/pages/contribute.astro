@@ -1,0 +1,72 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import { SITE, newTopicIssueUrl, reportFixUrl, repoFileUrl } from "~/site.config";
+---
+
+<BaseLayout
+  title="Contribute"
+  description="How to suggest topics or improve Computer Atlas."
+>
+  <article class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]">
+      Contribute
+    </h1>
+    <div class="prose prose-slate dark:prose-invert mt-6 max-w-none">
+      <p>
+        Computer Atlas is content-first and open. Adding or improving a topic is
+        just editing a Markdown file in the
+        <a href={SITE.repo} target="_blank" rel="noopener noreferrer">GitHub repository</a>.
+      </p>
+    </div>
+
+    <div class="not-prose mt-6 grid gap-3 sm:grid-cols-2">
+      <a
+        href={newTopicIssueUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)]"
+      >
+        <h2 class="text-base font-semibold text-[var(--color-atlas-ink)]">
+          Suggest a new topic
+        </h2>
+        <p class="mt-1 text-sm text-[var(--color-atlas-muted)]">
+          Open a structured GitHub issue. We use the answers to scaffold the new
+          MDX file.
+        </p>
+      </a>
+      <a
+        href={reportFixUrl()}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="block rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)]"
+      >
+        <h2 class="text-base font-semibold text-[var(--color-atlas-ink)]">
+          Report a fix
+        </h2>
+        <p class="mt-1 text-sm text-[var(--color-atlas-muted)]">
+          Found a factual error, a typo, or a missing relationship? File a quick
+          issue.
+        </p>
+      </a>
+    </div>
+
+    <div class="prose prose-slate dark:prose-invert mt-8 max-w-none">
+      <h2>Authoring conventions</h2>
+      <p>
+        Every topic page follows the same structure so the site feels coherent:
+      </p>
+      <pre><code>## In simple terms
+## More detail
+## Why it matters
+## Real-world examples
+## Common misconceptions
+## Learn next</code></pre>
+      <p>
+        Frontmatter is validated at build time — broken slug references will
+        fail the build, so you cannot accidentally link to a topic that does not
+        exist. For the full schema and field-by-field guidance, see
+        <a href={repoFileUrl("/CONTRIBUTING.md")} target="_blank" rel="noopener noreferrer">CONTRIBUTING.md</a>.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

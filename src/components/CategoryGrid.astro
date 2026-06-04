@@ -1,0 +1,38 @@
+---
+import { getCollection } from "astro:content";
+import { categoryUrl } from "~/lib/graph";
+
+const categories = (await getCollection("categories")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+
+<div
+  class="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+>
+  {
+    categories.map((c) => (
+      <a
+        href={categoryUrl(c.data.slug)}
+        class="group flex flex-col rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)] transition-colors"
+      >
+        <div class="flex items-center gap-2">
+          {c.data.icon && (
+            <span
+              class="text-lg leading-none text-[var(--color-atlas-muted)]"
+              aria-hidden="true"
+            >
+              {c.data.icon}
+            </span>
+          )}
+          <h3 class="text-sm font-semibold text-[var(--color-atlas-ink)] group-hover:text-[var(--color-atlas-accent)]">
+            {c.data.title}
+          </h3>
+        </div>
+        <p class="mt-1 text-xs text-[var(--color-atlas-muted)] line-clamp-3">
+          {c.data.summary}
+        </p>
+      </a>
+    ))
+  }
+</div>

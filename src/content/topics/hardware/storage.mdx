@@ -1,0 +1,48 @@
+---
+title: Storage
+aliases: ["disk", "persistent storage"]
+category: hardware
+kind: technology
+summary: Long-term, non-volatile storage where files and programs are kept when the computer is off.
+level: beginner
+status: reviewed
+tags: ["disk", "ssd", "hdd"]
+prerequisites: ["memory"]
+related: ["memory"]
+nextSteps: ["operating-system"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Storage is where your computer remembers things after you turn it off — your files, your photos, the operating system itself. It is much slower than memory, but it keeps its contents without power and is much larger.
+
+## More detail
+
+Storage is **non-volatile**: it retains data without a power source. The two dominant kinds today are:
+
+- **HDD** (hard disk drive) — spinning magnetic platters with a moving read/write head. Cheap per gigabyte, slow random access (around 10 ms), durable enough for archives.
+- **SSD** (solid-state drive) — flash memory chips with no moving parts. Hundreds to thousands of times faster than an HDD, especially for random access.
+
+Above the raw device, an operating system imposes a **file system** (NTFS, APFS, ext4, ZFS, ...) that organises bytes into named files and directories, tracks free space, and enforces permissions.
+
+In data centres, storage extends to networked block stores, object stores like S3, and globally replicated databases — but the same idea applies: data has to survive a power cut.
+
+## Why it matters
+
+Memory holds what a program is doing *right now*; storage holds everything else. The whole digital world — every document, photo, video, app, database — lives on storage somewhere.
+
+## Real-world examples
+
+- A 1 TB SSD inside a laptop.
+- A USB stick or SD card (both flash storage).
+- Amazon S3, where huge amounts of the public internet's content actually lives.
+
+## Common misconceptions
+
+- **"SSDs are basically RAM."** Both use chips, but flash is much slower than RAM and wears out after many writes. SSDs trade some performance for non-volatility and cost.
+- **"My data is safe because it is on my hard drive."** Drives fail. Backups exist for a reason.
+
+## Learn next
+
+To see how the CPU, memory, and storage are coordinated for many programs at once, learn about the [operating system](/t/operating-system).

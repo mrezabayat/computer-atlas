@@ -1,0 +1,41 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="About"
+  description="What Computer Atlas is and who it is for."
+>
+  <article class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]">
+      About Computer Atlas
+    </h1>
+    <div class="prose prose-slate dark:prose-invert mt-6 max-w-none">
+      <p>
+        <strong>Computer Atlas</strong> is a browsable, searchable map of
+        computer science and computing topics. It is built for beginners,
+        students, software engineers exploring adjacent fields, and teachers
+        looking for a structured way to explain things.
+      </p>
+      <p>For every topic the atlas tries to answer:</p>
+      <ul>
+        <li>What does this mean, in simple terms?</li>
+        <li>Where does it sit in the bigger picture?</li>
+        <li>What should I understand first?</li>
+        <li>What can I learn next?</li>
+      </ul>
+      <h2>Design principles</h2>
+      <ul>
+        <li>Content first. The site exists to make ideas legible.</li>
+        <li>Honest about gaps. Stubs and drafts are clearly marked.</li>
+        <li>Open. Every page links to its source on GitHub.</li>
+        <li>Fast. Static HTML, almost no JavaScript by default.</li>
+      </ul>
+      <h2>How to help</h2>
+      <p>
+        See <a href="/contribute">Contribute</a> for ways to suggest topics, fix
+        explanations, or improve relationships between concepts.
+      </p>
+    </div>
+  </article>
+</BaseLayout>

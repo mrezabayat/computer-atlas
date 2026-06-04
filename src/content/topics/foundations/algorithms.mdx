@@ -1,0 +1,57 @@
+---
+title: Algorithms
+aliases: ["algorithm"]
+category: foundations
+kind: concept
+summary: A precise, finite recipe for solving a problem — the central idea of computer science.
+level: intermediate
+status: reviewed
+tags: ["algorithms", "complexity"]
+related: ["boolean-logic"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An algorithm is a recipe. Given some input, it lists the exact steps a computer (or a person) should take to produce a correct output. "Sort this list", "find the shortest route", "search this text" — each is a problem with many possible algorithms.
+
+## More detail
+
+A good algorithm is:
+
+- **Correct** — it always produces the right answer (or a clearly bounded approximation).
+- **Finite** — it eventually stops.
+- **Unambiguous** — every step is well-defined.
+- **Efficient** — it uses reasonable time and memory, ideally analysed with **Big-O notation**.
+
+Big-O tells you how the cost grows with the input size `n`:
+
+| Notation | Meaning                  | Example                              |
+|----------|--------------------------|--------------------------------------|
+| O(1)     | constant                 | reading the first element of a list  |
+| O(log n) | logarithmic              | binary search                        |
+| O(n)     | linear                   | scanning a list                      |
+| O(n log n) | linearithmic           | merge sort, quicksort (average)      |
+| O(n²)    | quadratic                | bubble sort                          |
+| O(2ⁿ)    | exponential              | naive subset-sum                     |
+
+Classical algorithm families include sorting, searching, graph algorithms (shortest path, spanning tree), dynamic programming, and divide-and-conquer.
+
+## Why it matters
+
+The right algorithm can turn a problem that would take a year into one that finishes in a second. Choosing or designing one is the central engineering skill in computer science.
+
+## Real-world examples
+
+- Google's PageRank ranks web pages using a graph algorithm.
+- GPS navigation finds the fastest route with variants of Dijkstra's algorithm.
+- `git` finds the common ancestor of two branches using a graph traversal.
+
+## Common misconceptions
+
+- **"There is only one algorithm for each problem."** Most useful problems have many; the trade-offs are time, memory, and simplicity.
+- **"Faster always means better."** Sometimes a slightly slower algorithm is easier to maintain, easier to parallelise, or uses less memory.
+
+## Learn next
+
+Algorithms are made of decisions; revisit [boolean logic](/t/boolean-logic) if those decisions are unfamiliar, or explore data structures and complexity theory.

@@ -1,0 +1,56 @@
+---
+title: CPU
+aliases: ["central processing unit", "processor"]
+category: hardware
+kind: technology
+summary: The component of a computer that fetches and executes instructions — the place where programs actually run.
+level: beginner
+status: reviewed
+tags: ["processor", "architecture"]
+prerequisites: ["logic-gates"]
+related: ["memory"]
+nextSteps: ["memory", "operating-system"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+The CPU (central processing unit) is the part of a computer that **does the work**. It reads instructions out of memory one after another and carries them out: add these numbers, copy this byte, jump to that address.
+
+## More detail
+
+A CPU is built from a few cooperating pieces:
+
+- **Registers** — a tiny pile of very fast storage cells, the CPU's "hands"
+- **ALU** (Arithmetic Logic Unit) — does the maths and the boolean operations
+- **Control unit** — decodes instructions and decides what happens next
+- **Caches** — small, fast memory close to the CPU to hide the slowness of main memory
+- **Clock** — a metronome that ticks billions of times per second; one tick (or a few) per instruction
+
+The cycle every CPU runs is the **fetch–decode–execute** loop:
+
+1. Fetch the next instruction from memory.
+2. Decode what it means.
+3. Execute it.
+4. Repeat forever.
+
+Modern CPUs have several cores (independent CPUs on one chip), pipelines (overlapping the steps above), and out-of-order execution (doing instructions in a smarter order while preserving the result).
+
+## Why it matters
+
+The CPU is the heart of a computer. Everything a program does — every pixel drawn, every packet sent, every neural-network multiply — eventually becomes a stream of CPU instructions.
+
+## Real-world examples
+
+- An Apple M-series chip contains a CPU with several "performance" and "efficiency" cores.
+- A Raspberry Pi has a single ARM CPU running at around 1.5 GHz.
+- A high-end server CPU may have 64 or more cores.
+
+## Common misconceptions
+
+- **"GHz tells you how fast a CPU is."** Clock speed matters, but so does what each tick can do — modern CPUs do far more per tick than CPUs from twenty years ago.
+- **"A CPU and a GPU are interchangeable."** A CPU is a generalist; a GPU is specialised for doing the same operation on many pieces of data in parallel.
+
+## Learn next
+
+The CPU is almost useless without [memory](/t/memory) to read from and write to, and without an [operating system](/t/operating-system) to share it.
