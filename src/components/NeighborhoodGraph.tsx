@@ -3,6 +3,8 @@ import {
   ReactFlow,
   Background,
   Controls,
+  Handle,
+  Position,
   MarkerType,
   type Edge,
   type Node,
@@ -100,12 +102,12 @@ function buildLayout(centerId: string, graph: NeighborGraph): LayoutResult {
     labelBgStyle: { fill: "var(--color-atlas-bg)" },
     labelBgPadding: [3, 2],
     labelBgBorderRadius: 4,
-    style: { stroke: RELATION_COLORS[e.relation], strokeWidth: 1.5 },
+    style: { stroke: RELATION_COLORS[e.relation], strokeWidth: 1.75 },
     markerEnd: {
       type: MarkerType.ArrowClosed,
       color: RELATION_COLORS[e.relation],
-      width: 14,
-      height: 14,
+      width: 22,
+      height: 22,
     },
     type: "default",
     animated: false,
@@ -126,14 +128,37 @@ function AtlasNode({ data }: { data: AtlasNodeData }) {
   const cls = data.isCenter
     ? "border-[var(--color-atlas-accent)] bg-[var(--color-atlas-accent-soft)] text-[var(--color-atlas-ink)]"
     : "border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] text-[var(--color-atlas-ink)]";
+
+  const handleStyle: React.CSSProperties = {
+    width: 6,
+    height: 6,
+    background: "var(--color-atlas-muted)",
+    border: "none",
+    opacity: 0.6,
+  };
+
   return (
-    <a
-      href={data.isCenter ? undefined : data.href}
-      className={`rfg-node inline-block rounded-md border px-3 py-1.5 text-xs font-medium no-underline shadow-sm ${cls}`}
-      style={{ pointerEvents: data.isCenter ? "none" : "auto" }}
-    >
-      {data.label}
-    </a>
+    <>
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={handleStyle}
+        isConnectable={false}
+      />
+      <a
+        href={data.isCenter ? undefined : data.href}
+        className={`rfg-node inline-block rounded-md border px-3 py-1.5 text-xs font-medium no-underline shadow-sm ${cls}`}
+        style={{ pointerEvents: data.isCenter ? "none" : "auto" }}
+      >
+        {data.label}
+      </a>
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={handleStyle}
+        isConnectable={false}
+      />
+    </>
   );
 }
 
