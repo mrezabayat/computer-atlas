@@ -5,6 +5,7 @@ import { categoryLabel, type CategorySlug } from "~/lib/categories";
 import StatusBadge from "./StatusBadge.astro";
 import KindBadge from "./KindBadge.astro";
 import LevelBadge from "./LevelBadge.astro";
+import ImportanceBadge from "./ImportanceBadge.astro";
 
 interface Props {
   topic: CollectionEntry<"topics">;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const { topic, showCategory = true } = Astro.props;
-const { title, summary, kind, level, status, category } = topic.data;
+const { title, summary, kind, level, status, importance, category } = topic.data;
 ---
 
 <a
@@ -31,6 +32,7 @@ const { title, summary, kind, level, status, category } = topic.data;
     {summary}
   </p>
   <div class="mt-3 flex flex-wrap items-center gap-1.5">
+    {importance !== "important" && <ImportanceBadge importance={importance} />}
     <LevelBadge level={level} />
     <KindBadge kind={kind} />
     {showCategory && (

@@ -1,0 +1,57 @@
+---
+title: CPU Pipeline
+aliases: ["instruction pipeline", "pipelining"]
+category: computer-architecture
+kind: concept
+summary: An assembly-line technique for executing instructions — split each instruction into stages and overlap many in flight at once.
+level: intermediate
+status: draft
+importance: core
+tags: ["cpu", "architecture", "pipeline"]
+prerequisites: ["cpu", "instruction-set"]
+related: ["cache", "register"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A CPU could finish one instruction completely before starting the next, but most of its hardware would sit idle most of the time. A **pipeline** splits each instruction into a sequence of stages (fetch, decode, execute, write back) and feeds new instructions in continuously, so different parts of the CPU are busy on different instructions simultaneously — like an assembly line.
+
+## More detail
+
+The classic five-stage RISC pipeline:
+
+1. **IF** — Instruction Fetch (read from memory).
+2. **ID** — Instruction Decode (figure out what it is, read registers).
+3. **EX** — Execute (the ALU does the work).
+4. **MEM** — Memory access (load/store).
+5. **WB** — Write Back (store the result in a register).
+
+With a 5-stage pipeline, the CPU finishes (in steady state) one instruction per cycle, not one per five cycles. Real CPUs have 10–20 stages.
+
+The catch is **hazards**:
+
+- **Data hazard** — instruction B needs the result of instruction A that's still in the pipeline. Solved by **forwarding** (route the result early) or **stalling** (insert bubbles).
+- **Control hazard** — a branch instruction's outcome is known only after EX, but IF has already loaded the next instruction. Solved by **branch prediction**: guess, speculate, and rewind on a misprediction.
+- **Structural hazard** — two stages want the same hardware resource. Solved by duplicating the resource.
+
+Modern CPUs add **superscalar** (multiple pipelines in parallel), **out-of-order execution** (reorder around stalls), and **simultaneous multithreading** (interleave two threads' instructions to keep stages fed).
+
+## Why it matters
+
+Pipelining is the technique that lets a 3 GHz CPU actually do a few billion operations per second instead of dropping by a factor of 5 to 20. It is the foundation of every other architectural trick in a modern processor.
+
+## Real-world examples
+
+- A modern x86 CPU has ~14–16 pipeline stages.
+- A branch misprediction on a deeply pipelined CPU can cost ~15 cycles — the entire pipeline has to be flushed.
+- Spectre and similar attacks abuse the speculative execution that pipelines need.
+
+## Common misconceptions
+
+- **"Longer pipelines are always faster."** Longer pipelines allow higher clock speeds but pay more on every misprediction. The trade-off shifted away from very deep pipelines (Pentium 4 era) toward moderately deep, wider designs.
+- **"Pipelining is free."** It is free *only* when there are no hazards. Real workloads hit hazards constantly; the entire job of an out-of-order core is to hide them.
+
+## Learn next
+
+Speed often comes from data being where the CPU expects: see [cache](/t/cache). The small, fast storage feeding the pipeline: [register](/t/register).

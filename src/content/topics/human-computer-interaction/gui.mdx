@@ -1,0 +1,64 @@
+---
+title: GUI
+aliases: ["graphical user interface", "windowed interface"]
+category: human-computer-interaction
+kind: concept
+summary: A user interface built from visual elements you point at and manipulate — windows, icons, menus, pointers — as opposed to typing commands.
+level: beginner
+status: draft
+importance: core
+tags: ["gui", "ui"]
+prerequisites: ["user-interface"]
+related: ["command-line-interface"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **GUI** (graphical user interface) is what most people picture when they think of "using a computer": windows, icons, menus, buttons, a pointer you move with a mouse or finger. You see what's available and click on it, instead of typing a command.
+
+## More detail
+
+GUIs were pioneered at Xerox PARC in the 1970s (Smalltalk, the Alto) and popularised by the Apple Lisa and Macintosh, then Windows. The "WIMP" acronym — Windows, Icons, Menus, Pointer — captures the original idiom.
+
+A typical GUI stack:
+
+- **Window system** — manages on-screen windows and input events (X11, Wayland, Quartz, DWM).
+- **Toolkit** — buttons, text fields, layout (Qt, GTK, Cocoa/UIKit, WinUI, Flutter, React Native).
+- **Application code** — what the buttons actually do.
+
+Modern variants:
+
+- **Touch interfaces** drop the pointer, change minimum sizes, and add gestures.
+- **Web GUIs** are HTML/CSS/JS reimplementations of the same patterns in a browser.
+- **Voice and conversational** interfaces aren't GUIs at all but increasingly coexist with them.
+
+The trade-offs against the command line:
+
+| GUI                                  | CLI                                |
+|--------------------------------------|------------------------------------|
+| Discoverable (you see options)       | Memorisable (you type)             |
+| Slow for repeat tasks                | Fast for repeat tasks              |
+| Hard to script                       | Composable, scriptable             |
+| Lower learning curve                 | Higher learning curve, higher ceiling |
+
+Most powerful tools end up offering both, and power users live in the CLI while everyone else uses the GUI.
+
+## Why it matters
+
+GUIs made computers usable by non-specialists. Every consumer-facing piece of software is built around one. They are also where most accessibility and UX work plays out.
+
+## Real-world examples
+
+- macOS Finder, Windows Explorer, the file manager you use on Linux.
+- Photoshop, Figma, Excel, your email app.
+- The browser is itself a GUI app — and a runtime for further GUIs.
+
+## Common misconceptions
+
+- **"GUIs are easier than CLIs."** Easier to start, often slower to master. Skilled CLI users routinely outpace GUI workflows for repeat tasks.
+- **"GUIs are old hat."** They are universal. Web, mobile, desktop — all GUI-first.
+
+## Learn next
+
+The text-based alternative: [command-line interface](/t/command-line-interface). The broader surface they belong to: [user interface](/t/user-interface).

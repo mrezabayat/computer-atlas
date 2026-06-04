@@ -1,0 +1,55 @@
+---
+title: Mobile App
+aliases: ["mobile apps", "smartphone app", "native app"]
+category: applications
+kind: technology
+summary: Software designed to run on a phone or tablet — distributed through an app store and sandboxed by the platform.
+level: beginner
+status: draft
+importance: core
+tags: ["mobile", "ios", "android"]
+prerequisites: ["operating-system"]
+related: ["web-browser"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **mobile app** is a program built to run on a phone or tablet. It's distributed through an app store (Apple's App Store, Google Play, third parties on Android), tightly sandboxed by the OS, and designed for touch, small screens, and intermittent network.
+
+## More detail
+
+Three main implementation strategies:
+
+- **Native** — built with the platform's preferred toolchain. Swift/SwiftUI for iOS, Kotlin/Jetpack Compose for Android. Best performance, full platform access, two codebases.
+- **Cross-platform native** — one codebase compiles to native binaries. Flutter (Dart → Skia/Impeller), React Native (JS bridged to native views), Kotlin Multiplatform.
+- **Web-based** (PWA, Capacitor, hybrid) — HTML/CSS/JS in a system web view. Easy reuse from the web product; weaker access to platform APIs; sometimes worse performance.
+
+Mobile platforms enforce strong constraints:
+
+- **Sandboxing** — apps can't read each other's data without explicit sharing.
+- **Permission prompts** — camera, location, contacts, notifications all require user consent.
+- **Background execution limits** — long-running work needs special APIs.
+- **App store review** — Apple's is strict; Google's is automated and lighter.
+- **Energy** — battery awareness shapes everything from network polling to animation.
+
+Distribution and revenue are a major part of the story: app stores typically take 15–30% of in-app purchases and subscriptions, a source of long-running industry friction.
+
+## Why it matters
+
+For most users in 2026, software *is* mobile apps. Mobile is the dominant computing platform globally, and increasingly the only one many people use.
+
+## Real-world examples
+
+- A messaging app, a banking app, a ride-share app — all native or near-native.
+- A small business's mobile presence is often a PWA wrapping their web app.
+- Most games are built in Unity or Unreal, which compile to native binaries on iOS and Android.
+
+## Common misconceptions
+
+- **"Mobile apps are just smaller websites."** Touch ergonomics, energy budgets, offline support, and platform integration all make mobile a distinct medium.
+- **"Cross-platform is always cheaper."** The savings shrink as you need deep native features. Sometimes two native apps are cheaper than one cross-platform app that fights its toolkit.
+
+## Learn next
+
+The most common alternative: [web browser](/t/web-browser) as a runtime. The system mobile apps run on: [operating system](/t/operating-system).

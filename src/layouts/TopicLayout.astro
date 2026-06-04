@@ -4,6 +4,7 @@ import BaseLayout from "./BaseLayout.astro";
 import StatusBadge from "~/components/StatusBadge.astro";
 import KindBadge from "~/components/KindBadge.astro";
 import LevelBadge from "~/components/LevelBadge.astro";
+import ImportanceBadge from "~/components/ImportanceBadge.astro";
 import RelationLists from "~/components/RelationLists.astro";
 import NeighborhoodGraph from "~/components/NeighborhoodGraph.tsx";
 import { getTopicRelations, getNeighborGraph, categoryUrl } from "~/lib/graph";
@@ -15,7 +16,7 @@ interface Props {
 }
 
 const { topic } = Astro.props;
-const { title, summary, kind, level, status, category, updated, aliases } =
+const { title, summary, kind, level, status, importance, category, updated, aliases } =
   topic.data;
 const relations = (await getTopicRelations(topic.id)) ?? {
   prerequisites: [],
@@ -61,6 +62,11 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
       aria-hidden="true"
       data-pagefind-filter={`status:${status}`}
     ></span>
+    <span
+      class="hidden"
+      aria-hidden="true"
+      data-pagefind-filter={`importance:${importance}`}
+    ></span>
     {
       tags.map((tag) => (
         <span
@@ -84,6 +90,11 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
       class="hidden"
       aria-hidden="true"
       data-pagefind-meta={`level:${level}`}
+    ></span>
+    <span
+      class="hidden"
+      aria-hidden="true"
+      data-pagefind-meta={`importance:${importance}`}
     ></span>
     <nav
       class="text-xs text-[var(--color-atlas-muted)]"
@@ -111,6 +122,7 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
         </p>
       )}
       <div class="mt-3 flex flex-wrap items-center gap-2">
+        {importance !== "important" && <ImportanceBadge importance={importance} />}
         <LevelBadge level={level} />
         <KindBadge kind={kind} />
         {status !== "reviewed" && <StatusBadge status={status} />}
@@ -176,3 +188,22 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
     </footer>
   </article>
 </BaseLayout>
+
+<style is:global>
+  /* React Flow controls — make the +/-/fit-view buttons honour the dark theme. */
+  :root[data-theme="dark"] .react-flow__controls {
+    box-shadow: none;
+  }
+  :root[data-theme="dark"] .react-flow__controls-button {
+    background: var(--color-atlas-surface);
+    border-bottom: 1px solid var(--color-atlas-line);
+    color: var(--color-atlas-ink);
+  }
+  :root[data-theme="dark"] .react-flow__controls-button:hover {
+    background: var(--color-atlas-accent-soft);
+  }
+  :root[data-theme="dark"] .react-flow__controls-button svg,
+  :root[data-theme="dark"] .react-flow__controls-button path {
+    fill: var(--color-atlas-ink);
+  }
+</style>

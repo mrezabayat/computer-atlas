@@ -1,0 +1,160 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import {
+  getAllTopics,
+  getAllPaths,
+  categoryUrl,
+  pathUrl,
+} from "~/lib/graph";
+
+const categories = (await getCollection("categories")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const topics = await getAllTopics();
+const paths = await getAllPaths();
+
+const coreCount = topics.filter((t) => t.data.importance === "core").length;
+const reviewedCount = topics.filter((t) => t.data.status === "reviewed").length;
+
+const topicsByCategory = new Map<string, number>();
+for (const t of topics) {
+  topicsByCategory.set(
+    t.data.category,
+    (topicsByCategory.get(t.data.category) ?? 0) + 1,
+  );
+}
+---
+
+<BaseLayout
+  title="Atlas overview"
+  description="One page, everything in Computer Atlas — categories, topics, and learning paths."
+>
+  <div class="mx-auto max-w-5xl px-4 py-8">
+    <nav class="text-xs text-[var(--color-atlas-muted)]" aria-label="Breadcrumb">
+      <a href="/" class="no-underline hover:underline">Atlas</a>
+    </nav>
+    <header class="mt-2">
+      <h1
+        class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]"
+      >
+        The Atlas, at a glance
+      </h1>
+      <p class="mt-3 text-lg text-[var(--color-atlas-muted)] max-w-3xl">
+        A one-page map of everything in Computer Atlas — the 16 categories,
+        every topic A-Z, and the curated learning paths.
+      </p>
+      <dl
+        class="mt-4 grid grid-cols-3 gap-3 max-w-md text-sm text-[var(--color-atlas-muted)]"
+      >
+        <div class="rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+          <dt>Topics</dt>
+          <dd class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+            {topics.length}
+          </dd>
+        </div>
+        <div class="rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+          <dt>Core</dt>
+          <dd class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+            {coreCount}
+          </dd>
+        </div>
+        <div class="rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+          <dt>Reviewed</dt>
+          <dd class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+            {reviewedCount}
+          </dd>
+        </div>
+      </dl>
+    </header>
+
+    <section class="mt-10">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+          Categories
+        </h2>
+        <a
+          href="/topics"
+          class="text-sm text-[var(--color-atlas-accent)] no-underline hover:underline"
+        >
+          A–Z index →
+        </a>
+      </div>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+        {
+          categories.map((c) => (
+            <li>
+              <a
+                href={categoryUrl(c.data.slug)}
+                class="flex items-baseline justify-between gap-3 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-3 py-2 no-underline hover:border-[var(--color-atlas-accent)]"
+              >
+                <span class="text-sm font-medium text-[var(--color-atlas-ink)]">
+                  {c.data.icon ? `${c.data.icon}  ` : ""}{c.data.title}
+                </span>
+                <span class="text-xs text-[var(--color-atlas-muted)]">
+                  {topicsByCategory.get(c.data.slug) ?? 0} topics
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-10">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+          Learning paths
+        </h2>
+        <a
+          href="/paths"
+          class="text-sm text-[var(--color-atlas-accent)] no-underline hover:underline"
+        >
+          See all →
+        </a>
+      </div>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+        {
+          paths.map((p) => (
+            <li>
+              <a
+                href={pathUrl(p.id)}
+                class="flex flex-col rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-3 py-2 no-underline hover:border-[var(--color-atlas-accent)]"
+              >
+                <span class="text-sm font-medium text-[var(--color-atlas-ink)]">
+                  {p.data.title}
+                </span>
+                <span class="text-xs text-[var(--color-atlas-muted)] line-clamp-1">
+                  {p.data.summary}
+                </span>
+                <span class="mt-1 text-xs text-[var(--color-atlas-muted)]">
+                  For {p.data.audience}s · {p.data.topics.length} topics
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+        Other useful pages
+      </h2>
+      <ul class="mt-3 list-disc pl-5 text-sm text-[var(--color-atlas-muted)]">
+        <li>
+          <a href="/topics" class="text-[var(--color-atlas-accent)] no-underline hover:underline">All topics, A–Z</a>
+        </li>
+        <li>
+          <a href="/search" class="text-[var(--color-atlas-accent)] no-underline hover:underline">Search</a>
+        </li>
+        <li>
+          <a href="/contribute" class="text-[var(--color-atlas-accent)] no-underline hover:underline">Contribute</a>
+        </li>
+        <li>
+          <a href="/rss.xml" class="text-[var(--color-atlas-accent)] no-underline hover:underline">RSS feed</a>
+        </li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

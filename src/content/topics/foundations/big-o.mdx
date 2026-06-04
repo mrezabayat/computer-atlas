@@ -1,0 +1,64 @@
+---
+title: Big O
+aliases: ["big-o notation", "asymptotic complexity"]
+category: foundations
+kind: concept
+summary: A notation for describing how an algorithm's cost grows as its input grows — the standard way computer scientists compare algorithms.
+level: beginner
+status: draft
+importance: core
+tags: ["complexity", "algorithms"]
+prerequisites: ["algorithms"]
+related: ["data-structure", "recursion"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Big O** is a short way of saying "how slow does this get as the input gets bigger?" Instead of giving you a concrete time in seconds (which depends on the machine), it gives you the *shape* of the growth. O(n) means "double the input, roughly double the time." O(n²) means "double the input, roughly quadruple the time."
+
+## More detail
+
+Big O ignores constant factors and lower-order terms, so we can compare algorithms across machines and inputs. The common growth rates, fastest to slowest:
+
+| Notation  | Name           | Example                                       |
+|-----------|----------------|-----------------------------------------------|
+| O(1)      | constant       | Look up an array element by index             |
+| O(log n)  | logarithmic    | Binary search a sorted array                  |
+| O(n)      | linear         | Find the max of an array                      |
+| O(n log n)| linearithmic   | Merge sort, quicksort (average)               |
+| O(n²)     | quadratic      | Naive sort (bubble, insertion); pair-wise comparisons |
+| O(n³)     | cubic          | Naive matrix multiply                         |
+| O(2ⁿ)     | exponential    | Brute-force subset enumeration                |
+| O(n!)     | factorial      | Brute-force traveling salesman                |
+
+A few rules of thumb:
+
+- For n = 1000, O(n²) is a million ops — usually fine. O(n³) is a billion — usually not.
+- For n = 1,000,000, you almost always need O(n) or O(n log n).
+- Constants matter in practice: a "slow" O(n log n) algorithm with a huge constant can lose to a "fast" O(n²) one for small n.
+
+Related notations:
+
+- **Big Ω** — lower bound. "It takes *at least* this much."
+- **Big Θ** — tight bound. Both upper and lower.
+- **Amortised O(x)** — average over a sequence of operations. Dynamic-array append is amortised O(1).
+
+## Why it matters
+
+Big O is how engineers reason about scale. Choosing an O(n) over an O(n²) algorithm is often the single biggest performance decision you'll make. Interviews lean heavily on it for the same reason: it separates "works on a demo" from "works in production".
+
+## Real-world examples
+
+- The Git blame for a 100k-line file: O(n) → fast. O(n²) → painful.
+- A database query that scans every row is O(n); the same query with the right index is O(log n) or O(1).
+- A regex that backtracks exponentially can hang a server on a 50-character input ("ReDoS").
+
+## Common misconceptions
+
+- **"Lower Big O is always faster."** Asymptotically, yes. For small inputs and reasonable hardware, constants and cache effects often dominate.
+- **"Big O measures wall-clock time."** It measures growth rate of operations, not seconds. Two O(n) algorithms can differ by 1000× in real time.
+
+## Learn next
+
+The structures Big O usually compares: [data structures](/t/data-structure). One of the techniques that produces logarithmic algorithms: [recursion](/t/recursion).

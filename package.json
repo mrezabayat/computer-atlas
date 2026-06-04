@@ -9,7 +9,11 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "astro check"
+    "check": "astro check",
+    "lint:content": "node scripts/lint-content.mjs",
+    "audit:orphans": "node scripts/find-orphans.mjs",
+    "audit:importance": "node scripts/audit-importance.mjs",
+    "new:topic": "node scripts/new-topic.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

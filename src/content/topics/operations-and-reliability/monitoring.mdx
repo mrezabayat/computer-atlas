@@ -1,0 +1,61 @@
+---
+title: Monitoring
+aliases: ["systems monitoring"]
+category: operations-and-reliability
+kind: concept
+summary: Continuously observing a running system — collecting metrics, alerting on anomalies — so problems are caught before users notice.
+level: beginner
+status: draft
+importance: core
+tags: ["ops", "monitoring", "observability"]
+prerequisites: ["deployment"]
+related: ["sre"]
+nextSteps: ["logging", "incident-response"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Monitoring** is what you do so you find out a service is broken before your users (or your boss) does. You collect numbers — request rate, error rate, latency, queue depth, CPU, memory — and you set alarms that fire when those numbers go where they shouldn't.
+
+## More detail
+
+Most monitoring stacks combine three signal types:
+
+- **Metrics** — numeric, low-cardinality, sampled at intervals. Time-series databases (Prometheus, InfluxDB, Datadog, CloudWatch).
+- **Logs** — discrete events with rich context. See [logging](/t/logging).
+- **Traces** — the path of a single request through many services. Distributed tracing (Jaeger, Zipkin, Tempo).
+
+Together these are usually called **observability** — the broader umbrella.
+
+The classic four "Golden Signals" (Google SRE book):
+
+1. **Latency** — how long requests take.
+2. **Traffic** — how many requests per second.
+3. **Errors** — fraction of requests failing.
+4. **Saturation** — how full the system is.
+
+Layered on top:
+
+- **Dashboards** for at-a-glance status and incident response.
+- **Alerts** that page humans only when needed. Bad alerting is worse than no alerting: alert fatigue makes everyone ignore the next one.
+- **SLOs** (Service Level Objectives) — concrete targets like "99.9% of requests under 300 ms in any rolling 30-day window" — that frame what's worth alerting on.
+
+## Why it matters
+
+Monitoring is the difference between "we're flying blind" and "we know what's happening". It is the foundation everything in operations sits on — without it, you can't reliably deploy, debug, or commit to availability targets.
+
+## Real-world examples
+
+- A spike in 5xx errors after a deploy pages the on-call engineer, who rolls back.
+- A latency histogram showing p99 climbing for hours while p50 stays flat — usually a tail-latency problem.
+- A dashboard during an incident is where most people watch what's happening; without it the team is reduced to messages and guesses.
+
+## Common misconceptions
+
+- **"More metrics = better monitoring."** Past a point, more is noise. Pick the few that matter and watch them well.
+- **"Monitoring tells you why."** It tells you *what* and *when*. *Why* comes from logs, traces, and human investigation.
+
+## Learn next
+
+The other major signal: [logging](/t/logging). What you do when alerts fire: [incident response](/t/incident-response).

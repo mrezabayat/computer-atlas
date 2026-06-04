@@ -1,0 +1,66 @@
+---
+title: Authentication
+aliases: ["authn", "login", "sign-in"]
+category: security-and-privacy
+kind: concept
+summary: Proving *who* a user is — by something they know (password), have (token, phone), or are (biometric).
+level: intermediate
+status: draft
+importance: core
+tags: ["security", "auth"]
+prerequisites: ["cryptography"]
+related: []
+nextSteps: ["authorization", "password-hashing"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Authentication** is the part of an app that figures out who you are. It's the login page, the magic link, the "Sign in with Google", the fingerprint. Once authenticated, you can be **authorised** to do things — but those two are different jobs.
+
+## More detail
+
+Factors of authentication:
+
+- **Something you know** — password, PIN, passphrase.
+- **Something you have** — phone, hardware token, smart card, app on your device.
+- **Something you are** — fingerprint, face, voice.
+
+**Multi-factor authentication (MFA)** combines two or more from different categories. Two passwords aren't MFA.
+
+Modern application authentication is typically built on:
+
+- **Passwords** — hashed with a slow KDF (Argon2, bcrypt, scrypt), checked on login. Avoid building from scratch; use a library.
+- **OAuth 2.0 / OpenID Connect** — federated sign-in via Google, GitHub, Apple, etc.
+- **WebAuthn / Passkeys** — public-key cryptography from the device, replacing passwords.
+- **Magic links** — short-lived signed URL emailed to the user.
+- **TOTP** (RFC 6238) — the 6-digit codes from Google Authenticator / Authy / 1Password.
+- **Hardware keys** (YubiKey, Titan) — strongest in practice.
+
+Once authenticated, the server issues a **session**: a cookie or token that the client sends with each request to prove "this is still that user".
+
+Pitfalls to avoid:
+
+- Storing passwords in plaintext or with weak hashes.
+- Building MFA without account-recovery flows that aren't themselves bypasses.
+- Letting the password reset link reset MFA too.
+- Not rate-limiting login or 2FA endpoints (credential stuffing).
+
+## Why it matters
+
+Authentication is the single highest-stakes piece of code in most applications. A bug here means anyone can be anyone. It is also one of the most attacked surfaces — every public app gets login traffic from bots within minutes of going live.
+
+## Real-world examples
+
+- "Sign in with GitHub" is OAuth 2.0 / OIDC.
+- A passkey replaces a password with a private key locked in your phone's secure enclave.
+- A leaked password database is a disaster only if the passwords were hashed weakly.
+
+## Common misconceptions
+
+- **"Authentication = authorization."** No: authn proves who; authz decides what. They are separate stages, often handled by different code.
+- **"Passwords are dead because of passkeys."** Passkeys are gaining ground fast, but passwords + MFA will be around for years.
+
+## Learn next
+
+What the system does once it knows who you are: [authorization](/t/authorization). How to store passwords safely: [password hashing](/t/password-hashing).

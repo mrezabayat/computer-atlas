@@ -1,0 +1,61 @@
+---
+title: Container
+aliases: ["containers", "docker container", "linux container"]
+category: distributed-systems-and-cloud
+kind: technology
+summary: A lightweight, isolated unit of computing — a process running with its own filesystem and namespaces, packaged with its dependencies.
+level: intermediate
+status: draft
+importance: core
+tags: ["containers", "docker", "kubernetes"]
+prerequisites: ["operating-system", "process"]
+related: ["deployment"]
+nextSteps: ["microservices"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **container** is a way of packaging an application together with its dependencies — libraries, binaries, config — and running it in isolation from everything else on the host. It looks like a tiny virtual machine but it's just a normal process with extra OS features applied: its own filesystem view, its own process tree, its own network stack.
+
+## More detail
+
+Linux containers are built from a handful of kernel features:
+
+- **Namespaces** — separate views of PIDs, mounts, networks, users, hostname, IPC. A process in a PID namespace can't see processes outside it.
+- **cgroups** — limit and account for CPU, memory, I/O.
+- **Capabilities, seccomp, SELinux/AppArmor** — restrict what the contained process can do.
+- **Union filesystems** (overlayfs) — layer a read-only image with a thin writable layer per container.
+
+A **container image** is a tarball-plus-metadata that describes the filesystem and how to start the entry process. The OCI (Open Container Initiative) standardises both the image format and the runtime interface, so any compliant runtime can run any compliant image.
+
+Compared to virtual machines:
+
+| Property         | VM                       | Container                 |
+|------------------|--------------------------|---------------------------|
+| Isolation        | Full OS, hardware-level  | Process-level, OS-shared  |
+| Boot time        | Seconds to minutes       | Milliseconds              |
+| Image size       | GBs                      | MBs to hundreds of MBs    |
+| Overhead         | High                     | Negligible                |
+| Security boundary | Strong                   | Weaker (shared kernel)    |
+
+Docker popularised containers in 2013; today the ecosystem is much broader: Docker, containerd, CRI-O, Podman, runc, gVisor, Firecracker.
+
+## Why it matters
+
+Containers gave us reproducible builds, repeatable deploys, and a unit of work the cloud could schedule efficiently. They are what made microservices and serverless practical at scale, and the foundation underneath Kubernetes.
+
+## Real-world examples
+
+- A `Dockerfile` describes how to build an image; `docker run` starts a container from it.
+- A Kubernetes pod is one or more containers scheduled together on a node.
+- AWS Lambda runs your function in a Firecracker microVM, which behaves like a very strongly isolated container.
+
+## Common misconceptions
+
+- **"Containers are mini-VMs."** They are processes with kernel-level isolation; they share the host kernel.
+- **"Containerised = secure."** Default Docker isolation is weaker than a VM's. Untrusted code needs additional sandboxing (gVisor, Kata Containers).
+
+## Learn next
+
+How containers are scheduled and managed at scale: Kubernetes. The architecture they popularised: [microservices](/t/microservices).

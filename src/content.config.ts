@@ -16,6 +16,8 @@ const TOPIC_KINDS = [
 
 const LEVELS = ["beginner", "intermediate", "advanced"] as const;
 
+const IMPORTANCE = ["core", "important", "supplemental"] as const;
+
 const stripDirAndExt = (entry: string): string =>
   entry.replace(/\.mdx?$/, "").split("/").pop() ?? entry;
 
@@ -36,6 +38,7 @@ const topics = defineCollection({
     summary: z.string().min(1).max(280),
     level: z.enum(LEVELS),
     status: z.enum(["stub", "draft", "reviewed"]).default("draft"),
+    importance: z.enum(IMPORTANCE).default("important"),
     tags: z.array(z.string()).default([]),
 
     prerequisites: z.array(reference("topics")).default([]),

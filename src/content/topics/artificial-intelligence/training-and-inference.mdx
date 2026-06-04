@@ -1,0 +1,63 @@
+---
+title: Training and Inference
+aliases: ["inference", "training"]
+category: artificial-intelligence
+kind: concept
+summary: The two distinct phases of a machine-learning model's life — learning its parameters (training) and using them to make predictions (inference).
+level: intermediate
+status: draft
+importance: core
+tags: ["ml", "ai", "inference", "training"]
+prerequisites: ["machine-learning"]
+related: ["neural-network", "supervised-learning"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A machine-learning model has two completely different jobs in its lifetime. **Training** is when you teach it: feed it labelled data, compute how wrong it is, nudge its parameters, repeat for millions of steps. **Inference** is when you use it: feed it one input, get one prediction out. Training is slow, expensive, and rare; inference is fast, cheap, and constant.
+
+## More detail
+
+| Property      | Training                                | Inference                              |
+|---------------|------------------------------------------|----------------------------------------|
+| What changes  | The model parameters                     | Nothing — parameters are fixed         |
+| Compute       | Forward + backward pass + optimiser step | Forward pass only                      |
+| Batch size    | Large (hundreds to thousands)            | Small (often 1)                        |
+| Hardware      | GPUs / TPUs in clusters                  | Anything from a CPU to a GPU           |
+| Cost driver   | Total examples × parameters              | Latency per request                    |
+| Frequency     | Days to weeks per run                    | Continuous                             |
+
+For modern foundation models there's a third phase:
+
+- **Pre-training** — expensive, rare, learns general representations from huge data.
+- **Fine-tuning** — cheaper, narrows the model toward a task.
+- **Inference** — runs in production.
+
+Inference optimisations are a discipline of their own:
+
+- **Quantisation** — store weights in 8-bit (or 4-bit) integers, not 16/32-bit floats.
+- **Distillation** — train a smaller "student" model to mimic a large "teacher".
+- **Compilation** — turn the model graph into optimised code for the target hardware.
+- **Batching and caching** — combine requests; cache key-value tensors in transformers.
+
+The economics of LLMs in particular are now dominated by inference cost: pre-training a model is a one-time investment of millions of dollars; serving it to millions of users is a permanent operational expense that often dwarfs the original training run.
+
+## Why it matters
+
+Most people who deploy ML never train a model from scratch — they fine-tune or just call inference. Understanding the boundary clarifies what your hardware budget actually pays for, where latency comes from, and why "the model is just a matrix multiplication at inference time" is roughly true.
+
+## Real-world examples
+
+- ChatGPT was pre-trained for months on tens of thousands of GPUs. Each chat you have is inference.
+- An object-detection model on your phone runs inference in milliseconds; it was trained on a cluster for days.
+- A recommendation system retrains nightly and serves inferences continuously.
+
+## Common misconceptions
+
+- **"The model 'learns' from each request."** Not unless the system is explicitly designed to do online learning. Most production models are static between training runs.
+- **"Inference is free."** At scale, inference cost dwarfs training cost over the life of a model.
+
+## Learn next
+
+The classical setup that trains most models: [supervised learning](/t/supervised-learning). The dominant model family: [neural networks](/t/neural-network).

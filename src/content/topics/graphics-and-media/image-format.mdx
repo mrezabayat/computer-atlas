@@ -1,0 +1,62 @@
+---
+title: Image Format
+aliases: ["image formats", "image file formats"]
+category: graphics-and-media
+kind: concept
+summary: The way pixels (and metadata) are encoded into a file — different formats trade size, quality, and feature support.
+level: beginner
+status: draft
+importance: core
+tags: ["image", "format"]
+prerequisites: ["pixel"]
+related: ["codec", "color-space"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Two pictures with the same pixels can take dramatically different amounts of disk space depending on the **image format** you save them in. Each format is a compromise: how small is the file, how good does it look, does it support animation, does it preserve every pixel exactly, can old software read it?
+
+## More detail
+
+Major web/desktop formats in 2026:
+
+| Format | Compression | Notes                                                  |
+|--------|-------------|--------------------------------------------------------|
+| **JPEG**  | Lossy       | Universal. Great for photos. Big files at low compression. |
+| **PNG**   | Lossless    | Great for UI, screenshots, anything with sharp edges.     |
+| **GIF**   | Lossless palette | Animation, but 256 colours. Largely superseded.      |
+| **WebP**  | Lossy + lossless | Better compression than JPEG/PNG, ~all browsers.    |
+| **AVIF**  | Lossy + lossless | Modern, much better compression than WebP.          |
+| **HEIC**  | Lossy       | Apple's default; uses HEVC video compression.           |
+| **SVG**   | Vector      | Lines and shapes, not pixels. Infinitely scalable.       |
+| **JPEG XL** | Lossy + lossless | High-quality successor; uneven adoption.           |
+
+For images on the web, the practical guidance is:
+
+- Photos → AVIF (with WebP / JPEG fallback).
+- UI graphics → SVG when vector, PNG when raster.
+- Animation → WebM/AVIF/MP4 video; rarely GIF anymore.
+
+Lossless ≠ uncompressed: PNG and WebP-lossless both apply lossless compression. **Lossy** discards information you (probably) won't see; **lossless** keeps every bit.
+
+Formats also carry metadata: color space (sRGB vs. Display P3), ICC profile, EXIF (camera info), animation frames, alpha channel.
+
+## Why it matters
+
+Image weight is one of the biggest factors in page load time. Choosing the right format with the right quality can shrink a site by 50%+ with no visible difference.
+
+## Real-world examples
+
+- A 2 MB JPEG often re-encodes to a 400 KB AVIF with no visible loss.
+- A PNG used for a JPEG-friendly photo can be 5-10× larger than necessary.
+- SVG is the right answer for icons and logos at any size.
+
+## Common misconceptions
+
+- **"PNG is always best quality."** PNG is lossless for raster; for photos, a high-quality WebP/AVIF is visually identical and far smaller.
+- **"AVIF is too new."** Browser support is now near-universal.
+
+## Learn next
+
+The pixel underneath: [pixel](/t/pixel). The colour interpretation layer: [color space](/t/color-space). The video equivalent: [codec](/t/codec).

@@ -1,0 +1,60 @@
+---
+title: UDP
+aliases: ["user datagram protocol"]
+category: networks-and-internet
+kind: protocol
+summary: A connectionless, "fire and forget" transport protocol. Faster than TCP but with no delivery, ordering, or reliability guarantees.
+level: intermediate
+status: draft
+importance: core
+tags: ["udp", "networking"]
+prerequisites: ["packet", "ip-address"]
+related: ["tcp"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**UDP** is the simpler sibling of TCP. You put data in a packet, address it, send it — and the network may deliver it, drop it, duplicate it, or deliver it out of order. UDP doesn't try to fix any of that for you. In exchange, it's fast, has tiny overhead, and is great for things that don't mind a missing frame here and there.
+
+## More detail
+
+A UDP packet is just an 8-byte header on top of an IP packet:
+
+| Field             | Bytes |
+|-------------------|-------|
+| Source port       | 2     |
+| Destination port  | 2     |
+| Length            | 2     |
+| Checksum          | 2     |
+| Payload           | …     |
+
+That's it. No handshake, no acknowledgements, no congestion control, no ordering. If you need any of those, you build them in the application — which is exactly what real-time protocols do.
+
+UDP is the right choice when:
+
+- **Low latency** beats reliability — voice, video, gaming, live telemetry.
+- **One-shot requests** make connection setup overkill — DNS, NTP.
+- **Broadcast or multicast** — TCP can't do this; UDP can.
+- **You build your own reliability** — QUIC (used by HTTP/3) is a stack of features layered on top of UDP, because TCP couldn't be evolved fast enough.
+
+For each TCP-only feature you forgo, you can add a tailored version: ACK only what matters, retransmit only fresh data, congestion control tuned to your traffic.
+
+## Why it matters
+
+A surprising amount of the modern internet — video calls, online games, DNS, almost all real-time media, HTTP/3 — runs over UDP. It is the foundation for any protocol that needs to escape TCP's assumptions.
+
+## Real-world examples
+
+- **DNS** queries are usually a single UDP packet each direction.
+- **WebRTC** video and audio use UDP (via SRTP) so a momentary loss doesn't stall the call.
+- **QUIC** / HTTP/3 are UDP-based replacements for TCP / HTTP/2.
+
+## Common misconceptions
+
+- **"UDP is unreliable, so I shouldn't use it."** UDP is unreliable in the sense that the protocol itself makes no guarantees; well-built UDP applications can be extremely reliable.
+- **"UDP is faster than TCP."** Per packet, yes. End-to-end throughput depends on what your application does on top.
+
+## Learn next
+
+The reliable, ordered transport: [TCP](/t/tcp). Address layer beneath both: [IP address](/t/ip-address).

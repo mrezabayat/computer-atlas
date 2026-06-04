@@ -1,0 +1,55 @@
+---
+title: Garbage Collection
+aliases: ["gc", "garbage collector"]
+category: programming-languages
+kind: concept
+summary: Automatic memory management — the runtime tracks which allocated objects are still in use and frees the rest, so programmers don't have to.
+level: intermediate
+status: draft
+importance: core
+tags: ["memory", "runtime"]
+prerequisites: ["programming-language", "memory"]
+related: ["interpreter"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Garbage collection** is when the language runtime, not you, is responsible for freeing memory. The runtime periodically figures out which allocated objects no one is using anymore and reclaims them. This eliminates whole categories of bugs — leaks, use-after-free, double-free — at the cost of some runtime overhead.
+
+## More detail
+
+The core idea is **reachability**: an object is "live" if it can be reached from a known set of roots (the stack, registers, global variables). Anything unreachable can be freed.
+
+Common collector designs:
+
+- **Reference counting** — every object keeps a count of references; when it hits zero, free. Simple, predictable. Can't reclaim cycles without extra work. Used by CPython, Swift, Rust's `Rc`.
+- **Mark-and-sweep** — periodically walk all reachable objects, mark them, then sweep unmarked ones. Stops the world briefly.
+- **Generational** — most objects die young, so split the heap into generations and collect young objects often, old ones rarely. JVM, V8, .NET.
+- **Concurrent / incremental** — do collection work alongside the application to reduce pause times. Modern JVM (ZGC, Shenandoah), Go's GC.
+- **Copy / compacting** — move live objects to a new region; defragments memory.
+
+Non-GC alternatives:
+
+- **Manual** (C, C++) — you call `free`/`delete`. Fast, dangerous.
+- **Ownership / RAII** (Rust, C++) — the compiler tracks who owns each allocation and frees it at scope exit. Compile-time, zero overhead.
+- **Region-based** — bulk-free a whole region when done. Common in compilers and games.
+
+## Why it matters
+
+Garbage collection lets most application code stop thinking about memory entirely. It's why Python, JavaScript, Java, Go, and C# are productive at the application layer. The cost — occasional pauses, higher memory use, less control — is acceptable for most software but not for low-latency systems like games, real-time control, or kernels.
+
+## Real-world examples
+
+- The JVM's G1 GC keeps pause times under ~200 ms for most workloads.
+- Go advertises sub-millisecond GC pauses by collecting concurrently.
+- A long-running Node.js server's "RSS keeps climbing" is often a memory leak hiding from the GC — usually a closure or cache holding references it shouldn't.
+
+## Common misconceptions
+
+- **"GC means I never leak."** You can still leak by keeping references alive (caches, globals, event listeners). GC reclaims unreachable memory, not unused memory.
+- **"GC is always slower than manual."** Not necessarily — a moving GC can allocate by bumping a pointer and amortise frees, which is faster than `malloc/free` in many workloads.
+
+## Learn next
+
+Memory works in concert with the [memory hierarchy](/t/memory). For an alternative model, look at Rust's ownership/borrow checker (covered under [type system](/t/type-system)).

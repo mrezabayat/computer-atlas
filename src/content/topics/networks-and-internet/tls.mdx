@@ -1,0 +1,52 @@
+---
+title: TLS
+aliases: ["transport layer security", "ssl"]
+category: networks-and-internet
+kind: protocol
+summary: The protocol that encrypts and authenticates almost all secure traffic on the internet — the "S" in HTTPS, IMAPS, SMTPS, and many more.
+level: intermediate
+status: draft
+importance: core
+tags: ["tls", "security", "networking"]
+prerequisites: ["tcp", "public-key-cryptography"]
+related: ["cryptography"]
+nextSteps: ["http"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**TLS** (Transport Layer Security) is the layer that turns any TCP connection into a private, tamper-resistant pipe. When you visit `https://`, the browser and the server first agree on a shared secret using public-key cryptography, then encrypt every byte that follows with a fast symmetric cipher.
+
+## More detail
+
+A modern TLS 1.3 handshake takes one round-trip and does three things at once:
+
+1. **Authentication** — the server presents a certificate chain signed by a trusted CA, proving it owns the hostname.
+2. **Key agreement** — both sides use ECDHE (an elliptic-curve Diffie–Hellman exchange) to derive a fresh symmetric key. Even if the server's private key leaks later, that session's traffic stays private ("forward secrecy").
+3. **Negotiation** — agree on cipher suite, ALPN protocol (`h2`, `http/1.1`, `h3`), and resumption tickets.
+
+After the handshake, both sides encrypt records using an AEAD cipher like AES-GCM or ChaCha20-Poly1305: each record carries its own authenticated tag, so the receiver detects any tampering.
+
+TLS 1.3 (RFC 8446) is the current version. Older versions (SSL 2.0/3.0, TLS 1.0/1.1) are deprecated; modern stacks should not negotiate them. TLS 1.2 is still widely supported but TLS 1.3 is faster and simpler.
+
+Mutual TLS (**mTLS**) is the same protocol with both sides presenting certificates — common for service-to-service traffic inside a private network.
+
+## Why it matters
+
+TLS is the bedrock of internet trust. Browsers refuse to load HTTP pages without it, mobile apps require it to talk to their backends, and CAs and certificate transparency logs make MITM attacks at scale very difficult.
+
+## Real-world examples
+
+- Every `https://` page in your browser.
+- A `git push` to GitHub uses HTTPS over TLS or SSH (a different protocol with similar guarantees).
+- Let's Encrypt issues 90-day TLS certificates for free, automated via ACME.
+
+## Common misconceptions
+
+- **"TLS hides who I'm talking to."** It encrypts the payload but the destination IP and (without ECH) the hostname are still visible.
+- **"TLS is for browsers only."** Almost any TCP-based protocol can be wrapped in TLS — IMAP, SMTP, AMQP, MQTT, gRPC, PostgreSQL.
+
+## Learn next
+
+The application layer that usually rides on TLS: [HTTP](/t/http). The math that makes the handshake work: [public-key cryptography](/t/public-key-cryptography).

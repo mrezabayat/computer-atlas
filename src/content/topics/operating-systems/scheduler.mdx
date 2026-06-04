@@ -1,0 +1,58 @@
+---
+title: Scheduler
+aliases: ["process scheduler", "cpu scheduler"]
+category: operating-systems
+kind: concept
+summary: The part of the OS kernel that decides which thread runs on each CPU at any moment — balancing fairness, responsiveness, and throughput.
+level: intermediate
+status: draft
+importance: core
+tags: ["os", "scheduling"]
+prerequisites: ["process", "thread"]
+related: []
+partOf: ["operating-system"]
+nextSteps: ["kernel"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A computer might have hundreds of threads wanting to run but only a handful of CPU cores. The **scheduler** decides which thread gets the next slice of CPU time, swaps it in, lets it run for a bit, then swaps in the next one — fast enough that everything feels simultaneous.
+
+## More detail
+
+A scheduler is judged on several axes that pull in different directions:
+
+- **Throughput** — total work done per second.
+- **Latency / responsiveness** — how quickly a thread that wakes up gets to run.
+- **Fairness** — does every thread get its share?
+- **Energy** — can we keep cores idle when we can?
+
+Common scheduling families:
+
+- **Round-robin** — each thread gets a fixed time slice in turn. Simple and fair.
+- **Priority-based** — higher-priority threads run first; risk of starving low-priority ones.
+- **Multilevel feedback queues** — classic Unix; threads move between priority queues based on behaviour (CPU-bound vs I/O-bound).
+- **Completely Fair Scheduler (CFS)** — Linux's modern scheduler; tracks how much CPU each thread "deserves" and runs whoever is most behind.
+- **Real-time** — gives strict timing guarantees, used for control systems and audio.
+
+The scheduler runs whenever a thread blocks, a timer fires, or a higher-priority thread becomes runnable. A **context switch** saves the current thread's registers, loads the next one's, and jumps to it — fast (microseconds), but not free.
+
+## Why it matters
+
+The scheduler is the difference between a system that feels snappy and one that stutters. It is also the foundation of multitasking: every "I can do many things at once" claim a modern computer makes ultimately boils down to scheduling.
+
+## Real-world examples
+
+- Linux's CFS schedules every thread on most servers and Android phones.
+- macOS and iOS use a priority scheduler with QoS (Quality of Service) classes you can set per task.
+- Game engines often pin their threads to specific cores to avoid scheduler decisions.
+
+## Common misconceptions
+
+- **"The scheduler runs my code on demand."** It runs your thread when it decides to. A `sleep(0)` is a polite hint, not a guarantee.
+- **"Higher priority makes a program faster."** Only relative to other threads on the same machine — and only if it was actually waiting for the CPU, not for I/O.
+
+## Learn next
+
+Scheduling is one of the central jobs of the [kernel](/t/kernel). For memory, see [virtual memory](/t/virtual-memory).

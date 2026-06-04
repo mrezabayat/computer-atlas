@@ -1,0 +1,60 @@
+---
+title: Sharding
+aliases: ["partitioning", "horizontal partitioning"]
+category: distributed-systems-and-cloud
+kind: concept
+summary: Splitting data across multiple machines by some key, so the working set per machine — and the request load — stays manageable as the system grows.
+level: intermediate
+status: draft
+importance: core
+tags: ["distributed", "sharding", "scalability"]
+prerequisites: ["distributed-system", "database"]
+related: ["replication"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+When one machine can't hold all your data — or can't handle the request load — you **shard**: split the data into pieces by some key, and put each piece on a different machine. User IDs 1–999,999 on shard A; 1,000,000–1,999,999 on shard B; and so on.
+
+## More detail
+
+Common sharding strategies:
+
+- **Range** — contiguous ranges of the key per shard. Good for range queries; risk of hot spots if the key is sequential.
+- **Hash** — `hash(key) mod N` chooses the shard. Distributes evenly; no range queries.
+- **Consistent hashing** — placeholder ring of slots so adding/removing nodes moves only a fraction of the keys. Used by DynamoDB, Cassandra, memcached clients.
+- **Lookup directory** — explicit map from key range to shard; flexible but adds a hop.
+
+Choosing the **shard key** is the single most important decision:
+
+- It should be a value present on (almost) every query, so requests route to one shard.
+- It should distribute load evenly — avoid keys with hot accounts (`user_id` where one user makes 90% of the traffic).
+- Changing it later is painful — a resharding migration is a big project.
+
+Sharding interacts uncomfortably with:
+
+- **Joins / transactions** that cross shards (slow, often forbidden).
+- **Unique constraints** other than the shard key (need a coordinator).
+- **Rebalancing** as the cluster grows.
+
+Modern systems hide some of this: Vitess, Citus, YugabyteDB, Spanner, CockroachDB all do automatic sharding with various trade-offs.
+
+## Why it matters
+
+Sharding is how databases scale beyond what one machine can hold or serve. The cost is complexity: distributed transactions, cross-shard queries, and the operational pain of moving data when traffic patterns shift.
+
+## Real-world examples
+
+- A messaging app shards messages by `chat_id` so all a chat's messages live together.
+- An e-commerce site shards orders by `customer_id` so a single customer's history is one query.
+- Reddit's comment storage is sharded by `link_id` (the post the comment is on).
+
+## Common misconceptions
+
+- **"Sharding is the first thing to try when slow."** Almost never. Add indexes, cache, scale vertically, add read replicas, *then* shard.
+- **"Sharding replaces replication."** They're orthogonal: each shard is usually replicated for availability.
+
+## Learn next
+
+The other axis of distribution: [replication](/t/replication). What it takes to keep shards consistent: [consensus](/t/consensus).

@@ -1,0 +1,69 @@
+---
+title: Testing
+aliases: ["software testing", "automated tests"]
+category: software-engineering
+kind: concept
+summary: Writing code that runs your code to check it does what it should — the safety net that lets teams change software without breaking it.
+level: beginner
+status: draft
+importance: core
+tags: ["testing", "quality"]
+prerequisites: ["programming-language"]
+related: ["code-review"]
+nextSteps: ["ci-cd"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Testing** in software means writing extra code whose job is to *run* your real code and check the results. Tests turn "I think it works" into "the machine just confirmed it works" — and they run again every time the code changes, so regressions get caught before users do.
+
+## More detail
+
+Tests are usually classified by scope:
+
+- **Unit test** — one function or class, no I/O. Fast (milliseconds), runs by the thousand.
+- **Integration test** — several components together, often against a real database. Slower, fewer.
+- **End-to-end (E2E) test** — drives the whole system the way a user would. Slow, brittle, but high signal.
+- **Property-based test** — generate inputs and check invariants instead of hard-coded examples.
+- **Fuzz test** — bombard a function with random inputs to find crashes.
+- **Smoke test** — minimal "does the thing start at all" check after a deploy.
+
+The "test pyramid" is a useful heuristic: many unit tests, fewer integration tests, very few E2E tests.
+
+Conventions and tools by ecosystem:
+
+| Language    | Default test runner          |
+|-------------|------------------------------|
+| JavaScript  | Jest, Vitest, Playwright (E2E) |
+| Python      | pytest, unittest             |
+| Java        | JUnit, TestNG                |
+| Rust        | built-in `cargo test`        |
+| Go          | built-in `go test`           |
+
+A good test:
+
+- Has a clear name describing the behaviour, not the implementation.
+- Sets up its own data and cleans up.
+- Asserts one thing.
+- Fails for a clear reason.
+- Runs in deterministic time.
+
+## Why it matters
+
+Tests are how teams of humans modify a codebase confidently. They are also documentation that can't go out of date, and they make refactoring possible — you can change the inside of a function freely as long as the tests still pass.
+
+## Real-world examples
+
+- A typo that swaps two arguments is caught by a unit test the moment you save.
+- An end-to-end test "user signs up and receives a welcome email" guards the most important flow in a SaaS product.
+- Property tests have found bugs in JSON parsers, encryption libraries, and core algorithms that example-based tests missed for years.
+
+## Common misconceptions
+
+- **"100% coverage means the code is correct."** Coverage means lines were executed, not that they behave correctly. Tests need meaningful assertions.
+- **"Tests slow you down."** They slow the first commit and speed everything that follows. Untested code rots fastest.
+
+## Learn next
+
+The collaborative complement: [code review](/t/code-review). The pipeline that runs tests on every push: [CI/CD](/t/ci-cd).

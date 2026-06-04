@@ -1,0 +1,63 @@
+---
+title: Microservices
+aliases: ["microservice", "service-oriented architecture"]
+category: distributed-systems-and-cloud
+kind: concept
+summary: An architectural style that builds an application as many small, independently-deployable services, each owning its own data and talking over a network.
+level: intermediate
+status: draft
+importance: core
+tags: ["architecture", "microservices"]
+prerequisites: ["distributed-system", "http"]
+related: ["deployment"]
+nextSteps: ["container"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **microservice** architecture breaks an application up into many small services that each do one thing — auth, billing, search, notifications — and talk to each other over the network. The opposite is a **monolith**, where one big codebase and one process does everything.
+
+## More detail
+
+Often-cited benefits:
+
+- **Independent deploys** — each team ships their service on their own cadence.
+- **Independent scaling** — scale the busy service, not everything.
+- **Technology diversity** — different services can pick their own language and database.
+- **Bounded fault impact** — a failure in one service doesn't crash the whole app, *if* the rest is built to degrade gracefully.
+- **Smaller teams own smaller code** — Conway's law: org and architecture mirror each other.
+
+Costs and risks (always understated):
+
+- **Distributed systems are harder** — network failures, retries, partial outages, eventual consistency.
+- **Operational complexity** — many services means many deploys, dashboards, on-call rotations.
+- **End-to-end debugging** — a single user request can traverse a dozen services.
+- **Data consistency** — no cross-service transactions; you live with sagas, outbox patterns, and reconciliation jobs.
+
+Rules of thumb:
+
+- **Start with a monolith.** Split out a service only when a clear seam exists and the cost is justified.
+- **A service that just wraps a database table is too small.**
+- **A service owned by no team is doomed.**
+
+Supporting tech you usually adopt with microservices: containers, an orchestrator (Kubernetes), service discovery, distributed tracing, centralised logging, a CI/CD pipeline that can ship dozens of services.
+
+## Why it matters
+
+Microservices, when right-sized, let large organisations move quickly without coordinating every change across the whole company. When wrong-sized, they recreate every problem a monolith had plus the entire surface area of a distributed system.
+
+## Real-world examples
+
+- Amazon's "two-pizza team" rule famously aligns team size with service ownership.
+- Netflix is the canonical microservices case study.
+- Shopify ran a monolith for years and proudly still mostly does — successfully.
+
+## Common misconceptions
+
+- **"Microservices are how big tech got to scale."** Some did; others scaled monoliths for many years. Architecture is one input among many.
+- **"Microservices ship faster."** They can — but only if the platform underneath them is mature. Without it, they often slow teams down.
+
+## Learn next
+
+The packaging unit that made microservices practical: [container](/t/container). The release engine: [deployment](/t/deployment).

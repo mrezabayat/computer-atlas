@@ -1,0 +1,56 @@
+---
+title: Router
+aliases: ["routers", "ip router"]
+category: networks-and-internet
+kind: technology
+summary: A device that forwards IP packets between networks, deciding which neighbour gets each packet on its way to the destination.
+level: beginner
+status: draft
+importance: core
+tags: ["networking", "router"]
+prerequisites: ["packet", "ip-address"]
+related: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **router** is a device that connects two or more networks and decides where to send each packet next. The home router on your shelf bridges your house to your ISP; backbone routers at internet exchanges move millions of packets a second between continents.
+
+## More detail
+
+A router has a **routing table**: rules that map "destination network" to "next hop". When a packet arrives:
+
+1. Look at its **destination IP address**.
+2. Find the **longest matching prefix** in the routing table.
+3. Decrement the packet's **TTL** (so loops eventually die).
+4. Send the packet out the corresponding interface to the next router.
+
+Routing tables come from:
+
+- **Static routes** — hand-configured by humans.
+- **Interior routing protocols** — OSPF, IS-IS — share routes within one organisation.
+- **Border Gateway Protocol (BGP)** — exchanges routes between Autonomous Systems (ISPs and big networks). BGP is what makes "the internet" a single graph.
+
+Home routers usually combine many functions in one box: routing, DHCP (handing out private IPs), NAT (sharing one public IP), DNS forwarding, Wi-Fi, and firewalling.
+
+Switches are sometimes confused with routers but operate at a lower layer: a switch forwards Ethernet frames inside one local network using MAC addresses; a router forwards IP packets between networks.
+
+## Why it matters
+
+Without routers, every network would be an island. They are how a packet sent from a laptop in Lisbon finds its way to a server in Sydney via dozens of hops, in milliseconds.
+
+## Real-world examples
+
+- The plastic box from your ISP is a router.
+- `traceroute` (or `mtr`) shows the chain of routers a packet passes through.
+- A BGP misconfiguration at a major ISP can take down chunks of the public internet for hours.
+
+## Common misconceptions
+
+- **"My router gives me Wi-Fi."** Wi-Fi is one feature of the all-in-one box; routing is a separate job.
+- **"Routers know the full path."** They know only the *next hop*. Each router along the way makes a local decision.
+
+## Learn next
+
+How addresses are assigned: [IP address](/t/ip-address). What rides on top of routing: [HTTP](/t/http) and the rest of the application stack.

@@ -1,0 +1,67 @@
+---
+title: Game Engine
+aliases: ["game engines"]
+category: applications
+kind: technology
+summary: A reusable framework for building video games — rendering, physics, audio, input, scripting, scene tools — so game teams build worlds, not engines.
+level: intermediate
+status: draft
+importance: core
+tags: ["gamedev", "engine"]
+prerequisites: ["programming-language", "gpu"]
+related: ["rasterization"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **game engine** is the toolkit you use to build a video game. Instead of writing your own 3D renderer, physics solver, audio mixer, scripting language, and editor, you adopt an engine that provides them all and you focus on the game itself — the world, the rules, the art, the feel.
+
+## More detail
+
+A typical engine includes:
+
+- **Rendering** — a 3D/2D pipeline using the GPU (Vulkan, DirectX, Metal, WebGPU).
+- **Physics** — rigid bodies, collisions, joints, sometimes soft bodies and fluids.
+- **Audio** — mixing, 3D positional sound, music systems.
+- **Input** — keyboard, mouse, gamepad, touch, VR controllers.
+- **Scripting** — Lua, Python, C#, Blueprint, or the engine's own.
+- **Editor** — visual scene composition, asset import, level design.
+- **Networking** — sometimes; multiplayer is its own discipline.
+- **Animation** — skeletal, blend trees, IK.
+
+Dominant engines in 2026:
+
+- **Unity** — C#, indie and mid-size studio standard. Strong mobile, 2D, AR/VR.
+- **Unreal Engine** — C++ and Blueprints. AAA visual quality; widely used in AAA games and increasingly in film/TV virtual production.
+- **Godot** — open-source, lightweight, GDScript/C#. Growing rapidly.
+- **Custom in-house** — large studios still maintain their own (id Tech, Decima, Frostbite, Anvil, Snowdrop).
+
+The trade-offs:
+
+| Build your own | Use an engine |
+|----------------|----------------|
+| Total control | Fast time to playable |
+| All the work | Battle-tested systems |
+| Optimised to your needs | Generic-ish for many cases |
+| Years of plumbing first | Years of game design instead |
+
+The right answer for almost every team in 2026 is "use an engine".
+
+## Why it matters
+
+Engines collapsed the cost of starting a game from millions of dollars to free. Without Unity, Godot, and Unreal, the indie and mobile game booms would not have happened.
+
+## Real-world examples
+
+- *Among Us* — Unity. *Hollow Knight* — Unity. *Fortnite* — Unreal. *Cyberpunk 2077* — REDengine (custom). *Stardew Valley* — XNA/MonoGame (lightweight framework).
+- Unreal Engine 5 is increasingly used for virtual production (LED-wall film sets).
+
+## Common misconceptions
+
+- **"Engines make all games look the same."** They support widely different art styles; the engine is rarely the limiting factor.
+- **"Real games are built without engines."** A handful are (id Software historically), but the practical choice today is almost always an engine.
+
+## Learn next
+
+Hardware that engines rely on: [GPU](/t/gpu). The rendering technique: [rasterization](/t/rasterization).

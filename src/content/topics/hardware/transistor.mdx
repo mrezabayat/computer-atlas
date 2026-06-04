@@ -1,0 +1,51 @@
+---
+title: Transistor
+aliases: ["transistors"]
+category: hardware
+kind: technology
+summary: The microscopic electronic switch that, replicated by the billions, forms every modern integrated circuit and CPU.
+level: beginner
+status: draft
+importance: core
+tags: ["hardware", "semiconductor"]
+related: ["cpu"]
+nextSteps: ["logic-gates"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **transistor** is a tiny electronic switch. A small voltage on one terminal controls whether current flows between the other two. Modern CPUs contain tens of billions of them, etched onto a fingernail-sized chip and switching billions of times per second.
+
+## More detail
+
+The dominant type today is the **MOSFET** (metal-oxide-semiconductor field-effect transistor). A voltage on the **gate** creates a conductive channel between the **source** and **drain**.
+
+Two MOSFET flavours combine in **CMOS** logic — the foundation of all modern digital chips: n-type and p-type transistors paired so that almost no current flows except when switching, keeping power consumption manageable at billions of devices.
+
+Key trends:
+
+- **Moore's Law** observed that transistor count doubles roughly every two years. It held for ~50 years; in the late 2010s it slowed.
+- **Process nodes** ("5 nm", "3 nm") describe the manufacturing generation. The numbers are largely marketing now — actual features are larger.
+- **3D structures** (FinFET, GAAFET) replaced flat MOSFETs once features got too small.
+
+Modern AI accelerators and CPUs measure die area by *billions* of transistors. An Apple M-series chip has ~20–30 billion; a top-end Nvidia GPU has 80+ billion.
+
+## Why it matters
+
+Every digital device — phone, laptop, microwave, satellite — runs on patterns of transistors switching on and off. They are the physical substrate of computing.
+
+## Real-world examples
+
+- The first commercial transistor radio (1954) had four transistors.
+- A modern flagship phone SoC has ~20 billion transistors in a few hundred square millimetres.
+- A single failed transistor among billions usually has no observable effect, thanks to error correction and redundancy.
+
+## Common misconceptions
+
+- **"Smaller process = smaller transistor."** Smaller process nodes pack more transistors and consume less power per switch, but the headline number is no longer the physical gate length.
+- **"Transistors are analog."** They have analog physics; in digital chips they're driven to behave as switches.
+
+## Learn next
+
+What transistors combine into: [logic gates](/t/logic-gates). The big assemblies of gates: [CPU](/t/cpu).

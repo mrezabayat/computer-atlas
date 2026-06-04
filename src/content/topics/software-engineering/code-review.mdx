@@ -1,0 +1,69 @@
+---
+title: Code Review
+aliases: ["pull request review", "pr review"]
+category: software-engineering
+kind: concept
+summary: Reviewing someone else's proposed code change before it lands — the most reliable practice for catching bugs and spreading knowledge in teams.
+level: beginner
+status: draft
+importance: core
+tags: ["code-review", "process"]
+prerequisites: ["version-control"]
+related: ["testing", "git", "design-pattern"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Code review** is the practice of having another engineer read your proposed change before it's merged. They check for bugs, ask questions, suggest improvements, and learn what's changing in the codebase. Done well, it catches issues that no test would have caught and makes the whole team smarter.
+
+## More detail
+
+The dominant workflow today is the **pull request** (or merge request) on GitHub, GitLab, Bitbucket, or similar:
+
+1. A developer pushes a branch and opens a PR with a description.
+2. Automated checks run (lint, tests, security scans).
+3. One or more reviewers read the diff, comment, and either approve or request changes.
+4. The author addresses feedback in new commits.
+5. Once approved and green, the PR is merged.
+
+What good reviewers look for:
+
+- **Correctness** — does it do the right thing? Edge cases?
+- **Design** — does the change fit the codebase?
+- **Tests** — is the change covered? Will the tests catch a regression?
+- **Readability** — would a future engineer understand this?
+- **Safety** — concurrency bugs, security issues, error handling.
+- **Performance** — only when it matters.
+
+What good reviewers avoid:
+
+- Bikeshedding on style (let formatters and linters decide).
+- "I would have written it differently" without a concrete reason.
+- Demanding the author address everything in one round; trust them.
+
+What good authors do:
+
+- Keep PRs **small and focused** (a few hundred lines, one change).
+- Write a clear description: what changed, why, what to look at first.
+- Self-review before requesting review.
+- Respond to every comment, even with just "done" or "good point, fixed in 3a1b9".
+
+## Why it matters
+
+Code review is the highest-ROI engineering practice that doesn't require new tooling. It catches bugs, distributes knowledge so no module has a single point of failure, and continuously enforces the team's standards by example.
+
+## Real-world examples
+
+- An open-source contribution to a major project is almost entirely shaped by review feedback.
+- A bug that would have taken an hour to debug is spotted in 5 seconds by a reviewer.
+- Pair programming is, in effect, real-time code review.
+
+## Common misconceptions
+
+- **"Review is for finding bugs."** It's at least as much about teaching, knowledge sharing, and design alignment.
+- **"Only senior people review."** Anyone can leave a useful comment; reviewing other people's code is one of the fastest ways to grow.
+
+## Learn next
+
+What review usually flows through: [version control](/t/version-control) and [Git](/t/git). The other major reliability practice: [testing](/t/testing).

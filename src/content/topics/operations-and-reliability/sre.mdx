@@ -1,0 +1,53 @@
+---
+title: SRE
+aliases: ["site reliability engineering", "site reliability engineer"]
+category: operations-and-reliability
+kind: field
+summary: A discipline pioneered at Google that applies software-engineering principles to operations — automation, SLOs, error budgets, blameless culture.
+level: intermediate
+status: draft
+importance: core
+tags: ["sre", "ops"]
+prerequisites: ["monitoring"]
+related: ["incident-response", "logging", "deployment", "ci-cd"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Site Reliability Engineering (SRE)** is what you get when you assign software engineers to do operations work. Instead of treating "keep the lights on" as a separate, manual job, SREs write code to automate it, define **explicit reliability targets**, and use the gap between the target and reality to govern release pace.
+
+## More detail
+
+Coined and popularised at Google (Beyer et al., *Site Reliability Engineering*, 2016). The defining ideas:
+
+- **SLI / SLO / SLA**:
+  - **SLI** (Indicator) — a metric measuring reliability ("fraction of HTTP requests with status < 500 served in < 300 ms").
+  - **SLO** (Objective) — the target for the SLI ("99.9% over any 30-day window").
+  - **SLA** (Agreement) — the contractually-promised version, usually one notch weaker than the SLO.
+- **Error budget** — `1 − SLO`. The amount of unreliability you've decided is acceptable. When you've spent the budget, you stop shipping risky changes until reliability recovers. This is the lever that lets engineering and product agree on velocity vs. reliability.
+- **Toil elimination** — toil is repetitive, manual operational work that scales linearly with the service. SREs measure toil and automate it away.
+- **Blameless postmortems** — see [incident response](/t/incident-response).
+- **Capacity planning** as engineering work, not guesswork.
+- **Production readiness reviews** before a service goes live.
+
+SRE is one model among several; you'll also see "DevOps" (broader cultural movement, fewer concrete practices), "Platform Engineering" (building internal developer platforms), and traditional ops teams. Many organisations blend them.
+
+## Why it matters
+
+SRE made it possible to run very large, very reliable services without manual heroics. The SLO/error-budget framing in particular is one of the most useful conceptual contributions to modern software operations.
+
+## Real-world examples
+
+- A team with a 99.9% latency SLO has ~43 minutes of error budget per month. A risky migration that costs 30 minutes leaves only 13 — risky changes pause until budget regenerates.
+- Google's SRE org famously caps "ops work" per engineer at 50%, with the rest spent on automation and engineering.
+- A "production readiness review" might block a launch because the service has no SLOs, no on-call rotation, or no rollback procedure.
+
+## Common misconceptions
+
+- **"SRE = ops with a fancy name."** SRE is engineering-led ops with explicit targets and an error budget. Without those, it's just ops.
+- **"100% reliability is the goal."** It is not — past a point, more nines cost more than they're worth, and slow product development to nothing. SLOs are deliberately less than 100%.
+
+## Learn next
+
+What SRE primarily uses to know the state of the world: [monitoring](/t/monitoring). What SREs do at 3 a.m.: [incident response](/t/incident-response). The release end: [deployment](/t/deployment) and [CI/CD](/t/ci-cd).

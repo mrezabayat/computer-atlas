@@ -1,0 +1,66 @@
+---
+title: File System
+aliases: ["filesystem", "file systems"]
+category: operating-systems
+kind: concept
+summary: The layer that organises raw storage into named files and directories, manages free space, and enforces permissions.
+level: beginner
+status: draft
+importance: core
+tags: ["os", "filesystem", "storage"]
+prerequisites: ["storage", "operating-system"]
+related: ["kernel"]
+partOf: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **file system** is the bookkeeping that turns a disk full of nameless bytes into folders and files you can open. It tracks where each file's bytes live, what its name and permissions are, how big it is, and what's free space.
+
+## More detail
+
+A file system manages four things on top of a block device:
+
+1. **Namespace** — directories and filenames; usually a tree.
+2. **Metadata** — size, owner, permissions, timestamps; stored in **inodes** on Unix-like systems, **MFT entries** on Windows.
+3. **Data layout** — which physical blocks belong to which file.
+4. **Free space** — bitmaps or trees of unused blocks.
+
+Modern file systems also add:
+
+- **Journaling** (ext4, NTFS, APFS) — log writes ahead so a crash doesn't corrupt the on-disk structure.
+- **Snapshots and copy-on-write** (ZFS, Btrfs, APFS) — cheap point-in-time copies.
+- **Checksums** — detect silent data corruption ("bit rot").
+- **Compression and deduplication**.
+- **Encryption at rest**.
+
+Examples in 2026:
+
+| OS        | Default file system | Notes                                 |
+|-----------|---------------------|---------------------------------------|
+| Linux     | ext4 / Btrfs / XFS  | ext4 is the conservative pick         |
+| macOS     | APFS                | Copy-on-write, snapshots, encryption  |
+| Windows   | NTFS / ReFS         | NTFS is universal; ReFS for servers   |
+| Android   | F2FS / ext4         | F2FS tuned for flash                  |
+
+There are also **network file systems** (NFS, SMB) that expose a remote machine's tree as if it were local, and **virtual file systems** like `/proc` and `/sys` on Linux that expose kernel state as if it were files.
+
+## Why it matters
+
+Almost every program reads or writes a file. The file system is what makes those operations meaningful and durable across reboots, crashes, and bad sectors. It's also the boundary at which most permission and security checks happen.
+
+## Real-world examples
+
+- `ls`, `cd`, `mkdir`, `cp`, `mv`, `rm` — all file-system operations.
+- A "disk full" error is the file system saying it has no free blocks.
+- A USB stick that "needs to be repaired" is a file system whose metadata got inconsistent.
+
+## Common misconceptions
+
+- **"Reformatting erases the data."** A quick format usually erases the index, not the bytes. Recovery tools can often resurrect files.
+- **"Deleting a file frees disk immediately."** Many systems delay actual block reclamation; on SSDs the `TRIM` command is what finally tells the device the blocks are free.
+
+## Learn next
+
+The underlying physical layer is [storage](/t/storage). The OS's privileged layer that runs the file system code is the [kernel](/t/kernel).

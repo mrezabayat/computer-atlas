@@ -1,0 +1,61 @@
+---
+title: Packet
+aliases: ["packets", "network packet"]
+category: networks-and-internet
+kind: concept
+summary: A small, self-describing chunk of data that travels across a network. The internet's fundamental unit of communication.
+level: beginner
+status: draft
+importance: core
+tags: ["networking", "packets"]
+related: ["router", "tcp", "udp"]
+nextSteps: ["ip-address"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **packet** is a small envelope of data — typically a few hundred to a few thousand bytes — addressed to a destination and dropped onto the network. Big things like a video stream or a web page get broken into many packets, sent independently, and reassembled at the other end.
+
+## More detail
+
+A packet typically has:
+
+- **Headers** — addressing and bookkeeping (source/destination, length, checksums, protocol numbers).
+- **Payload** — the actual data being carried.
+
+Headers are layered: an Ethernet frame wraps an IP packet, which wraps a TCP/UDP segment, which wraps your HTTP message. Each layer's header is added when the packet enters that layer and stripped at the other end:
+
+```
+[ Ethernet | IP | TCP | HTTP request                       ]
+```
+
+Properties of packet-switched networks (vs. the old telephone-style circuit-switched ones):
+
+- Each packet is **routed independently**; it can take a different path than the next.
+- Packets can be **dropped**, **delayed**, **reordered**, or **duplicated**.
+- Higher-level protocols (TCP) restore order and retransmit losses; lower-level ones (UDP) leave that to you.
+
+Common sizes:
+
+- **MTU** (Maximum Transmission Unit) is typically 1500 bytes on Ethernet. Bigger packets get fragmented.
+- A modern fibre link carries billions of packets per second.
+
+## Why it matters
+
+Packetisation is what makes the internet work as one shared, resilient network. Because each packet finds its own way, the network survives broken links, congested routes, and constant change.
+
+## Real-world examples
+
+- `ping` sends ICMP packets and measures round-trip time.
+- `tcpdump` and Wireshark show you the actual packets crossing a network interface.
+- A "packet loss" reading on a video call means some packets didn't arrive — the codec hides the gaps as best it can.
+
+## Common misconceptions
+
+- **"Packets are sent in order."** They are sent in order; they are not necessarily *received* in order. TCP fixes this for you; UDP does not.
+- **"Each packet is its own connection."** No — a TCP connection is a stream that happens to be carried by many independent packets.
+
+## Learn next
+
+Packets need addresses — see [IP address](/t/ip-address) — and need to be steered — see [router](/t/router).

@@ -1,0 +1,56 @@
+---
+title: Replication
+aliases: ["data replication"]
+category: distributed-systems-and-cloud
+kind: concept
+summary: Keeping copies of the same data on multiple machines for availability, durability, and read scaling.
+level: intermediate
+status: draft
+importance: core
+tags: ["distributed", "replication"]
+prerequisites: ["distributed-system"]
+related: ["consensus", "sharding"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Replication** is keeping copies of your data on more than one machine. If one machine dies, the others still have it; if more readers come, you can serve them from any copy. The hard part is keeping the copies in sync without slowing everything down.
+
+## More detail
+
+Three common models:
+
+- **Single-leader (primary/replica)** — all writes go to one leader; replicas asynchronously or synchronously follow along. Simple, scales reads, but failover is non-trivial. Used by MySQL, PostgreSQL, MongoDB.
+- **Multi-leader** — multiple nodes accept writes and replicate to each other. Allows multi-region writes; introduces conflict-resolution problems.
+- **Leaderless** — any node accepts a write, gossips to others (Cassandra, DynamoDB). Configurable quorums let you trade latency for consistency per operation.
+
+Replication can be:
+
+- **Synchronous** — write isn't acknowledged until replicas confirm. Stronger guarantee, slower.
+- **Asynchronous** — leader acks immediately, replicas catch up. Faster, risk of lag and data loss on failover.
+
+Why it's hard:
+
+- **Replication lag** — replicas can be seconds behind. Reads from a replica can return stale data.
+- **Split brain** — a partition causes two leaders. Solved by consensus protocols.
+- **Conflict resolution** — multi-leader systems need rules (last-write-wins, CRDTs, app-defined).
+
+## Why it matters
+
+Replication is the foundation under high availability. Cloud databases promise "99.99%" precisely because they replicate across machines, racks, and regions. It's also how reads scale beyond a single machine.
+
+## Real-world examples
+
+- A Postgres primary with two read replicas: one writer, two readers, automatic failover.
+- DynamoDB Global Tables replicate writes across continents.
+- A blockchain is leaderless replication taken to an extreme.
+
+## Common misconceptions
+
+- **"More replicas = more durability."** Up to a point. Synchronous replication to a single nearby replica usually buys most of the safety; cross-region adds latency.
+- **"Replicas are read-only standbys."** Often they're production-load read replicas with their own indexes and caches.
+
+## Learn next
+
+How replicas agree without a single point of truth: [consensus](/t/consensus). How replication interacts with horizontal scaling: [sharding](/t/sharding).

@@ -1,0 +1,55 @@
+---
+title: Bus
+aliases: ["data bus", "system bus"]
+category: hardware
+kind: concept
+summary: A set of wires (or differential lanes) that carries data, addresses, or control signals between components inside a computer.
+level: beginner
+status: draft
+importance: core
+tags: ["hardware", "interconnect"]
+prerequisites: ["cpu", "memory"]
+related: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **bus** is the highway that connects the parts of a computer. The CPU uses one bus to talk to memory, another to talk to storage, another to talk to peripherals. Each bus has a width (how many bits move at once) and a speed (how many transfers per second).
+
+## More detail
+
+Classical computer architecture talked about three logical buses:
+
+- **Data bus** — the actual values.
+- **Address bus** — where to read/write.
+- **Control bus** — read/write signals, clocks, interrupts.
+
+Modern computers don't expose these as shared multi-drop buses; they use **point-to-point serial links** that look the same from the outside:
+
+- **PCIe** (PCI Express) connects CPUs, GPUs, NVMe SSDs, and many add-in cards. PCIe 5.0 carries ~32 GB/s per direction on a 16-lane slot.
+- **DDR / LPDDR** — wide parallel links from CPU to RAM (and the source of "memory bus" jargon).
+- **NVLink, Infinity Fabric** — high-bandwidth links inside GPU clusters or between CCDs in a chiplet CPU.
+- **USB, Thunderbolt** — external peripherals.
+- **I²C, SPI, CAN, SMBus** — slow internal buses for sensors, microcontrollers, automotive electronics.
+
+The bus is often the bottleneck. A CPU may have terabytes-per-second of cache bandwidth but only ~100 GB/s to main memory and a few GB/s to disk.
+
+## Why it matters
+
+Bus bandwidth and latency define how fast components can cooperate. Many performance problems — slow GPU compute starved of data, slow database serving from disk — are really bus problems.
+
+## Real-world examples
+
+- Connecting an Nvidia GPU via PCIe vs. NVLink: NVLink is ~5× the bandwidth for GPU-to-GPU traffic.
+- An NVMe SSD plugged into a slower PCIe slot runs at a fraction of its potential.
+- USB 3 vs USB 2 device speeds differ by a factor of 10× due to the underlying bus.
+
+## Common misconceptions
+
+- **"Buses are shared wires."** Modern interconnects are mostly point-to-point with switching.
+- **"Wider bus is always faster."** Only if your traffic can use the width; many workloads are latency-bound, not bandwidth-bound.
+
+## Learn next
+
+What rides on the bus to and from the chip: [CPU](/t/cpu) and [memory](/t/memory).

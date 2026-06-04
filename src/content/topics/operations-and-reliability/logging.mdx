@@ -1,0 +1,59 @@
+---
+title: Logging
+aliases: ["application logs", "log management"]
+category: operations-and-reliability
+kind: concept
+summary: Recording discrete events from a running system, so the engineers operating it can reconstruct what happened — and when, and why.
+level: beginner
+status: draft
+importance: core
+tags: ["ops", "logging", "observability"]
+prerequisites: ["deployment"]
+related: ["monitoring", "incident-response"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **log** is a stream of timestamped events produced by a running program: "request received", "DB query took 312 ms", "user 42 deleted file X", "ERROR: payment gateway timeout". Logs are the system's running journal — invaluable when debugging, irreplaceable during an incident.
+
+## More detail
+
+Modern good practice:
+
+- **Structured logging** — emit JSON (or similar), not free-form text. Lets you filter and aggregate.
+- **Levels** — `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`. Production usually defaults to INFO; you can raise it temporarily during investigation.
+- **Correlation IDs** — every log line for a single request carries the same `request_id` or `trace_id`. Lets you reconstruct a journey across services.
+- **Don't log secrets** — passwords, tokens, full credit card numbers. Redact at source, not in the pipeline.
+- **Don't log PII unnecessarily** — and even where you must, treat it like the regulated data it is.
+- **Sample noisy lines** — full-rate "health check OK" logs drown the signal.
+
+Pipeline shape (one of many):
+
+```
+app  → stdout / file → agent (Fluent Bit, Vector) → message broker (Kafka)
+     → indexer (OpenSearch, Loki, ClickHouse) → UI (Kibana, Grafana, Datadog)
+```
+
+Logs are the "what exactly happened" signal. Metrics tell you that something is wrong; logs tell you what; traces tell you where.
+
+Centralised logging is essential the moment you have more than one server — chasing logs across many machines by hand is hopeless.
+
+## Why it matters
+
+When a system breaks at 3 a.m., logs are usually how the on-call engineer reconstructs what happened. Good logs cut incident time dramatically; bad logs (or no logs) turn 15-minute fixes into all-night investigations.
+
+## Real-world examples
+
+- A 500 error in a single request, traced back through 7 services by a shared `trace_id`.
+- A retroactive analysis of "how many users hit this bug yesterday?" answered with a single log query.
+- A compliance audit asking "what did this admin do last Tuesday?" answered from access logs.
+
+## Common misconceptions
+
+- **"Log everything."** Eventually unaffordable in storage and unfindable in search. Pick what matters; sample the rest.
+- **"Logs are just for debugging."** They are also evidence for postmortems, security forensics, and product analytics.
+
+## Learn next
+
+The other major signal: [monitoring](/t/monitoring). What you do with these signals during a bad night: [incident response](/t/incident-response).

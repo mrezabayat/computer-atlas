@@ -35,8 +35,17 @@ jobs:
       - name: Type-check (Astro + TypeScript) and validate content schemas
         run: npm run check
 
+      - name: Lint content (standardized headings, no TODOs in reviewed topics)
+        run: npm run lint:content
+
       - name: Build site (fails on broken topic references and bad frontmatter)
         run: npm run build
+
+      - name: Audit orphans (informational)
+        run: npm run audit:orphans || true
+
+      - name: Audit importance / Ring N completeness (informational)
+        run: npm run audit:importance || true
 
       - name: Upload built site as artifact
         uses: actions/upload-artifact@v4

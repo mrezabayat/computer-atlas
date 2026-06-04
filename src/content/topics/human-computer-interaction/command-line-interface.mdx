@@ -1,0 +1,63 @@
+---
+title: Command-Line Interface
+aliases: ["cli", "terminal", "shell"]
+category: human-computer-interaction
+kind: concept
+summary: A text-based user interface where you type commands and read text output — small, fast, scriptable, and the default for system administration and development.
+level: beginner
+status: draft
+importance: core
+tags: ["cli", "terminal"]
+prerequisites: ["user-interface"]
+related: ["gui"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **command-line interface** (CLI) is a way of using a computer by typing commands at a text prompt. Instead of clicking buttons, you type a verb (`ls`, `git`, `cat`) and some arguments, press Enter, and read the response. It's faster, scriptable, and less friendly to discover — exactly the opposite trade-off of a GUI.
+
+## More detail
+
+The CLI runs inside a **terminal emulator** (Terminal, iTerm2, Windows Terminal, Alacritty, Wezterm). Inside the terminal a **shell** parses your input and runs commands: bash, zsh, fish, PowerShell, nushell.
+
+The Unix philosophy shapes most CLI tools:
+
+- Each program does one thing well.
+- Programs read text from standard input and write text to standard output.
+- Pipe (`|`) connects one program's output to the next's input.
+- Together, small tools compose into larger workflows.
+
+Example: count unique IP addresses from a log file:
+
+```bash
+awk '{print $1}' access.log | sort | uniq -c | sort -nr | head
+```
+
+Five tiny tools, no scripting, one line.
+
+Modern CLI ergonomics:
+
+- Tab completion, history search, syntax highlighting (zsh/fish defaults, bash plugins).
+- TUI (text user interface) tools that render full-screen interactive interfaces in the terminal (`htop`, `tig`, `lazygit`, `fzf`).
+- Aliases and shell functions for personal shortcuts.
+- `man`, `--help`, and tldr-style summaries for discoverability.
+
+## Why it matters
+
+Most servers don't have a GUI; if you administer them, you live in the CLI. The CLI is also the only practical way to script repetitive work, version-control your environment, and reproduce a workflow exactly. For developers, time invested here pays back forever.
+
+## Real-world examples
+
+- `git`, `npm`, `kubectl`, `docker`, `ssh` — every developer tool of consequence is a CLI first, GUI second.
+- A 50-line shell script can do the work of an afternoon of clicking.
+- Cloud admin commonly happens over SSH into terminals halfway across the planet.
+
+## Common misconceptions
+
+- **"CLIs are obsolete."** They are more popular than ever among developers and admins — and getting better tooling, not less.
+- **"GUI users can't learn CLI."** They can; the learning curve front-loads, then everything gets faster.
+
+## Learn next
+
+The visual counterpart: [GUI](/t/gui). The broader concept they're both forms of: [user interface](/t/user-interface).

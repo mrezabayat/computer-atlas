@@ -1,0 +1,55 @@
+---
+title: Thread
+aliases: ["threads"]
+category: operating-systems
+kind: concept
+summary: A single line of execution inside a process — the unit the CPU actually runs. A process can have many threads that share memory.
+level: intermediate
+status: draft
+importance: core
+tags: ["os", "concurrency"]
+prerequisites: ["process"]
+related: []
+partOf: ["operating-system"]
+nextSteps: ["scheduler"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **thread** is one stream of instructions running through a program. A process has at least one thread (the main one), and it can spawn more so it can do several things at once — keep the UI responsive while a download runs, or process many web requests in parallel.
+
+## More detail
+
+Threads inside the same process share the process's memory, file handles, and other resources, but each has its own:
+
+- **Stack** — a small private workspace for local variables and the call chain.
+- **Program counter and registers** — what it is currently executing.
+
+Because threads share memory, they can communicate cheaply, but they can also corrupt each other's data if they aren't careful. Coordinating threads is the job of **synchronisation primitives**: locks/mutexes, semaphores, condition variables, atomic operations, and channels.
+
+Kinds of threads:
+
+- **OS threads** — scheduled by the kernel. Heavy but truly parallel across CPU cores.
+- **User threads / fibers / goroutines / async tasks** — multiplexed by a runtime onto a smaller pool of OS threads. Much cheaper to create, ideal for I/O-bound work.
+
+Modern languages each have their own concurrency story: Java and C++ expose OS threads directly; Go has goroutines; Python is moving from the GIL toward real free-threading; JavaScript uses an event loop with a single thread plus workers.
+
+## Why it matters
+
+Modern CPUs have many cores; the only way to use them is concurrency. Threads (or their lightweight cousins) are the primary mechanism. Even on a single core, threads let a program overlap CPU work with I/O latency.
+
+## Real-world examples
+
+- A web server uses one thread per request (Java) or one goroutine per request (Go).
+- A video game uses separate threads for physics, rendering, and audio.
+- A spreadsheet recalculates formulas on a background thread so typing stays smooth.
+
+## Common misconceptions
+
+- **"More threads means faster."** Past the number of CPU cores you have, more threads add overhead without more work being done in parallel.
+- **"Threads are safe by default."** They are not. Two threads writing the same variable without synchronisation is a data race, and the result is undefined.
+
+## Learn next
+
+Threads are run by the [scheduler](/t/scheduler). Sharing memory safely is its own subject — locks, atomics, and lock-free data structures.

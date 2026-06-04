@@ -1,0 +1,64 @@
+---
+title: Cache
+aliases: ["cpu cache", "memory cache"]
+category: computer-architecture
+kind: concept
+summary: Small, fast memory close to the CPU that keeps recently or about-to-be-used data, hiding the slowness of main memory.
+level: intermediate
+status: draft
+importance: core
+tags: ["cache", "memory", "architecture"]
+prerequisites: ["cpu", "memory"]
+related: ["cpu-pipeline", "register"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Main memory is fast but the CPU is much faster. A **cache** is a small bank of even-faster memory sitting between the CPU and RAM. It holds copies of the most recently accessed bytes so the CPU rarely has to wait the full ~100 nanoseconds for RAM.
+
+## More detail
+
+A typical CPU has several cache levels:
+
+| Level | Typical size | Latency | Shared by             |
+|-------|--------------|---------|-----------------------|
+| L1    | 32–64 KB     | ~1 ns   | One core, split I/D   |
+| L2    | 256 KB–1 MB  | ~3–5 ns | One core              |
+| L3    | 8–64 MB      | ~10–20 ns| All cores            |
+
+Each level trades capacity for latency. RAM by comparison is ~100 ns.
+
+Caches operate on **cache lines** — fixed-size blocks (usually 64 bytes) — not individual bytes. Reading one byte pulls in its 64-byte neighbourhood.
+
+A cache exploits two properties of real programs:
+
+- **Temporal locality** — data used once is likely to be used again soon.
+- **Spatial locality** — data near recently-used data is also likely to be used soon.
+
+Cache organisation:
+
+- **Direct-mapped** — each address maps to exactly one cache slot. Simple, can thrash.
+- **Set-associative** — each address can live in any of N slots in a set (N-way). Most real caches.
+- **Fully associative** — any address anywhere; expensive hardware.
+
+When data isn't in the cache (**cache miss**), the CPU stalls until the line is fetched. Coherence protocols (MESI, MOESI) keep caches consistent across cores.
+
+## Why it matters
+
+Most "performance" tuning at the language level is really cache tuning: lay data out contiguously, avoid pointer chasing, keep hot data small. A program that fits in L1 can be hundreds of times faster than one that constantly misses to RAM.
+
+## Real-world examples
+
+- Iterating a Python list of integers is slow partly because each integer is a heap-allocated object, scattering them across memory.
+- A struct-of-arrays layout almost always beats array-of-structs for tight inner loops on the same data.
+- The Intel/AMD performance gap is often a cache-hierarchy gap.
+
+## Common misconceptions
+
+- **"Cache is RAM."** Cache is on the CPU die, made of SRAM, and orders of magnitude faster than RAM (DRAM).
+- **"Bigger cache is always better."** Larger caches are slower; the hierarchy is a deliberate compromise.
+
+## Learn next
+
+How instructions consume cached data: [CPU pipeline](/t/cpu-pipeline). The smallest, fastest storage of all: [register](/t/register).

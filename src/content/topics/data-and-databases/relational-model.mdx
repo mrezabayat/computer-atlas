@@ -1,0 +1,57 @@
+---
+title: Relational Model
+aliases: ["relational"]
+category: data-and-databases
+kind: concept
+summary: A model of data as a set of relations (tables of tuples) — the mathematical foundation under SQL databases.
+level: intermediate
+status: draft
+importance: core
+tags: ["database", "relational"]
+prerequisites: ["database"]
+related: ["sql", "indexing"]
+nextSteps: ["normalization"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+The **relational model** describes data as a collection of **tables** (formally, *relations*). Each table has named columns, and each row is a tuple of values for those columns. You ask questions of the data with a small, fixed set of operations — select, project, join, union, difference — and any complex query is built from those building blocks.
+
+## More detail
+
+E.F. Codd published the relational model in 1970. Its central ideas:
+
+- **Data is shaped like sets of tuples**, not pointers between records.
+- **Operations are declarative**: you describe what you want, not how to compute it.
+- **Keys** identify rows: a **primary key** is unique per row; a **foreign key** in one table references the primary key of another.
+- **Schema** is separate from data: the structure is declared once and the system enforces it.
+- **Integrity constraints** (uniqueness, foreign keys, checks) are part of the schema.
+
+From this foundation came:
+
+- **SQL** as the standard query language.
+- **Relational algebra** and **relational calculus** as the theoretical query languages.
+- **Normalization** as the design discipline for avoiding redundancy.
+- The **ACID** transaction model.
+
+NoSQL stores often relax parts of this model (no joins, no schema, no transactions) in exchange for scale or flexibility — but most still describe their tables in vaguely relational terms.
+
+## Why it matters
+
+The relational model is the most successful data abstraction in computing. Nearly every business application stores its canonical data in a relational database. Even if the application uses an ORM or a document store on top, the relational ideas — schemas, keys, joins — show through.
+
+## Real-world examples
+
+- An `orders` table has a `customer_id` foreign key pointing at the `customers` table.
+- "Find all customers in France who ordered last month" is one SQL query joining three relations.
+- BigQuery, Snowflake, and Redshift are warehouse-scale relational stores that absorbed the model and added massive parallelism.
+
+## Common misconceptions
+
+- **"Relational means SQL."** SQL is the dominant *language* for the relational model, but the model is older and more general than SQL.
+- **"NoSQL replaces relational."** For most application data, the relational model is still the safer default. Specialised stores complement, rather than replace.
+
+## Learn next
+
+The discipline of structuring tables well — [normalization](/t/normalization). The query language — [SQL](/t/sql). What makes lookups fast — [indexing](/t/indexing).

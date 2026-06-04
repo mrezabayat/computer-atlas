@@ -1,0 +1,59 @@
+---
+title: Recursion
+aliases: ["recursive"]
+category: foundations
+kind: concept
+summary: A way of solving a problem by having a function call itself on a smaller version of the same problem, until the base case is trivial.
+level: beginner
+status: draft
+importance: core
+tags: ["recursion", "algorithms"]
+prerequisites: ["algorithms"]
+related: ["data-structure", "big-o"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Recursion** is solving a problem by reducing it to a smaller version of itself. The function calls itself with a simpler input and combines that result to answer the original question. Every recursion needs a **base case** — a small input it can answer directly — otherwise it runs forever.
+
+## More detail
+
+The classic shape:
+
+```python
+def factorial(n):
+    if n <= 1:           # base case
+        return 1
+    return n * factorial(n - 1)   # recursive case
+```
+
+Recursion shines on problems with a self-similar structure:
+
+- **Tree traversals** — a tree is a node plus child trees.
+- **Divide-and-conquer algorithms** — merge sort, quicksort, FFT.
+- **Backtracking** — n-queens, sudoku, parsing.
+- **Many graph algorithms** — DFS, topological sort.
+
+Each call lives on the **call stack**; too deep, and you get a stack overflow. Many languages support **tail-call optimisation**: if the recursive call is the last thing the function does, the compiler can reuse the current stack frame, turning recursion into a loop. Schemes, OCaml, and most functional languages guarantee this; C++ and Rust do it opportunistically; Python and Java do not.
+
+Recursion and iteration are interchangeable in principle. The choice is about clarity: tree-shaped problems are usually clearest recursively; long linear traversals are usually clearest as a loop.
+
+## Why it matters
+
+Most beautiful algorithms are recursive when written naturally. Recognising self-similarity in a problem and turning it into recursion is a core programming skill — and a near-universal interview topic.
+
+## Real-world examples
+
+- A file-system traversal: process each entry; if it's a directory, recurse.
+- React renders a component tree by recursively rendering children.
+- Compilers walk syntax trees recursively to type-check and generate code.
+
+## Common misconceptions
+
+- **"Recursion is always slow."** Function-call overhead is real, but a clear recursive algorithm with a smart base case is often faster than a contorted iterative version. Modern compilers are good at it.
+- **"Recursion always needs a stack overflow guard."** Bounded-depth recursion (e.g. logarithmic in n) is perfectly safe.
+
+## Learn next
+
+How to talk about recursion's cost: [Big O](/t/big-o). The structures recursion often operates on: trees and graphs in [data structures](/t/data-structure).

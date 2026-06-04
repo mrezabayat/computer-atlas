@@ -1,0 +1,59 @@
+---
+title: GPU
+aliases: ["graphics processing unit", "gpus"]
+category: hardware
+kind: technology
+summary: A processor designed for massive data-parallel work — originally for rendering graphics, now also the workhorse of machine learning, simulation, and crypto.
+level: beginner
+status: draft
+importance: core
+tags: ["gpu", "hardware"]
+prerequisites: ["cpu"]
+related: ["neural-network", "game-engine"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **GPU** (graphics processing unit) is a chip with thousands of small cores that all do the same operation on different pieces of data at the same time. It was designed for rendering pixels, where every pixel needs roughly the same maths. Today it's the engine behind almost all modern machine learning.
+
+## More detail
+
+CPUs and GPUs are both processors but optimised for opposite things:
+
+| Property         | CPU                          | GPU                              |
+|------------------|------------------------------|----------------------------------|
+| Number of cores  | ~4–128                       | Thousands                        |
+| Per-core power   | Very powerful, complex       | Simple, narrow                   |
+| Branch handling  | Excellent (branch prediction)| Poor (whole groups stall)        |
+| Best at          | Sequential, branchy work     | Massive data-parallel work       |
+| Memory model     | Coherent caches, low latency | High-bandwidth, higher latency   |
+
+GPUs execute in **warps** / **wavefronts** of 32–64 lanes; all lanes in a warp do the same instruction at the same time (**SIMD/SIMT**). This is exactly what dense matrix multiplication needs — which is exactly what neural-network training does.
+
+Programmable APIs that exposed GPUs beyond graphics:
+
+- **CUDA** (Nvidia, 2007) — the de facto standard for ML.
+- **OpenCL** — cross-vendor, less popular.
+- **ROCm** (AMD), **Metal** (Apple), **DirectX Compute** (Microsoft).
+
+In 2026, a top-end data-centre GPU has tens of billions of transistors, 80+ GB of HBM memory, and performs hundreds of teraflops to petaflops on AI workloads.
+
+## Why it matters
+
+Without GPUs, modern AI would not exist at its current scale. Training a large language model on CPUs would take centuries.
+
+## Real-world examples
+
+- Nvidia H100 / B100 — the standard ML training GPUs.
+- Apple M-series GPUs handle the screen on a Mac and run on-device ML.
+- A gaming PC uses its GPU for 3D rendering primarily but increasingly also for upscaling (DLSS) and physics.
+
+## Common misconceptions
+
+- **"GPUs are faster than CPUs."** Only at parallel work. A GPU is terrible at sequential code with lots of branches.
+- **"GPUs are only for graphics."** That hasn't been true for two decades; today most data-centre GPUs barely render anything.
+
+## Learn next
+
+The architectural cousin: [CPU](/t/cpu). What GPUs are mostly used for now: [neural network](/t/neural-network).

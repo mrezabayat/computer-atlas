@@ -1,0 +1,57 @@
+---
+title: Indexing
+aliases: ["index", "database index"]
+category: data-and-databases
+kind: concept
+summary: Auxiliary data structures a database maintains so it can answer queries without scanning every row — the single biggest knob for query performance.
+level: intermediate
+status: draft
+importance: core
+tags: ["database", "performance"]
+prerequisites: ["database", "sql"]
+related: ["relational-model"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An **index** is a separate, sorted copy of one or more columns that a database keeps so it can find rows quickly. Without it, "find the user with email X" means reading every row. With it, the lookup is logarithmic — typically a handful of disk reads instead of millions.
+
+## More detail
+
+The dominant on-disk index is a **B-tree** (or B+ tree): a wide, shallow, balanced tree that stays efficient even when individual reads are slow. Each node points to children for ranges of key values; a tree over 100 million rows is typically only 3–4 levels deep.
+
+Other common kinds:
+
+- **Hash index** — O(1) lookup, no ordered traversal. Postgres, MySQL `MEMORY` engine.
+- **Bitmap index** — one bitmap per distinct value; great for low-cardinality columns in analytics.
+- **GIN / inverted index** — maps each token to the set of documents containing it; powers full-text search.
+- **GiST / R-tree** — multi-dimensional, used for spatial and range queries.
+- **Vector index** (HNSW, IVF) — for approximate nearest-neighbour search over embeddings.
+
+An index has costs:
+
+- **Write amplification** — every insert/update may need to update each index too.
+- **Storage** — indexes can equal or exceed the size of the table.
+- **Maintenance** — fragmentation, rebuilds.
+
+The art is picking exactly the indexes your queries need and no more. A single composite index on `(customer_id, created_at)` may answer many queries; ten single-column indexes often help none of them.
+
+## Why it matters
+
+Most "the database is slow" stories are really "a query is doing a sequential scan when it should be using an index" stories. Reading the query plan (`EXPLAIN ANALYZE` in PostgreSQL) and adding the right index is the single highest-leverage skill in backend work.
+
+## Real-world examples
+
+- A `WHERE email = ?` lookup with an index: ~3 disk reads. Without: a full table scan of millions of rows.
+- A leading-column index on `(country, created_at)` answers "users in France created after Jan 1" efficiently.
+- A full-text search index lets a blog answer "posts containing 'rust' and 'memory'" in milliseconds.
+
+## Common misconceptions
+
+- **"More indexes = faster database."** Reads get faster; writes get slower; storage grows.
+- **"Indexes always help."** A small table or a high-selectivity scan can be faster without an index.
+
+## Learn next
+
+The model on top: [relational model](/t/relational-model). The query language: [SQL](/t/sql).

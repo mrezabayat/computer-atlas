@@ -1,0 +1,61 @@
+---
+title: Supervised Learning
+category: artificial-intelligence
+kind: concept
+summary: Learning a function from labelled examples — the most widely-deployed flavour of machine learning.
+level: intermediate
+status: draft
+importance: core
+tags: ["ml", "ai", "supervised"]
+prerequisites: ["machine-learning"]
+related: ["neural-network"]
+nextSteps: ["training-and-inference"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+In **supervised learning**, you show a model a bunch of examples paired with the correct answer ("this picture is a cat", "this email is spam") and it learns to predict the answer on new examples it hasn't seen. The word "supervised" refers to the labels — a teacher told the model what each example was.
+
+## More detail
+
+The training loop:
+
+1. Collect a dataset of input/output pairs.
+2. Choose a model architecture (linear, tree, neural net, ...).
+3. Define a **loss function** measuring how wrong the model is.
+4. Iteratively adjust the model's parameters to reduce the loss — usually with **gradient descent**.
+5. Evaluate on a **held-out test set** the model never saw during training.
+
+Two main flavours:
+
+- **Classification** — predict one of a fixed set of categories. Cat vs. dog. Spam vs. not. Digit 0–9.
+- **Regression** — predict a real number. Tomorrow's temperature. The selling price of a house.
+
+Common pitfalls:
+
+- **Overfitting** — the model memorises the training set and performs poorly on new data.
+- **Data leakage** — information from the test set sneaks into training (e.g. preprocessing on the combined set).
+- **Imbalanced classes** — accuracy is misleading when 99% of examples are one class.
+- **Distribution shift** — production data differs from training data; performance silently degrades.
+
+Modern industrial ML is overwhelmingly supervised: search ranking, recommendations, ad targeting, image moderation, machine translation, code completion. Even unsupervised techniques (like training a language model on raw text) are usually followed by supervised fine-tuning.
+
+## Why it matters
+
+Most "AI that works" is supervised learning at scale: huge labelled datasets, well-understood architectures, careful evaluation. The gap between an interesting prototype and a useful product is almost always a labels and evaluation problem.
+
+## Real-world examples
+
+- An email spam filter is a binary classifier trained on millions of labelled emails.
+- A medical imaging model learns "tumour vs. healthy tissue" from radiologist annotations.
+- A coding assistant is fine-tuned on accepted vs. rejected completions.
+
+## Common misconceptions
+
+- **"Supervised learning needs perfect labels."** It tolerates noisy labels surprisingly well, especially at scale. It is much less tolerant of *biased* labels.
+- **"Bigger model is the answer."** Often more or better-labelled data is. Architecture matters less than people assume.
+
+## Learn next
+
+How a trained model is actually used at run time: [training and inference](/t/training-and-inference). The dominant model family for supervised learning: [neural networks](/t/neural-network).

@@ -1,0 +1,56 @@
+---
+title: Type System
+aliases: ["type systems", "types"]
+category: programming-languages
+kind: concept
+summary: A set of rules a programming language uses to assign and check the "kinds" of values, catching whole classes of bugs before the program runs.
+level: intermediate
+status: draft
+importance: core
+tags: ["types", "languages"]
+prerequisites: ["programming-language"]
+related: ["compiler", "interpreter"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **type system** is the part of a programming language that knows what kinds of things your values are — numbers, strings, lists, functions — and refuses to let you do nonsense like add a number to a function. The stricter the type system, the more bugs it catches without running your code.
+
+## More detail
+
+Type systems vary along several axes:
+
+- **Static vs dynamic** — types known at compile time (Rust, Java, TypeScript) vs. only at run time (Python, Ruby, JavaScript-without-TS).
+- **Strong vs weak** — refuses implicit conversions ("strong") or silently coerces ("weak"). JavaScript's `"5" + 3 === "53"` is the canonical weak-typing example.
+- **Manifest vs inferred** — you write the types (`int x = 5`) or the compiler figures them out (`let x = 5`).
+- **Nominal vs structural** — "two types are the same iff they have the same name" vs. "iff they have the same shape" (TypeScript famously uses structural typing).
+- **Sound vs unsound** — a sound type system makes promises the runtime will always keep; an unsound one sometimes lies (TypeScript is intentionally unsound in places for ergonomics).
+
+Modern features many languages have adopted:
+
+- **Generics / parametric polymorphism** — `List<T>` works for any `T`.
+- **Algebraic data types** — sum types (`Result<T, E>`), pattern matching.
+- **Type inference** — most local types don't need to be written.
+- **Option / nullable types** — make "might be missing" explicit instead of letting `null` lurk anywhere.
+- **Lifetimes / ownership** (Rust) — types that also encode aliasing and memory safety.
+- **Effect systems** — types that track side effects (IO, async, can-throw).
+
+## Why it matters
+
+Type systems are the cheapest, fastest test you have. A good one removes whole categories of bugs before the program ever runs and powers excellent tooling — autocomplete, refactoring, jump-to-definition.
+
+## Real-world examples
+
+- A typo in a field name in TypeScript fails the build instead of silently returning `undefined` at run time.
+- Rust's borrow checker is "just" an unusually expressive type system; it eliminates an entire class of memory bugs.
+- Python's optional type hints (PEP 484) let `mypy` catch errors that the interpreter wouldn't.
+
+## Common misconceptions
+
+- **"Static types slow you down."** They cost a few keystrokes; they save hours of debugging at any non-trivial scale.
+- **"Dynamic types are simpler."** They are simpler to start with and harder to maintain at scale; that is why most large dynamically-typed codebases adopt some form of type checker.
+
+## Learn next
+
+How types get checked: the [compiler](/t/compiler) or the language's [interpreter](/t/interpreter).

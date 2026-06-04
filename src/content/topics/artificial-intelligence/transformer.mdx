@@ -1,0 +1,64 @@
+---
+title: Transformer
+aliases: ["transformers", "transformer architecture"]
+category: artificial-intelligence
+kind: concept
+summary: The neural-network architecture, introduced in 2017, that powers modern large language models, image generation, and most of contemporary AI.
+level: intermediate
+status: draft
+importance: core
+tags: ["ml", "ai", "transformer", "attention"]
+prerequisites: ["neural-network"]
+related: ["training-and-inference"]
+nextSteps: ["large-language-model"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **transformer** is the neural-network design that learned to read whole sentences at once instead of one word at a time. It became the universal architecture for language — and then for images, audio, and code — because it parallelises beautifully on GPUs and gets better the more data you throw at it. Every modern large language model is a transformer.
+
+## More detail
+
+Introduced in the paper "Attention Is All You Need" (Vaswani et al., 2017), the transformer replaced the recurrent and convolutional networks that previously dominated sequence modelling.
+
+Key ingredients:
+
+- **Self-attention** — for each token in the input, compute a weighted combination of all other tokens. Lets every token "see" the whole sequence directly.
+- **Multi-head attention** — do this several times in parallel with different learned projections.
+- **Feed-forward layers** between attention layers.
+- **Positional encoding** — since the model has no recurrence, position has to be added explicitly.
+- **Residual connections + layer normalisation** for trainability at depth.
+
+A transformer "block" stacks attention and feed-forward, with residuals around each. A modern LLM stacks dozens to hundreds of these blocks.
+
+The two big variants:
+
+- **Encoder-only** (BERT) — bidirectional attention; great for understanding tasks (classification, retrieval).
+- **Decoder-only** (GPT family) — causal attention; great for generation. Dominant for chat / completion.
+- **Encoder–decoder** (T5, original "Attention Is All You Need") — common in translation.
+
+Why it won:
+
+- **Parallelism** — unlike RNNs, attention computes all positions at once. Loves GPUs.
+- **Scales predictably** — performance keeps improving with more parameters and more data ("scaling laws"). This is the empirical foundation of large language models.
+- **General purpose** — the same architecture handles text, code, images (Vision Transformer), audio, and protein sequences.
+
+## Why it matters
+
+Transformers are the foundation of the 2020s AI boom. Without them, ChatGPT, Claude, Gemini, image generators, and most modern code completion would not exist in their current form.
+
+## Real-world examples
+
+- GPT, Claude, Gemini, Llama, Mistral — all decoder-only transformers, mostly.
+- Stable Diffusion's text encoder is a transformer; modern image models often have transformers in their core too.
+- AlphaFold-2's structure module is built from attention layers.
+
+## Common misconceptions
+
+- **"Transformers think."** They predict the next token from patterns in their training data, very well. Whether that constitutes "thought" is a separate, contested question.
+- **"Attention is the only thing that matters."** Feed-forward layers actually hold most of the parameters and do a lot of the work.
+
+## Learn next
+
+The architectural family it belongs to: [neural network](/t/neural-network). What gets built from it: [large language model](/t/large-language-model).

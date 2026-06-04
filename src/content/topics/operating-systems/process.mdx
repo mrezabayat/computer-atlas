@@ -1,0 +1,54 @@
+---
+title: Process
+aliases: ["processes"]
+category: operating-systems
+kind: concept
+summary: A running instance of a program, with its own memory, file handles, and CPU time — the unit the operating system schedules and isolates.
+level: beginner
+status: draft
+importance: core
+tags: ["os", "process"]
+prerequisites: ["operating-system", "memory"]
+related: []
+partOf: []
+nextSteps: ["thread", "scheduler"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **process** is what a program becomes once it's running. When you double-click an app, the OS creates a process: a private slice of memory, a list of open files, a CPU it gets to share, and a name and number to track it by. Two copies of the same app running at the same time are two processes.
+
+## More detail
+
+A process is the OS's main unit of accounting and isolation. Each process has:
+
+- A **PID** (process ID) — a unique integer.
+- Its own **virtual address space** — pretend memory the kernel maps to real RAM.
+- A **state** — running, ready to run, blocked on I/O, stopped, or terminated.
+- A **set of resources** — open file descriptors, sockets, environment variables.
+- One or more **threads** of execution.
+- A **parent** process (everything traces back to PID 1).
+
+Processes are created by **forking** an existing process (Unix) or by an OS call like `CreateProcess` (Windows). Operating systems carefully prevent one process from reading another's memory unless they explicitly share it.
+
+When a process exits, the OS reclaims its memory and closes its files. A misbehaving process usually only takes itself down, not the whole machine — that is the central benefit of process isolation.
+
+## Why it matters
+
+Processes are why a single computer can run a browser, a video call, a code editor, and a backup all at once without each breaking the others. They are the primitive on top of which scheduling, security, and containers are built.
+
+## Real-world examples
+
+- The `ps` / Task Manager / Activity Monitor list of running programs is a list of processes.
+- A web browser usually runs each tab as its own process for isolation.
+- A crashing app shows up as a process that exited with a non-zero status.
+
+## Common misconceptions
+
+- **"A process is a program."** A program is a file on disk; a process is one running instance of it. The same program can be many processes.
+- **"More processes means more parallelism."** Only if they actually do work in parallel — many processes spend most of their time blocked on I/O.
+
+## Learn next
+
+A process can have several lines of execution running at once — see [thread](/t/thread). To understand how the OS picks which one to run, see the [scheduler](/t/scheduler).

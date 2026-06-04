@@ -1,0 +1,58 @@
+---
+title: Kernel
+category: operating-systems
+kind: concept
+summary: The privileged core of an operating system — the only software that talks to hardware directly and the gatekeeper that protects every program from every other.
+level: intermediate
+status: draft
+importance: core
+tags: ["os", "kernel"]
+prerequisites: ["operating-system", "process"]
+related: ["scheduler", "virtual-memory"]
+partOf: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+The **kernel** is the heart of an operating system. It is the only program allowed to talk to hardware directly: the CPU, the memory controller, the disks, the network card. Every other program runs in a less-privileged mode and has to ask the kernel for help via **system calls**.
+
+## More detail
+
+The CPU itself has at least two privilege levels — typically called **kernel mode** (ring 0 on x86) and **user mode** (ring 3). Instructions that talk to hardware, change page tables, or mask interrupts can only run in kernel mode. The kernel switches to user mode before handing control to an application, and switches back when the application asks for a service.
+
+A modern kernel's responsibilities:
+
+- **Process and thread management** — fork, exec, exit, scheduling.
+- **Memory management** — page tables, allocation, swapping.
+- **File systems** — open, read, write, close, journaling.
+- **Device drivers** — keyboards, displays, GPUs, network cards.
+- **Networking** — TCP/IP stack, sockets.
+- **IPC** — pipes, sockets, signals, shared memory.
+- **Security** — permissions, capabilities, mandatory access control.
+
+Two long-standing architectural choices:
+
+- **Monolithic kernel** (Linux, FreeBSD) — drivers and most services live inside the kernel address space. Fast; one bug can crash everything.
+- **Microkernel** (MINIX, seL4, parts of QNX, macOS Mach core) — keep the kernel tiny and run services as user-space processes. Robust; performance is the trade-off.
+
+In practice the lines blur: Linux is monolithic but supports loadable modules; macOS is technically a hybrid (Mach + BSD); Windows is similar.
+
+## Why it matters
+
+The kernel is the most security-sensitive code in the whole system. A bug in kernel mode can do anything — read any memory, corrupt any file, send any packet. That's why kernel changes are reviewed slowly and why kernel updates often need a reboot.
+
+## Real-world examples
+
+- Linux 6.x is the kernel running most servers and Android phones.
+- The Apple `xnu` kernel powers macOS, iOS, watchOS, and tvOS.
+- The Windows NT kernel is the basis of all modern Windows, including Xbox.
+
+## Common misconceptions
+
+- **"The kernel is the operating system."** It is the privileged core; an OS also includes a shell, libraries, system services, and a desktop environment.
+- **"Kernel = open source."** Many production kernels are proprietary (Windows NT, macOS xnu — though parts of xnu are open).
+
+## Learn next
+
+System calls are how user programs ask the kernel for things. For a higher-level view, revisit [operating system](/t/operating-system).

@@ -1,0 +1,63 @@
+---
+title: Data Structure
+aliases: ["data structures"]
+category: foundations
+kind: concept
+summary: A way of organising values in memory so that the operations you care about — find, insert, delete, sort — are efficient.
+level: beginner
+status: draft
+importance: core
+tags: ["data-structures", "algorithms"]
+prerequisites: ["bits", "algorithms"]
+related: []
+nextSteps: ["big-o"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **data structure** is a way of arranging values so the things you want to do with them are fast. A shopping list is a data structure; so is a phone book, a calendar, a family tree. Different shapes are good at different questions.
+
+## More detail
+
+A few of the structures every programmer should know:
+
+| Structure          | Strength                                  | Typical use                          |
+|--------------------|-------------------------------------------|--------------------------------------|
+| **Array**          | O(1) random access by index               | Fixed-size lists, image rows         |
+| **Dynamic array / vector** | O(1) amortised append              | Most "list" types (Python, Rust Vec) |
+| **Linked list**    | O(1) insert/delete given a node           | Queues, undo histories               |
+| **Hash table**     | O(1) average lookup by key                | Sets, dictionaries, caches           |
+| **Tree** (balanced) | O(log n) lookup, ordered traversal       | Sorted maps, file systems            |
+| **Heap**           | O(log n) insert; O(1) peek-min            | Priority queues, scheduling          |
+| **Graph**          | Models arbitrary relationships            | Social networks, maps                |
+| **Trie**           | O(k) lookup for strings of length k       | Autocomplete, IP routing             |
+
+Choosing one well requires asking: what operations will this code do most? Insert once, look up a million times → hash table. Frequent insert at front and back → deque. Need things in sorted order → balanced tree. Range queries → segment tree or sorted array.
+
+Most languages ship the common ones in their standard library:
+
+- Python: `list`, `dict`, `set`, `deque`, `heapq`.
+- Java: `ArrayList`, `HashMap`, `TreeMap`, `LinkedList`, `PriorityQueue`.
+- Rust: `Vec`, `HashMap`, `BTreeMap`, `VecDeque`, `BinaryHeap`.
+- JavaScript: `Array`, `Map`, `Set`. (Trees and heaps you build yourself.)
+
+## Why it matters
+
+Algorithms operate on data structures. Picking the right structure can turn an O(n) operation into O(1) — the difference between a program that handles a thousand users and one that handles a million.
+
+## Real-world examples
+
+- Your browser's "back" button is a stack.
+- A printer queue is a queue.
+- A spell-checker uses a trie or hash set.
+- A graph search powers turn-by-turn navigation.
+
+## Common misconceptions
+
+- **"More features = better."** Pick the simplest structure that supports your operations cheaply. Extra features cost memory and confusion.
+- **"Hash tables are always O(1)."** Average case, yes. With a bad hash function or adversarial keys, you can hit O(n).
+
+## Learn next
+
+How to talk about how fast operations are: [Big O](/t/big-o). How to combine these structures into recipes: [algorithms](/t/algorithms).

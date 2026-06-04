@@ -1,0 +1,58 @@
+---
+title: Consensus
+aliases: ["distributed consensus"]
+category: distributed-systems-and-cloud
+kind: concept
+summary: A protocol that lets a group of machines agree on a single value despite failures and network unreliability — the foundation under replicated databases and leader election.
+level: advanced
+status: draft
+importance: core
+tags: ["distributed", "consensus", "raft", "paxos"]
+prerequisites: ["distributed-system"]
+related: []
+nextSteps: ["replication"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+When you have several machines that need to agree on something — which one is the leader, what the next entry in the log is, when to commit a transaction — and any of them can crash, slow down, or disconnect at any moment, you need a **consensus protocol**. Consensus is the formal solution to "how do we all agree, even when some of us are missing?"
+
+## More detail
+
+A consensus protocol guarantees:
+
+- **Agreement** — all non-faulty nodes decide on the same value.
+- **Validity** — that value was proposed by some node.
+- **Termination** — every non-faulty node eventually decides.
+
+The dominant algorithms in practice:
+
+- **Paxos** (Lamport, 1989) — the original. Notoriously hard to understand and implement; many production systems use a variant.
+- **Multi-Paxos / Raft** — extend single-value Paxos to a replicated log of commands.
+- **Raft** (Ongaro & Ousterhout, 2014) — designed to be understandable. Used by etcd, Consul, CockroachDB, TiKV, and many more.
+- **Byzantine fault tolerant (BFT)** — tolerates malicious nodes, not just crashes. Used in blockchains and high-stakes systems.
+
+Most quorum-based consensus systems need a **majority** of nodes alive to make progress: 3-of-5, 5-of-7, etc. A 3-node cluster survives 1 failure; a 5-node cluster survives 2.
+
+The **FLP impossibility result** (1985) proves that consensus with even one faulty process is impossible in a fully asynchronous network. Real systems get around this with timeouts and partial synchrony.
+
+## Why it matters
+
+Consensus is what stops your distributed system from telling itself contradictory stories. Every replicated database that promises strong consistency has a consensus protocol at its core — usually for leader election, log replication, or both.
+
+## Real-world examples
+
+- **etcd** (the brain of Kubernetes) uses Raft.
+- **ZooKeeper** uses ZAB (a Paxos relative) for the same job.
+- **CockroachDB**, **TiDB**, **YugabyteDB** use Raft per shard for replicated SQL.
+- A blockchain's "agreement on the next block" is a consensus problem with Byzantine guarantees.
+
+## Common misconceptions
+
+- **"Consensus needs all nodes."** No — it needs a *quorum* (majority). Tolerating failures is a key feature.
+- **"Raft and Paxos are very different."** Operationally they solve the same problem; Raft is a cleaner specification of (essentially) Multi-Paxos.
+
+## Learn next
+
+Consensus is the engine under [replication](/t/replication) and many sharded systems. The broader context: [distributed system](/t/distributed-system).

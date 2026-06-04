@@ -1,0 +1,51 @@
+---
+title: Register
+aliases: ["registers", "cpu register"]
+category: computer-architecture
+kind: concept
+summary: A handful of tiny, lightning-fast storage cells inside the CPU — the only memory most instructions actually read from or write to.
+level: intermediate
+status: draft
+importance: core
+tags: ["registers", "cpu", "architecture"]
+prerequisites: ["cpu", "instruction-set"]
+related: ["cache", "cpu-pipeline"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **register** is one of a small set (8 to 32 in classical designs, more in modern ones) of named storage cells inside the CPU itself. Almost every instruction reads its operands from registers and writes its result back into one. Registers are the CPU's hands; everything else — cache, RAM, disk — has to be passed through them to be operated on.
+
+## More detail
+
+The exact registers a CPU has are defined by its **instruction set architecture**:
+
+- **General-purpose registers** — used for any integer value. x86-64 has 16 (`rax`–`r15`); ARM64 has 31 plus a zero register; RISC-V has 32.
+- **Floating-point / SIMD registers** — wider, for floats and vector operations (`xmm`, `ymm`, `zmm` on x86; `v0`–`v31` on ARM).
+- **Special-purpose registers** — instruction pointer (`rip`/`pc`), stack pointer, flags, status, control.
+
+Registers are tiny — a few hundred bytes total — but they live in the same clock domain as the ALU and take zero time to access. Compared to L1 cache (~1 ns) and RAM (~100 ns), a register access is essentially free.
+
+The number of architectural registers is exposed to the programmer / compiler. Modern out-of-order CPUs internally have *physical* register files with hundreds of entries; **register renaming** maps the architectural names onto the physical pool to eliminate false dependencies.
+
+The compiler's **register allocator** decides which variables live in registers vs. on the stack. Spilling to the stack means writing to memory and reading it back — measurable on tight inner loops, invisible elsewhere.
+
+## Why it matters
+
+Registers are the choke point of execution. Every cycle the CPU does something, it's pulling values from registers and writing results back. Cache and RAM exist to keep registers fed.
+
+## Real-world examples
+
+- A C function with too many local variables spills to the stack, costing memory accesses on every call.
+- Hand-written assembly often outperforms compiler output by carefully managing which values live in which register.
+- Calling conventions (which registers a function may clobber, which it must preserve) are a core part of every ABI.
+
+## Common misconceptions
+
+- **"More registers means a faster CPU."** Up to a point — too many makes encoding inefficient and adds renaming overhead. 16–32 is the sweet spot.
+- **"Registers and cache are the same."** Same goal (be fast), totally different mechanisms: registers are named cells the ISA exposes; cache is transparent storage between CPU and RAM.
+
+## Learn next
+
+How instructions flow through register reads/writes: [CPU pipeline](/t/cpu-pipeline). The buffer between registers and RAM: [cache](/t/cache).

@@ -1,0 +1,56 @@
+---
+title: Authorization
+aliases: ["authz", "access control", "permissions"]
+category: security-and-privacy
+kind: concept
+summary: Deciding *what* an authenticated user is allowed to do — the system of permissions, roles, and policies that protects resources.
+level: intermediate
+status: draft
+importance: core
+tags: ["security", "auth", "permissions"]
+prerequisites: ["authentication"]
+related: []
+updated: 2026-06-04
+---
+
+## In simple terms
+
+Once a system knows *who* you are (authentication), it has to decide *what* you can do (**authorization**). Can this user read that document? Edit it? Delete the project? Authorization is the layer of permission checks that runs on every meaningful action.
+
+## More detail
+
+Common authorization models:
+
+- **Access Control List (ACL)** — for each resource, a list of "who can do what". Files on Unix work this way.
+- **Role-Based Access Control (RBAC)** — assign users to roles (`admin`, `editor`, `viewer`), assign permissions to roles. Coarse-grained, easy to reason about.
+- **Attribute-Based Access Control (ABAC)** — rules over attributes of the subject, resource, action, and environment ("editors in the project's organisation can edit during business hours"). Flexible, harder to audit.
+- **Relationship-Based Access Control (ReBAC)** — derives permissions from graphs of relationships ("you can edit because you're a member of the team that owns the project"). Used by Google Zanzibar, OpenFGA, SpiceDB.
+- **Capability-based** — possessing an unforgeable token *is* the permission. Hard to revoke; very simple.
+
+Implementation-level rules:
+
+- **Authorize on the server**, always. Hiding a button in the UI is not security.
+- **Default deny.** If no rule grants access, refuse.
+- **Check at the boundary** of each action, not just at navigation. Direct API calls bypass the UI.
+- **Audit log** every successful and failed authorization decision.
+
+Authorization is closely tied to **authentication** but logically separate: a single user might be authenticated once and then run through dozens of authorization decisions, one per resource access.
+
+## Why it matters
+
+Most data breaches are not "the password was wrong" — they're "the system didn't check whether this user should be allowed to do that". Insecure Direct Object Reference (IDOR) — guessing another user's resource ID — is one of the most common web vulnerabilities precisely because authorization is forgotten.
+
+## Real-world examples
+
+- A Google Doc has different permissions for "owner", "editor", "commenter", "viewer", plus per-link rules.
+- A Kubernetes RBAC policy controls which service accounts can list pods in which namespaces.
+- A `PUT /api/orders/42` that returns the right answer for the wrong user is an IDOR — an authorization bug.
+
+## Common misconceptions
+
+- **"Authorization is part of authentication."** They are separate concerns; conflating them is a source of bugs.
+- **"Roles are enough."** For small apps yes, for big ones no — you eventually need attributes, relationships, or both.
+
+## Learn next
+
+The other side of the coin: [authentication](/t/authentication). The infrastructure around credentials: [password hashing](/t/password-hashing).

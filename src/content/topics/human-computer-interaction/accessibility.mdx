@@ -1,0 +1,64 @@
+---
+title: Accessibility
+aliases: ["a11y", "web accessibility"]
+category: human-computer-interaction
+kind: concept
+summary: Designing software that people with diverse abilities — visual, auditory, motor, cognitive — can use effectively.
+level: beginner
+status: draft
+importance: core
+tags: ["a11y", "accessibility", "ux"]
+prerequisites: ["user-interface"]
+related: ["ux"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+**Accessibility** (often abbreviated **a11y**) means building software that works for people who don't see well, can't hear, have limited dexterity, use a screen reader, or experience the world differently from the average developer. Good accessibility is also good UX — many of the same patterns make the product better for everyone.
+
+## More detail
+
+Common areas of accessibility:
+
+- **Visual** — sufficient colour contrast, scalable text, alt text on images, support for high-contrast modes.
+- **Auditory** — captions, transcripts, no audio-only critical information.
+- **Motor** — full keyboard navigation, large tap targets, no time-pressure unless you can extend it.
+- **Cognitive** — simple language, consistent navigation, error prevention.
+- **Screen readers** — semantic HTML, ARIA roles, focus management.
+
+The dominant standard is the **W3C's Web Content Accessibility Guidelines (WCAG)**, currently 2.2. It defines testable success criteria at three levels: A (minimum), AA (the practical bar most regulations cite), AAA (aspirational).
+
+Quick practical wins:
+
+- Use real semantic elements (`<button>`, `<a>`, `<label>`), not styled `<div>`s.
+- Ensure every interactive element is keyboard-reachable.
+- Provide alt text for meaningful images; mark decorative images as such.
+- Maintain a colour-contrast ratio of at least 4.5:1 for normal text.
+- Caption your videos.
+- Test with a screen reader (VoiceOver, NVDA, JAWS, TalkBack) at least once.
+
+Tools:
+
+- **axe-core**, **Lighthouse**, **WAVE** — automated checks. Catch a surprising amount but miss most semantic issues.
+- **Manual testing** with a screen reader and keyboard — irreplaceable.
+- **User testing with disabled users** — the only way to find real friction.
+
+## Why it matters
+
+Accessibility is legally required in many jurisdictions (ADA, EAA, AODA, EN 301 549). Beyond compliance, it's good engineering: ~15% of the world's population has a disability, and accessible products tend to be more robust, more keyboard-friendly, and easier to automate.
+
+## Real-world examples
+
+- A login form with a missing `<label>` is unusable to most screen readers.
+- A modal that traps keyboard focus inside itself can be a usability win for everyone, not just keyboard users.
+- A "skip to main content" link benefits anyone navigating a long page by keyboard.
+
+## Common misconceptions
+
+- **"Accessibility is for blind people."** That's one audience among many — keyboard-only, low-vision, cognitive, motor, situational (one-handed, sunlight, baby in arm).
+- **"Accessible means ugly."** Excellent design and accessibility are entirely compatible.
+
+## Learn next
+
+The broader discipline: [UX](/t/ux). The component layer that has to support a11y attributes: [user interface](/t/user-interface).

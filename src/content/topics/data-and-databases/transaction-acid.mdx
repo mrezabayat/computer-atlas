@@ -1,0 +1,55 @@
+---
+title: ACID Transactions
+aliases: ["acid", "transaction", "transactions"]
+category: data-and-databases
+kind: concept
+summary: A transaction model that guarantees Atomicity, Consistency, Isolation, and Durability — the contract that keeps databases reliable under failures and concurrency.
+level: intermediate
+status: draft
+importance: core
+tags: ["database", "transactions", "acid"]
+prerequisites: ["database", "sql"]
+related: ["relational-model"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An **ACID transaction** is a group of database operations that the system treats as one. Either *all* of them happen, or *none* of them do; while it runs, other transactions don't see partial work; after it commits, the result survives crashes and power cuts. Without this, every concurrent write becomes a race condition.
+
+## More detail
+
+- **Atomicity** — all-or-nothing. A bank transfer must debit one account and credit another; if anything fails, neither happens.
+- **Consistency** — the database moves from one valid state to another. Constraints (foreign keys, checks, uniqueness) hold before and after.
+- **Isolation** — concurrent transactions appear to run one at a time. The strictest level is **serializable**; in practice databases offer weaker levels (read committed, repeatable read, snapshot) and document the anomalies each permits.
+- **Durability** — once a transaction commits, the database guarantees the result will survive crashes. Usually implemented with a **write-ahead log** (WAL).
+
+Isolation level cheat sheet (PostgreSQL defaults):
+
+| Level             | Anomalies allowed                          |
+|-------------------|--------------------------------------------|
+| Read uncommitted  | Dirty reads (PG never gives you this)      |
+| Read committed    | Non-repeatable reads, phantoms             |
+| Repeatable read   | Phantoms (PG uses snapshot here)           |
+| Serializable      | None (PG uses SSI to detect conflicts)     |
+
+Implementation techniques include **MVCC** (multi-version concurrency control — every read sees a consistent snapshot), **two-phase locking**, and **optimistic concurrency** (validate at commit, retry on conflict).
+
+## Why it matters
+
+ACID is why your bank balance is consistent across simultaneous transfers, why a half-finished order doesn't show up in the warehouse pick-list, and why a power cut during a deploy doesn't corrupt your database. Distributed systems give up some of these guarantees (BASE, eventual consistency) precisely because they are expensive at scale.
+
+## Real-world examples
+
+- PostgreSQL, MySQL/InnoDB, SQL Server, Oracle, SQLite — all ACID.
+- Most NoSQL stores started without transactions and added them later: MongoDB, DynamoDB, and others now support transactions on a subset of operations.
+- A long-running transaction can hold locks for minutes — a common production foot-gun.
+
+## Common misconceptions
+
+- **"Default isolation is serializable."** Default for almost every database is *not* serializable; it's a weaker level you have to opt out of for stronger guarantees.
+- **"ACID guarantees there are no anomalies."** Only at the serializable isolation level. Weaker levels are faster but allow specific anomalies.
+
+## Learn next
+
+How shape and rules are declared: [relational model](/t/relational-model). How to ask questions of an ACID store: [SQL](/t/sql).

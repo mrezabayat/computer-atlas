@@ -1,0 +1,55 @@
+---
+title: Design Pattern
+aliases: ["design patterns"]
+category: software-engineering
+kind: concept
+summary: A named, reusable solution to a recurring design problem in code. A shared vocabulary that lets engineers describe structure without re-explaining it.
+level: intermediate
+status: draft
+importance: core
+tags: ["patterns", "design"]
+prerequisites: ["programming-language"]
+related: ["testing"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **design pattern** is a named recipe for solving a problem that comes up over and over in software. "Use a factory" or "wrap it in an adapter" lets two engineers describe a whole structure in three words instead of three paragraphs. Patterns aren't required, but knowing them makes conversation, code review, and design much faster.
+
+## More detail
+
+The canonical reference is *Design Patterns* (Gamma, Helm, Johnson, Vlissides — the "Gang of Four", 1994), which catalogued 23 object-oriented patterns in three families:
+
+- **Creational** — how objects are made: Factory, Builder, Singleton, Prototype.
+- **Structural** — how objects compose: Adapter, Decorator, Facade, Proxy, Composite.
+- **Behavioural** — how objects interact: Observer, Strategy, Command, Iterator, State, Template Method.
+
+Since then the catalogue has grown well beyond OO:
+
+- **Concurrency**: Producer-Consumer, Worker Pool, Pipeline, Actor.
+- **Distributed**: Circuit Breaker, Bulkhead, Saga, Event Sourcing, CQRS.
+- **Functional**: Map/Filter/Reduce, Either/Result, Optional, Reader, State.
+- **Architectural**: MVC, Hexagonal, Onion, Microservices, Event-Driven.
+
+Patterns are not building blocks you bolt on; they are descriptions of structures you might choose. Reach for one when its trade-offs match your problem, not because the pattern exists.
+
+## Why it matters
+
+Names compress conversation. When a reviewer comments "this looks like a strategy in disguise — maybe extract it?", the suggestion lands instantly because both parties share the name. Patterns also surface trade-offs: every pattern is a known answer with known weaknesses, which is exactly what you want during design.
+
+## Real-world examples
+
+- React's component model is essentially Composite + Observer.
+- The "Repository" pattern wraps database access so domain code doesn't see SQL directly.
+- The Adapter pattern is what every "wrap their API in our interface" PR is doing.
+- Circuit Breaker around an external dependency stops cascading failures from one slow service.
+
+## Common misconceptions
+
+- **"More patterns is better code."** No — patterns add structure and indirection. The right pattern simplifies; the wrong one buries the logic.
+- **"Patterns are only for object-oriented languages."** They appear in every paradigm; functional languages have their own catalogue (Functor, Monad, Lens, etc.).
+
+## Learn next
+
+Patterns shine in code under test: see [testing](/t/testing). They are evaluated in [code review](/t/code-review).

@@ -18,11 +18,43 @@ if (!categoryEntry) {
 
 const topics = await getTopicsByCategory(category);
 
-const byLevel = ["beginner", "intermediate", "advanced"].map((level) => ({
-  level,
+const IMPORTANCE_META: Array<{
+  key: "core" | "important" | "supplemental";
+  label: string;
+  description: string;
+}> = [
+  {
+    key: "core",
+    label: "Core",
+    description: "The essentials. Start here.",
+  },
+  {
+    key: "important",
+    label: "Important",
+    description: "What you'll meet next.",
+  },
+  {
+    key: "supplemental",
+    label: "Supplemental",
+    description: "Niche, historical, or specialized.",
+  },
+];
+
+const LEVEL_ORDER: Record<string, number> = {
+  beginner: 0,
+  intermediate: 1,
+  advanced: 2,
+};
+
+const byImportance = IMPORTANCE_META.map((meta) => ({
+  ...meta,
   topics: topics
-    .filter((t) => t.data.level === level)
-    .sort((a, b) => a.data.title.localeCompare(b.data.title)),
+    .filter((t) => t.data.importance === meta.key)
+    .sort((a, b) => {
+      const lvl = (LEVEL_ORDER[a.data.level] ?? 9) - (LEVEL_ORDER[b.data.level] ?? 9);
+      if (lvl !== 0) return lvl;
+      return a.data.title.localeCompare(b.data.title);
+    }),
 }));
 
 const { Content: CategoryBody } = await render(categoryEntry);
@@ -74,14 +106,19 @@ const { Content: CategoryBody } = await render(categoryEntry);
         </a>.
       </p>
     ) : (
-      <div class="mt-8 space-y-8">
-        {byLevel.map(
+      <div class="mt-8 space-y-10">
+        {byImportance.map(
           (group) =>
             group.topics.length > 0 && (
               <section>
-                <h2 class="text-base font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
-                  {group.level}
-                </h2>
+                <div class="flex items-baseline justify-between">
+                  <h2 class="text-base font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+                    {group.label}
+                  </h2>
+                  <span class="text-xs text-[var(--color-atlas-muted)]">
+                    {group.description}
+                  </span>
+                </div>
                 <ul class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {group.topics.map((t) => (
                     <li>

@@ -1,0 +1,64 @@
+---
+title: Incident Response
+aliases: ["incident management", "outage response"]
+category: operations-and-reliability
+kind: concept
+summary: The structured way teams handle production incidents — from detection through resolution to a blameless postmortem.
+level: intermediate
+status: draft
+importance: core
+tags: ["ops", "incidents", "sre"]
+prerequisites: ["monitoring"]
+related: ["logging"]
+nextSteps: ["sre"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An **incident** is when a production system isn't doing what it should — a site is down, a feature is broken, performance has collapsed. **Incident response** is how the team finds out, coordinates, fixes it, communicates with users, and learns from the experience without blaming individuals.
+
+## More detail
+
+A common shape of an incident:
+
+1. **Detection** — an alert fires, or a user reports a problem. The clock starts.
+2. **Triage** — assess severity (SEV-1 / SEV-2 / SEV-3), assemble the right people.
+3. **Coordination** — declare an incident, open a war-room channel, designate an **incident commander** whose only job is to coordinate (not fix).
+4. **Mitigation** — restore service. Roll back. Failover. Scale. Disable feature. *Stop the bleeding before finding the root cause.*
+5. **Resolution** — confirm the symptom is gone; users are happy.
+6. **Communication** — keep affected users informed via status page; explain after.
+7. **Postmortem** — within days, write a blameless analysis: timeline, contributing factors, what went well, action items to make recurrence less likely.
+
+Roles often used during the incident:
+
+- **Incident Commander (IC)** — coordinator. Asks questions, doesn't fix.
+- **Communications Lead** — talks to users, executives, support.
+- **Subject-matter experts** — actually fix the thing.
+- **Scribe** — keeps a timeline.
+
+Key cultural rule: **blameless**. The goal is to make the system more robust, not punish individuals. People who fear blame hide information; people who don't, share it.
+
+Key metrics:
+
+- **MTTD** — Mean Time To Detect.
+- **MTTR** — Mean Time To Restore (or Resolve).
+- **Incidents per service per quarter**.
+
+## Why it matters
+
+Every non-trivial service has incidents. The difference between a team that ships confidently and one that doesn't is rarely how often things break — it's how well they handle the break when it happens, and how well they learn from it.
+
+## Real-world examples
+
+- A bad deploy at 09:55 → rolled back at 10:02 → root cause analysis later that week → guardrail in CI to prevent the same change shape. That's a healthy incident response.
+- A months-long outage handled by a single overworked engineer with no postmortem? Symptoms of a process problem, not a tech problem.
+
+## Common misconceptions
+
+- **"Blameless means no accountability."** It means the system, not a person, is on trial. Action items are owned and tracked.
+- **"Postmortems are paperwork."** They are the main mechanism by which a team gets safer over time.
+
+## Learn next
+
+The two main signals you use during an incident: [monitoring](/t/monitoring) and [logging](/t/logging). The discipline this lives inside: [SRE](/t/sre).

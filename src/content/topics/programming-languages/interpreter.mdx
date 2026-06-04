@@ -1,0 +1,55 @@
+---
+title: Interpreter
+category: programming-languages
+kind: tool
+summary: A program that reads source code (or bytecode) and executes it directly, without first producing a standalone binary.
+level: intermediate
+status: draft
+importance: core
+tags: ["interpreter", "runtime"]
+prerequisites: ["programming-language"]
+related: ["compiler"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+An **interpreter** runs your code by walking through it and doing what it says, statement by statement. There is no separate "build" step that produces a binary; the interpreter itself is the program, and your source is its input.
+
+## More detail
+
+There are several flavours:
+
+- **Tree-walking** — parse to an AST and recursively evaluate. Simple, slow. Many teaching interpreters work this way.
+- **Bytecode** — compile to a compact intermediate code that a virtual machine executes. CPython, Ruby's YARV, Lua VM.
+- **JIT** — at run time, compile hot bytecode to native machine code. V8 (JavaScript), HotSpot (JVM), LuaJIT, PyPy.
+
+Trade-offs vs. a pure ahead-of-time compiler:
+
+- **+** Faster startup; great REPL ("read-eval-print loop").
+- **+** Easier to reload code, do hot patching, ship the same code to many platforms.
+- **+** Often higher-level error messages, with full source context.
+- **−** Per-run startup tax (parse / load bytecode / warm up JIT).
+- **−** Distribution requires the runtime (Python, JVM, Node) on the target machine.
+
+Many modern systems blur the line: the Java toolchain compiles `.java` to `.class` bytecode ahead of time, then the JVM interprets and JIT-compiles at run time. V8 parses JS to bytecode, interprets, profiles, and JITs hot functions. The boundary between "compiler" and "interpreter" is often where in the pipeline you stop and start running.
+
+## Why it matters
+
+Interpreters power most of the web's server side (Node, Python, Ruby), most data science (Python, R), much of mobile app scripting, and the development inner loop for almost every language with a REPL.
+
+## Real-world examples
+
+- **CPython** runs `.py` files directly.
+- **Node.js** runs JavaScript on the V8 JIT.
+- **JVM** runs `.class` bytecode for Java, Kotlin, Scala, Clojure.
+- **bash** interprets shell scripts line by line.
+
+## Common misconceptions
+
+- **"Interpreted languages are always slow."** Modern JITs (V8, HotSpot, LuaJIT) can rival compiled code, especially on dynamic patterns.
+- **"Python is purely interpreted."** CPython actually compiles to bytecode first, then interprets the bytecode.
+
+## Learn next
+
+The dual is the [compiler](/t/compiler). The shape and safety of your code is determined by the [type system](/t/type-system).

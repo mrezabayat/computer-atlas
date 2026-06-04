@@ -1,0 +1,64 @@
+---
+title: Large Language Model
+aliases: ["llm", "large language models", "foundation model"]
+category: artificial-intelligence
+kind: technology
+summary: A very large neural network — usually a transformer — trained on huge amounts of text to predict the next token. The basis of modern chat assistants and AI coding tools.
+level: intermediate
+status: draft
+importance: core
+tags: ["ml", "ai", "llm", "gpt"]
+prerequisites: ["transformer", "machine-learning"]
+related: ["neural-network", "training-and-inference"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **large language model** (LLM) is a neural network trained on a huge corpus of text whose only direct job is to predict the next token (roughly, the next word piece). That deceptively simple task, scaled up to billions or trillions of parameters and similarly large datasets, produces something that can chat, summarise, translate, write code, and reason in surprising ways.
+
+## More detail
+
+Defining traits of modern LLMs:
+
+- **Architecture**: a decoder-only transformer. Tens to hundreds of layers, billions to trillions of parameters.
+- **Pre-training objective**: next-token prediction on web-scale text.
+- **Tokenisation**: input is chopped into subword tokens (BPE or similar). A token is ~4 characters on average for English.
+- **Context window**: how much input the model can consider at once. 4K in 2020; 128K to multi-million in 2026.
+- **Post-training**: supervised fine-tuning + RLHF / RLAIF / DPO to align responses with human preferences.
+- **Tool use**: modern LLMs can call functions, browse, run code, and read files — they have moved from "text in, text out" to "agent with tools".
+
+How they're used:
+
+- **Zero-shot prompting** — just ask.
+- **Few-shot prompting** — include examples in the prompt.
+- **Retrieval-Augmented Generation (RAG)** — look up relevant documents and put them in the prompt.
+- **Fine-tuning** — adapt to a narrow task or style on top of the base model.
+- **Agent loops** — the model plans, calls tools, observes results, iterates.
+
+Known weaknesses:
+
+- **Hallucination** — confident, plausible, wrong outputs.
+- **Stale knowledge** — bounded by the training cut-off unless given fresh context.
+- **No real introspection** — explanations may be post-hoc rationalisations.
+- **Cost** — inference is expensive at scale.
+- **Prompt injection** — untrusted content in the context can hijack the model.
+
+## Why it matters
+
+LLMs are the technology behind the current generation of AI products — chat assistants, coding tools, summarisers, search rewrites. Building on top of them, evaluating them, and using them safely are now mainstream software-engineering skills.
+
+## Real-world examples
+
+- GPT-4 / GPT-5 (OpenAI), Claude (Anthropic), Gemini (Google), Llama (Meta), Mistral.
+- GitHub Copilot, Cursor, and similar coding tools are LLMs prompted with code context.
+- RAG-powered support bots are LLMs grounded in a company's documentation.
+
+## Common misconceptions
+
+- **"LLMs understand."** They predict patterns in tokens. Whether that *is* a kind of understanding is a philosophical question, not a settled fact.
+- **"Bigger is always better."** Carefully trained small models can match much larger ones on specific tasks; the right answer is task-dependent.
+
+## Learn next
+
+The architecture they're built on: [transformer](/t/transformer). The training/inference distinction that dominates their economics: [training and inference](/t/training-and-inference).

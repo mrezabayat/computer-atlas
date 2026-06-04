@@ -1,0 +1,59 @@
+---
+title: Compiler
+category: programming-languages
+kind: tool
+summary: A program that translates source code in one language into another — usually a high-level language into machine code or an intermediate form.
+level: intermediate
+status: draft
+importance: core
+tags: ["compiler", "tooling"]
+prerequisites: ["programming-language"]
+related: []
+nextSteps: ["interpreter"]
+updated: 2026-06-04
+---
+
+## In simple terms
+
+A **compiler** is a program that reads code in one language (say, C or Rust) and produces an equivalent program in another (usually machine code the CPU can run). The translation happens once; the resulting binary runs many times.
+
+## More detail
+
+A typical compiler is a pipeline:
+
+1. **Lexer** — splits the source into tokens (`int`, `+`, `42`).
+2. **Parser** — builds an abstract syntax tree from the tokens.
+3. **Semantic analysis** — name resolution, type checking.
+4. **Intermediate representation (IR)** — a simpler, language-neutral form. LLVM IR is famous.
+5. **Optimisation** — constant folding, inlining, loop transformations, vectorisation.
+6. **Code generation** — produce machine code for the target ISA.
+7. **Linking** — combine compiled units and resolve external references.
+
+Variations:
+
+- **Ahead-of-time (AOT)** — produces a binary you ship (`gcc`, `rustc`, `clang`).
+- **Just-in-time (JIT)** — compiles at run-time inside the runtime (V8, HotSpot JVM, .NET CLR).
+- **Source-to-source / transpiler** — produces another high-level language (TypeScript → JavaScript, Babel for newer JS → older JS).
+- **Cross-compiler** — runs on host A, produces code for host B (common in embedded).
+
+Compilers also produce **debug info** so debuggers can map a crash address back to your source line.
+
+## Why it matters
+
+Compilers are how human-readable ideas become machine instructions. Good compilers make slow code fast; great ones make safe code possible by catching whole classes of bugs at compile time.
+
+## Real-world examples
+
+- **GCC**, **Clang/LLVM**, **MSVC** compile C and C++.
+- **rustc** compiles Rust; **swiftc** compiles Swift; **go** compiles Go.
+- The TypeScript compiler (`tsc`) emits JavaScript.
+- WebAssembly is a compilation target many languages now share.
+
+## Common misconceptions
+
+- **"Compilers always produce machine code."** Many compilers target bytecode (JVM, .NET) or another high-level language (TypeScript → JS).
+- **"Compiled means fast, interpreted means slow."** Modern JITs can match AOT compilers; modern interpreters with good runtimes outrun many compilers.
+
+## Learn next
+
+The dual to compilation is execution by an [interpreter](/t/interpreter). For what compilers actually *check*, see [type system](/t/type-system).

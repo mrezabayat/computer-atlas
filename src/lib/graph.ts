@@ -128,13 +128,34 @@ export async function getTopicRelations(
   return relationsById.get(id);
 }
 
+// Strongest semantic relation wins when a pair of topics is connected via
+// multiple fields. Avoids drawing two parallel arrows between the same nodes.
+const RELATION_PRECEDENCE: Record<RelationKind, number> = {
+  prerequisites: 4,
+  nextSteps: 3,
+  partOf: 2,
+  related: 1,
+  // Inverses are never emitted directly by getNeighborGraph; included for completeness.
+  subtopics: 2,
+  leadsTo: 3,
+  requiredBy: 4,
+};
+
 export async function getNeighborGraph(id: string): Promise<NeighborGraph> {
   const { topicsById, relationsById } = await loadGraph();
   const center = topicsById.get(id);
   const rels = relationsById.get(id);
   if (!center || !rels) return { nodes: [], edges: [] };
 
-  const edges: NeighborGraph["edges"] = [];
+  // Bucket candidate edges by an undirected pair key so we deduplicate across
+  // direction too (e.g. don't show both A → center and center → A for the same
+  // logical link). The strongest relation (and its implied direction) wins.
+  type Candidate = {
+    source: string;
+    target: string;
+    relation: RelationKind;
+  };
+  const byPair = new Map<string, Candidate>();
   const neighborIds = new Set<string>();
 
   const addEdges = (
@@ -143,13 +164,20 @@ export async function getNeighborGraph(id: string): Promise<NeighborGraph> {
     direction: "out" | "in",
   ) => {
     for (const t of targets) {
-      if (!topicsById.has(t)) continue;
+      if (!topicsById.has(t) || t === id) continue;
       neighborIds.add(t);
-      edges.push(
+      const candidate: Candidate =
         direction === "out"
           ? { source: id, target: t, relation }
-          : { source: t, target: id, relation },
-      );
+          : { source: t, target: id, relation };
+      const pairKey = [id, t].sort().join("|");
+      const existing = byPair.get(pairKey);
+      if (
+        !existing ||
+        RELATION_PRECEDENCE[relation] > RELATION_PRECEDENCE[existing.relation]
+      ) {
+        byPair.set(pairKey, candidate);
+      }
     }
   };
 
@@ -157,6 +185,8 @@ export async function getNeighborGraph(id: string): Promise<NeighborGraph> {
   addEdges(rels.related, "related", "out");
   addEdges(rels.partOf, "partOf", "out");
   addEdges(rels.nextSteps, "nextSteps", "out");
+
+  const edges: NeighborGraph["edges"] = [...byPair.values()];
 
   const nodes: NeighborGraph["nodes"] = [
     {
