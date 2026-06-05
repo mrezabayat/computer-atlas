@@ -79,4 +79,4 @@ Every topic body uses the same headings so the site stays coherent:
 
 ## License
 
-Content and code are intended to be open. License to be decided.
+MIT
