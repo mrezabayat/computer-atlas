@@ -95,4 +95,65 @@ import BaseLayout from "~/layouts/BaseLayout.astro";
   .pagefind-ui__filter-panel {
     margin-top: 0.5rem;
   }
+
+  /* Dark-mode overrides — Pagefind UI hardcodes a few greys that don't track its theme vars. */
+  :root[data-theme="dark"] .pagefind-ui,
+  :root[data-theme="dark"] .pagefind-ui * {
+    color-scheme: dark;
+  }
+  :root[data-theme="dark"] .pagefind-ui__search-input,
+  :root[data-theme="dark"] .pagefind-ui__search-clear {
+    background: var(--color-atlas-surface) !important;
+    color: var(--color-atlas-ink) !important;
+    border-color: var(--color-atlas-line) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__search-input::placeholder {
+    color: var(--color-atlas-muted) !important;
+    opacity: 1;
+  }
+  :root[data-theme="dark"] .pagefind-ui__result,
+  :root[data-theme="dark"] .pagefind-ui__results,
+  :root[data-theme="dark"] .pagefind-ui__drawer {
+    color: var(--color-atlas-ink) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__result-title,
+  :root[data-theme="dark"] .pagefind-ui__result-link {
+    color: var(--color-atlas-ink) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__result-link:hover {
+    color: var(--color-atlas-accent) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__result-excerpt,
+  :root[data-theme="dark"] .pagefind-ui__message,
+  :root[data-theme="dark"] .pagefind-ui__result-nested,
+  :root[data-theme="dark"] .pagefind-ui__filter-count {
+    color: var(--color-atlas-muted) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__filter-name,
+  :root[data-theme="dark"] .pagefind-ui__filter-label,
+  :root[data-theme="dark"] .pagefind-ui__filter-value {
+    color: var(--color-atlas-ink) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui mark {
+    background: var(--color-atlas-accent-soft) !important;
+    color: var(--color-atlas-ink) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__button {
+    background: var(--color-atlas-surface) !important;
+    color: var(--color-atlas-ink) !important;
+    border: 1px solid var(--color-atlas-line) !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__button:hover {
+    background: var(--color-atlas-accent-soft) !important;
+  }
+  /* The little metadata pills shown under each result (category, kind, level, importance). */
+  :root[data-theme="dark"] .pagefind-ui__result-tags,
+  :root[data-theme="dark"] .pagefind-ui__result-tag {
+    background: transparent !important;
+  }
+  :root[data-theme="dark"] .pagefind-ui__result-tag {
+    background: var(--color-atlas-bg) !important;
+    color: var(--color-atlas-muted) !important;
+    border: 1px solid var(--color-atlas-line) !important;
+  }
 </style>
