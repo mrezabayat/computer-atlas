@@ -1,4 +1,5 @@
 import { authClient } from "~/lib/auth-client";
+import { useState } from "react";
 
 function displayName(name: string | null | undefined, email: string | null | undefined) {
   return name || email || "Account";
@@ -6,12 +7,18 @@ function displayName(name: string | null | undefined, email: string | null | und
 
 export default function AuthMenu() {
   const session = authClient.useSession();
+  const [error, setError] = useState("");
 
-  const signIn = (provider: "github" | "google") => {
-    void authClient.signIn.social({
+  const signIn = async (provider: "github" | "google") => {
+    setError("");
+    const result = await authClient.signIn.social({
       provider,
       callbackURL: window.location.href,
     });
+
+    if (result.error) {
+      setError("Sign in is not configured yet.");
+    }
   };
 
   const signOut = () => {
@@ -40,6 +47,11 @@ export default function AuthMenu() {
           Sign in
         </summary>
         <div className="absolute right-0 top-full z-30 mt-2 flex w-36 flex-col rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-1.5 shadow-lg">
+          {error && (
+            <p className="px-3 py-2 text-xs text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => signIn("github")}
