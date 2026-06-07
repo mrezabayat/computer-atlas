@@ -6,8 +6,13 @@ import KindBadge from "~/components/KindBadge.astro";
 import LevelBadge from "~/components/LevelBadge.astro";
 import ImportanceBadge from "~/components/ImportanceBadge.astro";
 import RelationLists from "~/components/RelationLists.astro";
+import AppearsInCard from "~/components/AppearsInCard.astro";
 import NeighborhoodGraph from "~/components/NeighborhoodGraph.tsx";
+import PathContextStrip from "~/components/PathContextStrip.tsx";
+import InlineMarkComplete from "~/components/InlineMarkComplete.tsx";
 import { getTopicRelations, getNeighborGraph, categoryUrl } from "~/lib/graph";
+import { buildPathContexts } from "~/lib/path-contexts";
+import { topicReadingTimeMinutes } from "~/lib/reading-time";
 import { categoryLabel, type CategorySlug } from "~/lib/categories";
 import { editUrl, reportFixUrl } from "~/site.config";
 
@@ -29,12 +34,17 @@ const relations = (await getTopicRelations(topic.id)) ?? {
   appearsInRoadmaps: [],
 };
 const neighborGraph = await getNeighborGraph(topic.id);
+const pathContexts = await buildPathContexts(
+  topic.id,
+  relations.appearsInRoadmaps,
+);
 
 const editHref = topic.filePath ? editUrl(topic.filePath) : reportFixUrl({ topicId: topic.id });
 const reportHref = reportFixUrl({ topicId: topic.id });
 const updatedLabel = updated.toISOString().slice(0, 10);
 const tags = topic.data.tags ?? [];
 const categoryDisplay = categoryLabel(category as CategorySlug);
+const readingMinutes = topicReadingTimeMinutes(topic);
 ---
 
 <BaseLayout title={title} description={summary}>
@@ -96,6 +106,10 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
       aria-hidden="true"
       data-pagefind-meta={`importance:${importance}`}
     ></span>
+    {pathContexts.length > 0 && (
+      <PathContextStrip client:load pathContexts={pathContexts} />
+    )}
+
     <nav
       class="text-xs text-[var(--color-atlas-muted)]"
       aria-label="Breadcrumb"
@@ -127,7 +141,7 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
         <KindBadge kind={kind} />
         {status !== "reviewed" && <StatusBadge status={status} />}
         <span class="text-xs text-[var(--color-atlas-muted)]">
-          Updated {updatedLabel}
+          {readingMinutes} min read · Updated {updatedLabel}
         </span>
       </div>
       <p class="mt-4 text-lg text-[var(--color-atlas-ink)]">
@@ -141,7 +155,16 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
       <slot />
     </div>
 
-    <div class="mt-10">
+    {relations.appearsInRoadmaps.length > 0 && (
+      <div class="mt-10">
+        <AppearsInCard
+          topicId={topic.id}
+          pathIds={relations.appearsInRoadmaps}
+        />
+      </div>
+    )}
+
+    <div class={relations.appearsInRoadmaps.length > 0 ? "mt-6" : "mt-10"}>
       <RelationLists relations={relations} />
     </div>
 
@@ -165,6 +188,14 @@ const categoryDisplay = categoryLabel(category as CategorySlug);
         </section>
       )
     }
+
+    {pathContexts.length > 0 && (
+      <InlineMarkComplete
+        client:load
+        topicId={topic.id}
+        pathContexts={pathContexts}
+      />
+    )}
 
     <footer
       class="mt-10 border-t border-[var(--color-atlas-line)] pt-4 text-sm text-[var(--color-atlas-muted)] flex flex-wrap gap-x-4 gap-y-1"

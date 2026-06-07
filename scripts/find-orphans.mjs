@@ -22,18 +22,26 @@ function readList(fm, name) {
       .map((s) => s.trim().replace(/^['"]|['"]$/g, ""))
       .filter(Boolean);
   }
-  // Block form:
-  //   name:
-  //     - foo
-  //     - bar
-  const block = fm.match(new RegExp(`^${name}:\\s*\\n((?:\\s+-\\s+.+\\n?)+)`, "m"));
-  if (block) {
-    return block[1]
-      .split("\n")
-      .filter((l) => /^\s+-\s+/.test(l))
-      .map((l) => l.replace(/^\s+-\s+/, "").trim().replace(/^['"]|['"]$/g, ""));
+  // Block form. Capture from `name:` up to the next top-level key (or EOF).
+  // Two accepted item shapes:
+  //   - foo                  (plain slug)
+  //   - ref: foo             (object with ref/optional/section continuation lines)
+  const block = fm.match(
+    new RegExp(`^${name}:\\s*\\n([\\s\\S]*?)(?=^[A-Za-z][\\w-]*:|\\Z)`, "m"),
+  );
+  if (!block) return [];
+  const items = [];
+  for (const line of block[1].split("\n")) {
+    const dashed = line.match(/^\s+-\s+(.+)$/);
+    if (!dashed) continue;
+    const body = dashed[1].trim().replace(/^['"]|['"]$/g, "");
+    // Object form starts with `ref:`; pull the slug out.
+    const refMatch = body.match(/^ref:\s*(.+)$/);
+    items.push(
+      (refMatch ? refMatch[1] : body).trim().replace(/^['"]|['"]$/g, ""),
+    );
   }
-  return [];
+  return items.filter(Boolean);
 }
 
 const slugOf = (file) => basename(file).replace(/\.mdx$/, "");

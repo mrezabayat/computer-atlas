@@ -75,7 +75,20 @@ const paths = defineCollection({
     title: z.string().min(1),
     summary: z.string().min(1).max(280),
     audience: z.enum(LEVELS),
-    topics: z.array(reference("topics")).min(2),
+    // Two accepted forms — keep using bare slugs for simple linear paths,
+    // or upgrade individual entries to objects to mark sections / optional topics.
+    topics: z
+      .array(
+        z.union([
+          reference("topics"),
+          z.object({
+            ref: reference("topics"),
+            optional: z.boolean().default(false),
+            section: z.string().optional(),
+          }),
+        ]),
+      )
+      .min(2),
     updated: z.coerce.date(),
   }),
 });

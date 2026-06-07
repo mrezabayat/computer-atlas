@@ -1,0 +1,78 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import MeDashboard from "~/components/MeDashboard.tsx";
+import { createAuth } from "~/lib/auth";
+import { getCloudflareEnv } from "~/lib/cloudflare";
+
+export const prerender = false;
+
+// Determine signed-in state server-side so the page can render the right
+// shell without a flash. The dashboard itself fetches its own data client-side
+// via the shared getProgressMe() helper.
+//
+// If the Cloudflare runtime isn't available (e.g. plain `astro dev` without
+// `wrangler pages dev`), treat the visitor as signed-out and let them see the
+// sign-in CTA rather than crashing the page.
+let signedIn = false;
+let displayName = "";
+try {
+  const env = getCloudflareEnv(Astro);
+  const headers = new Headers(Astro.request.headers);
+  if (!headers.has("x-forwarded-for")) {
+    headers.set("x-forwarded-for", Astro.clientAddress);
+  }
+  const session = await createAuth(env).api.getSession({ headers });
+  signedIn = Boolean(session?.user);
+  displayName = session?.user?.name ?? session?.user?.email ?? "";
+} catch {
+  signedIn = false;
+}
+---
+
+<BaseLayout
+  title={signedIn ? "Your learning" : "Sign in"}
+  description="Your learning progress across every path in the atlas."
+>
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <nav
+      class="text-xs text-[var(--color-atlas-muted)]"
+      aria-label="Breadcrumb"
+    >
+      <a href="/" class="no-underline hover:underline">Atlas</a>
+    </nav>
+
+    {signedIn ? (
+      <>
+        <header class="mt-2">
+          <h1
+            class="text-3xl font-bold tracking-tight text-[var(--color-atlas-ink)]"
+          >
+            Your learning
+          </h1>
+          {displayName && (
+            <p class="mt-2 text-sm text-[var(--color-atlas-muted)]">
+              Signed in as <span class="text-[var(--color-atlas-ink)]">{displayName}</span>.
+            </p>
+          )}
+        </header>
+        <MeDashboard client:load />
+      </>
+    ) : (
+      <div class="mt-8 rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-6 text-center">
+        <h1
+          class="text-2xl font-bold tracking-tight text-[var(--color-atlas-ink)]"
+        >
+          Sign in to track your learning
+        </h1>
+        <p class="mt-2 text-sm text-[var(--color-atlas-muted)] max-w-prose mx-auto">
+          When you're signed in, every "Mark complete" you tick on a path is
+          saved to your account. This page shows where you left off, your
+          in-progress paths, and the topics you finished most recently.
+        </p>
+        <p class="mt-4 text-sm">
+          Sign in from the menu in the top-right corner. We support GitHub and Google.
+        </p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

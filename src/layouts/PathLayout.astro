@@ -3,6 +3,8 @@ import type { CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import LearningProgressRoadmap from "~/components/LearningProgressRoadmap";
 import { loadGraph, topicUrl } from "~/lib/graph";
+import { normalisePathTopics } from "~/lib/paths";
+import { sumPathReadingTime } from "~/lib/reading-time";
 import { editUrl } from "~/site.config";
 
 interface Props {
@@ -14,16 +16,48 @@ const { title, summary, audience, topics, updated } = path.data;
 const graph = await loadGraph();
 const editHref = path.filePath ? editUrl(path.filePath) : null;
 
-const orderedTopics = topics
-  .map((ref) => graph.topicsById.get(typeof ref === "string" ? ref : ref.id))
-  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+const normalised = normalisePathTopics(topics);
+const orderedItems = normalised
+  .map((n) => {
+    const entry = graph.topicsById.get(n.id);
+    return entry ? { ...n, entry } : null;
+  })
+  .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+const totalCount = orderedItems.length;
+const requiredCount = orderedItems.filter((i) => !i.optional).length;
+const optionalCount = totalCount - requiredCount;
+
+// Reading-time totals (required vs optional, in minutes).
+const { requiredMinutes, optionalMinutes } = sumPathReadingTime(
+  orderedItems.filter((i) => !i.optional).map((i) => i.entry),
+  orderedItems.filter((i) => i.optional).map((i) => i.entry),
+);
+
+// Level distribution across all topics (optional included for transparency).
+const levelOrder = ["beginner", "intermediate", "advanced"] as const;
+const levelCounts: Record<(typeof levelOrder)[number], number> = {
+  beginner: 0,
+  intermediate: 0,
+  advanced: 0,
+};
+for (const item of orderedItems) {
+  const lvl = item.entry.data.level;
+  if (lvl in levelCounts) levelCounts[lvl]++;
+}
+const levelSummary = levelOrder
+  .filter((l) => levelCounts[l] > 0)
+  .map((l) => `${levelCounts[l]} ${l}`)
+  .join(" · ");
 
 const updatedLabel = updated.toISOString().slice(0, 10);
-const roadmapTopics = orderedTopics.map((t) => ({
-  id: t.id,
-  title: t.data.title,
-  summary: t.data.summary,
-  href: topicUrl(t.id),
+const roadmapTopics = orderedItems.map((i) => ({
+  id: i.id,
+  title: i.entry.data.title,
+  summary: i.entry.data.summary,
+  href: topicUrl(i.id),
+  optional: i.optional,
+  section: i.section,
 }));
 ---
 
@@ -48,12 +82,33 @@ const roadmapTopics = orderedTopics.map((t) => ({
           For {audience}s
         </span>
         <span class="text-xs text-[var(--color-atlas-muted)]">
-          {orderedTopics.length} topics · updated {updatedLabel}
+          {totalCount} topics
+          {optionalCount > 0 && ` (${requiredCount} required · ${optionalCount} optional)`}
+          · updated {updatedLabel}
         </span>
       </div>
       <p class="mt-4 text-lg text-[var(--color-atlas-ink)]">
         {summary}
       </p>
+      <dl
+        class="mt-4 flex flex-wrap items-baseline gap-x-6 gap-y-1 text-sm text-[var(--color-atlas-muted)]"
+      >
+        <div class="flex items-baseline gap-1">
+          <dt class="text-xs uppercase tracking-wide">Reading time</dt>
+          <dd class="text-[var(--color-atlas-ink)]">
+            ~{requiredMinutes} min
+            {optionalMinutes > 0 && (
+              <span class="text-[var(--color-atlas-muted)]"> (+{optionalMinutes} min optional)</span>
+            )}
+          </dd>
+        </div>
+        {levelSummary && (
+          <div class="flex items-baseline gap-1">
+            <dt class="text-xs uppercase tracking-wide">Level mix</dt>
+            <dd class="text-[var(--color-atlas-ink)]">{levelSummary}</dd>
+          </div>
+        )}
+      </dl>
     </header>
 
     <div class="prose prose-slate dark:prose-invert mt-6 max-w-none">

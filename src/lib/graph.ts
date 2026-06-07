@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import { pathTopicIds } from "./paths";
 
 export type TopicEntry = CollectionEntry<"topics">;
 export type PathEntry = CollectionEntry<"paths">;
@@ -88,7 +89,7 @@ export async function loadGraph() {
   }
 
   for (const p of paths) {
-    const topicIds = refIds(p.data.topics);
+    const topicIds = pathTopicIds(p.data.topics);
     check(`path:${p.id}`, "paths.topics", topicIds);
   }
 
@@ -111,7 +112,7 @@ export async function loadGraph() {
   }
 
   for (const p of paths) {
-    const topicIds = refIds(p.data.topics);
+    const topicIds = pathTopicIds(p.data.topics);
     for (const tid of topicIds) {
       relationsById.get(tid)?.appearsInRoadmaps.push(p.id);
     }

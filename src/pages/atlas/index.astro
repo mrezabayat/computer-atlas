@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "~/layouts/BaseLayout.astro";
+import ContinueLearning from "~/components/ContinueLearning.tsx";
 import {
   getAllTopics,
   getAllPaths,
@@ -67,6 +68,52 @@ for (const t of topics) {
         </div>
       </dl>
     </header>
+
+    <div class="mt-6">
+      <ContinueLearning client:load />
+    </div>
+
+    {
+      paths.length > 0 && (
+        <section
+          class="mt-10 overflow-hidden rounded-lg border border-[var(--color-atlas-accent)]/40 bg-[var(--color-atlas-accent-soft)] p-6"
+          aria-label="Pick a path"
+        >
+          <div class="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+              Pick a learning path
+            </h2>
+            <a
+              href="/paths"
+              class="text-sm font-medium text-[var(--color-atlas-accent)] no-underline hover:underline"
+            >
+              See all {paths.length} →
+            </a>
+          </div>
+          <p class="mt-1 text-sm text-[var(--color-atlas-muted)] max-w-2xl">
+            A learning path is a curated sequence — pick one and the atlas
+            takes care of order, prev/next, and progress for you.
+          </p>
+          <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+            {paths.slice(0, 6).map((p) => (
+              <li>
+                <a
+                  href={pathUrl(p.id)}
+                  class="flex items-baseline justify-between gap-3 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-3 py-2 no-underline hover:border-[var(--color-atlas-accent)]"
+                >
+                  <span class="text-sm font-medium text-[var(--color-atlas-ink)] truncate">
+                    {p.data.title}
+                  </span>
+                  <span class="shrink-0 text-xs text-[var(--color-atlas-muted)]">
+                    For {p.data.audience}s · {p.data.topics.length}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
     <section class="mt-10">
       <div class="flex items-baseline justify-between">

@@ -97,6 +97,12 @@ export default function AuthMenu() {
         <p className="truncate px-3 py-2 text-xs text-[var(--color-atlas-muted)]">
           {displayName(user.name, user.email)}
         </p>
+        <a
+          href="/me"
+          className="block w-full rounded px-3 py-2 text-left text-sm text-[var(--color-atlas-muted)] no-underline hover:bg-[var(--color-atlas-bg)] hover:text-[var(--color-atlas-ink)]"
+        >
+          Your learning
+        </a>
         <button
           type="button"
           onClick={signOut}

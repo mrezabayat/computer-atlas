@@ -2,13 +2,25 @@
 import BaseLayout from "~/layouts/BaseLayout.astro";
 import CategoryGrid from "~/components/CategoryGrid.astro";
 import TopicCard from "~/components/TopicCard.astro";
-import { getAllTopics, getAllPaths, pathUrl } from "~/lib/graph";
+import PathCard from "~/components/PathCard.astro";
+import ContinueLearning from "~/components/ContinueLearning.tsx";
+import { loadGraph, getAllTopics, getAllPaths } from "~/lib/graph";
+import { pathTopicIds } from "~/lib/paths";
 
 const topics = await getAllTopics();
 const recentTopics = [...topics]
   .sort((a, b) => b.data.updated.getTime() - a.data.updated.getTime())
   .slice(0, 6);
 const paths = await getAllPaths();
+const featuredPaths = paths.slice(0, 6);
+
+const { topicsById } = await loadGraph();
+const titleListForPath = (
+  path: (typeof featuredPaths)[number],
+): string[] =>
+  pathTopicIds(path.data.topics)
+    .map((id) => topicsById.get(id)?.data.title)
+    .filter((t): t is string => Boolean(t));
 ---
 
 <BaseLayout title="Computer Atlas">
@@ -49,21 +61,11 @@ const paths = await getAllPaths();
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl px-4 py-10">
-    <div class="flex items-baseline justify-between">
-      <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
-        Browse by category
-      </h2>
-      <span class="text-sm text-[var(--color-atlas-muted)]">16 categories</span>
-    </div>
-    <div class="mt-4">
-      <CategoryGrid />
-    </div>
-  </section>
+  <ContinueLearning client:load />
 
   {
-    paths.length > 0 && (
-      <section class="mx-auto max-w-6xl px-4 py-6">
+    featuredPaths.length > 0 && (
+      <section class="mx-auto max-w-6xl px-4 py-10">
         <div class="flex items-baseline justify-between">
           <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
             Learning paths
@@ -72,32 +74,37 @@ const paths = await getAllPaths();
             href="/paths"
             class="text-sm text-[var(--color-atlas-accent)] no-underline hover:underline"
           >
-            See all
+            See all {paths.length} →
           </a>
         </div>
-        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
-          {paths.slice(0, 4).map((p) => (
+        <p class="mt-1 text-sm text-[var(--color-atlas-muted)] max-w-2xl">
+          Guided sequences of topics designed to be read in order. Best when you want a structured tour rather than to browse.
+        </p>
+        <ul class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {featuredPaths.map((p) => (
             <li>
-              <a
-                href={pathUrl(p.id)}
-                class="block rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4 no-underline hover:no-underline hover:border-[var(--color-atlas-accent)]"
-              >
-                <h3 class="text-base font-semibold text-[var(--color-atlas-ink)]">
-                  {p.data.title}
-                </h3>
-                <p class="mt-1 text-sm text-[var(--color-atlas-muted)] line-clamp-3">
-                  {p.data.summary}
-                </p>
-                <p class="mt-2 text-xs text-[var(--color-atlas-muted)]">
-                  For {p.data.audience}s · {p.data.topics.length} topics
-                </p>
-              </a>
+              <PathCard path={p} topicTitles={titleListForPath(p)} />
             </li>
           ))}
         </ul>
       </section>
     )
   }
+
+  <section class="mx-auto max-w-6xl px-4 py-6">
+    <div class="flex items-baseline justify-between">
+      <h2 class="text-xl font-semibold text-[var(--color-atlas-ink)]">
+        Browse by category
+      </h2>
+      <span class="text-sm text-[var(--color-atlas-muted)]">16 categories</span>
+    </div>
+    <p class="mt-1 text-sm text-[var(--color-atlas-muted)] max-w-2xl">
+      Prefer to wander by subject? Every topic in the atlas also lives in one of the 16 top-level categories.
+    </p>
+    <div class="mt-5">
+      <CategoryGrid />
+    </div>
+  </section>
 
   <section class="mx-auto max-w-6xl px-4 py-6">
     <div class="flex items-baseline justify-between">

@@ -1,15 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 interface RoadmapTopic {
   id: string;
   title: string;
   summary: string;
+  /** Bare topic URL; the component appends ?path= itself. */
   href: string;
+  /** Optional topics still appear in the roadmap but don't count toward completion. */
+  optional?: boolean;
+  /**
+   * If set, render a section header BEFORE this topic. Sections are visual only —
+   * each topic that begins a new section carries the section name; subsequent
+   * topics in the same section leave this undefined.
+   */
+  section?: string;
 }
 
 interface Props {
   pathId: string;
   topics: RoadmapTopic[];
+}
+
+function withPath(href: string, pathId: string): string {
+  const sep = href.includes("?") ? "&" : "?";
+  return `${href}${sep}path=${encodeURIComponent(pathId)}`;
 }
 
 type LoadState = "loading" | "ready" | "signed-out" | "error";
@@ -72,15 +86,26 @@ export default function LearningProgressRoadmap({ pathId, topics }: Props) {
     };
   }, [pathId]);
 
-  const completedCount = completed.size;
+  // Only required topics count toward "% complete". Completed optional topics
+  // are tracked (so the box can be ticked) but excluded from the denominator
+  // and the count.
+  const requiredIds = useMemo(
+    () => new Set(topics.filter((t) => !t.optional).map((t) => t.id)),
+    [topics],
+  );
+  const completedRequiredCount = useMemo(
+    () => [...completed].filter((id) => requiredIds.has(id)).length,
+    [completed, requiredIds],
+  );
+  const requiredCount = requiredIds.size;
   const disabled = state !== "ready";
 
   const statusText = useMemo(() => {
     if (state === "loading") return "Loading progress...";
     if (state === "signed-out") return "Sign in to save progress.";
     if (state === "error") return message;
-    return `${completedCount} of ${topics.length} complete`;
-  }, [completedCount, message, state, topics.length]);
+    return `${completedRequiredCount} of ${requiredCount} complete`;
+  }, [completedRequiredCount, message, requiredCount, state]);
 
   const toggleTopic = async (topicId: string, nextCompleted: boolean) => {
     if (disabled || saving.has(topicId)) return;
@@ -147,42 +172,73 @@ export default function LearningProgressRoadmap({ pathId, topics }: Props) {
         {topics.map((topic, index) => {
           const isCompleted = completed.has(topic.id);
           const isSaving = saving.has(topic.id);
+          const isFirstOfNewSection =
+            !!topic.section &&
+            (index === 0 || topics[index - 1]?.section !== topic.section);
 
           return (
-            <li
-              key={topic.id}
-              className="flex items-start gap-3 rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3"
-            >
-              <span
-                className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-atlas-accent-soft)] text-xs font-semibold text-[var(--color-atlas-accent)]"
-                aria-hidden="true"
-              >
-                {index + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <a
-                  href={topic.href}
-                  className="text-base font-semibold text-[var(--color-atlas-ink)] no-underline hover:underline"
+            <Fragment key={topic.id}>
+              {isFirstOfNewSection && (
+                <li
+                  className="pt-3 first:pt-0"
+                  aria-label={`Section: ${topic.section}`}
                 >
-                  {topic.title}
-                </a>
-                <p className="mt-0.5 text-sm text-[var(--color-atlas-muted)]">
-                  {topic.summary}
-                </p>
-              </div>
-              <label className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center">
-                <span className="sr-only">
-                  {isCompleted ? "Mark incomplete" : "Mark complete"}: {topic.title}
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+                    {topic.section}
+                  </h3>
+                </li>
+              )}
+              <li
+                className={`flex items-start gap-3 rounded-lg border bg-[var(--color-atlas-surface)] p-3 ${
+                  topic.optional
+                    ? "border-dashed border-[var(--color-atlas-line)]"
+                    : "border-[var(--color-atlas-line)]"
+                }`}
+              >
+                <span
+                  className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-atlas-accent-soft)] text-xs font-semibold text-[var(--color-atlas-accent)]"
+                  aria-hidden="true"
+                >
+                  {index + 1}
                 </span>
-                <input
-                  type="checkbox"
-                  checked={isCompleted}
-                  disabled={disabled || isSaving}
-                  onChange={(event) => toggleTopic(topic.id, event.currentTarget.checked)}
-                  className="h-5 w-5 rounded border-[var(--color-atlas-line)] accent-[var(--color-atlas-accent)] disabled:cursor-not-allowed"
-                />
-              </label>
-            </li>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <a
+                      href={withPath(topic.href, pathId)}
+                      className="text-base font-semibold text-[var(--color-atlas-ink)] no-underline hover:underline"
+                    >
+                      {topic.title}
+                    </a>
+                    {topic.optional && (
+                      <span
+                        className="inline-flex items-center rounded-full border border-[var(--color-atlas-line)] bg-[var(--color-atlas-bg)] px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--color-atlas-muted)]"
+                        title="Optional — doesn't count toward path completion."
+                      >
+                        Optional
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-sm text-[var(--color-atlas-muted)]">
+                    {topic.summary}
+                  </p>
+                </div>
+                <label className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center">
+                  <span className="sr-only">
+                    {isCompleted ? "Mark incomplete" : "Mark complete"}:{" "}
+                    {topic.title}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={isCompleted}
+                    disabled={disabled || isSaving}
+                    onChange={(event) =>
+                      toggleTopic(topic.id, event.currentTarget.checked)
+                    }
+                    className="h-5 w-5 rounded border-[var(--color-atlas-line)] accent-[var(--color-atlas-accent)] disabled:cursor-not-allowed"
+                  />
+                </label>
+              </li>
+            </Fragment>
           );
         })}
       </ol>

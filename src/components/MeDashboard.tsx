@@ -1,0 +1,307 @@
+import { useEffect, useState } from "react";
+import {
+  getProgressMe,
+  type ProgressMeState,
+} from "~/lib/progress-client";
+
+function fmtDate(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function fmtRelative(iso: string): string {
+  const then = Date.parse(iso);
+  if (Number.isNaN(then)) return "";
+  const diffMs = Date.now() - then;
+  const days = Math.floor(diffMs / 86_400_000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 30) return `${days} days ago`;
+  if (days < 365) return `${Math.floor(days / 30)} months ago`;
+  return `${Math.floor(days / 365)} years ago`;
+}
+
+function continueHref(pathId: string, topicId: string): string {
+  return `/t/${topicId}?path=${encodeURIComponent(pathId)}`;
+}
+
+export default function MeDashboard() {
+  const [state, setState] = useState<ProgressMeState>({ kind: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    getProgressMe().then((next) => {
+      if (!cancelled) setState(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (state.kind === "loading") {
+    return (
+      <div
+        className="mt-8 h-32 animate-pulse rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)]"
+        aria-label="Loading your progress"
+      />
+    );
+  }
+
+  if (state.kind === "signed-out") {
+    return (
+      <p className="mt-8 text-sm text-[var(--color-atlas-muted)]">
+        You appear to be signed out. Refresh after signing in.
+      </p>
+    );
+  }
+
+  if (state.kind === "error") {
+    return (
+      <p
+        className="mt-8 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+        role="alert"
+      >
+        {state.message}
+      </p>
+    );
+  }
+
+  const { paths, recentTopics } = state.data;
+  const continueWith =
+    paths.find((p) => p.lastProgressedAt && p.nextTopicId) ?? null;
+
+  const inProgress = paths.filter(
+    (p) => p.completedCount > 0 && p.completedCount < p.requiredCount,
+  );
+  const completed = paths.filter(
+    (p) => p.requiredCount > 0 && p.completedCount >= p.requiredCount,
+  );
+
+  const totalTopicsRead = paths.reduce((sum, p) => sum + p.completedCount, 0);
+  const distinctDays = new Set(
+    recentTopics.map((r) => r.completedAt.slice(0, 10)),
+  ).size;
+
+  return (
+    <div className="mt-6 space-y-10">
+      {/* Continue learning */}
+      {continueWith ? (
+        <section aria-label="Continue learning">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+            Continue learning
+          </h2>
+          <div className="mt-3 rounded-lg border border-[var(--color-atlas-accent)]/40 bg-[var(--color-atlas-accent-soft)] p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-lg font-semibold text-[var(--color-atlas-ink)]">
+                {continueWith.pathTitle}
+              </h3>
+              <span className="text-xs text-[var(--color-atlas-muted)]">
+                last activity {fmtRelative(continueWith.lastProgressedAt!)}
+              </span>
+            </div>
+            <ProgressBar
+              completedCount={continueWith.completedCount}
+              requiredCount={continueWith.requiredCount}
+              percent={continueWith.percent}
+            />
+            {continueWith.nextTopicId && (
+              <a
+                href={continueHref(
+                  continueWith.pathId,
+                  continueWith.nextTopicId,
+                )}
+                className="mt-4 inline-flex items-center gap-1 rounded-md bg-[var(--color-atlas-accent)] px-3 py-1.5 text-sm font-medium text-white no-underline"
+              >
+                Resume here
+                <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Stats */}
+      <section aria-label="Stats">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+          Stats
+        </h2>
+        <dl className="mt-3 grid grid-cols-3 gap-3 max-w-md text-sm text-[var(--color-atlas-muted)]">
+          <Stat label="Topics read" value={totalTopicsRead} />
+          <Stat label="Paths complete" value={completed.length} />
+          <Stat label="Active days" value={distinctDays} hint="recent 20" />
+        </dl>
+      </section>
+
+      {/* In progress */}
+      <section aria-label="In progress">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+          In progress
+        </h2>
+        {inProgress.length === 0 ? (
+          <p className="mt-3 text-sm text-[var(--color-atlas-muted)]">
+            No paths in progress.{" "}
+            <a
+              href="/paths"
+              className="text-[var(--color-atlas-accent)] no-underline hover:underline"
+            >
+              Pick one to start
+            </a>
+            .
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {inProgress.map((p) => (
+              <li
+                key={p.pathId}
+                className="rounded-lg border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-4"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <a
+                    href={`/p/${p.pathId}`}
+                    className="text-base font-semibold text-[var(--color-atlas-ink)] no-underline hover:underline"
+                  >
+                    {p.pathTitle}
+                  </a>
+                  <span className="text-xs text-[var(--color-atlas-muted)]">
+                    {p.lastProgressedAt
+                      ? `last activity ${fmtRelative(p.lastProgressedAt)}`
+                      : "not started"}
+                  </span>
+                </div>
+                <ProgressBar
+                  completedCount={p.completedCount}
+                  requiredCount={p.requiredCount}
+                  percent={p.percent}
+                />
+                {p.nextTopicId && (
+                  <a
+                    href={continueHref(p.pathId, p.nextTopicId)}
+                    className="mt-3 inline-flex items-center gap-1 text-sm text-[var(--color-atlas-accent)] no-underline hover:underline"
+                  >
+                    Resume here
+                    <span aria-hidden="true">→</span>
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Completed */}
+      {completed.length > 0 && (
+        <section aria-label="Completed paths">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+            Completed
+          </h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {completed.map((p) => (
+              <li
+                key={p.pathId}
+                className="flex items-center justify-between gap-2 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-3 py-2"
+              >
+                <a
+                  href={`/p/${p.pathId}`}
+                  className="text-sm font-medium text-[var(--color-atlas-ink)] no-underline hover:underline"
+                >
+                  {p.pathTitle}
+                </a>
+                <span className="text-xs text-emerald-700 dark:text-emerald-300">
+                  100%
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Recent topics */}
+      {recentTopics.length > 0 && (
+        <section aria-label="Recently completed">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-atlas-muted)]">
+            Recently completed
+          </h2>
+          <ul className="mt-3 divide-y divide-[var(--color-atlas-line)] rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)]">
+            {recentTopics.map((r, i) => (
+              <li
+                key={`${r.pathId}-${r.topicId}-${i}`}
+                className="flex flex-wrap items-baseline justify-between gap-2 px-3 py-2"
+              >
+                <a
+                  href={continueHref(r.pathId, r.topicId)}
+                  className="text-sm text-[var(--color-atlas-ink)] no-underline hover:underline"
+                >
+                  {r.topicTitle}
+                </a>
+                <span className="text-xs text-[var(--color-atlas-muted)]">
+                  in {r.pathTitle} · {fmtDate(r.completedAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function ProgressBar({
+  completedCount,
+  requiredCount,
+  percent,
+}: {
+  completedCount: number;
+  requiredCount: number;
+  percent: number;
+}) {
+  return (
+    <div className="mt-3">
+      <div
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${completedCount} of ${requiredCount} complete`}
+        className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-atlas-line)]"
+      >
+        <div
+          className="h-full bg-[var(--color-atlas-accent)] transition-[width]"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="mt-1.5 text-xs text-[var(--color-atlas-muted)]">
+        {completedCount} of {requiredCount} complete · {percent}%
+      </p>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+}) {
+  return (
+    <div className="rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+      <dt>{label}</dt>
+      <dd className="text-xl font-semibold text-[var(--color-atlas-ink)]">
+        {value}
+      </dd>
+      {hint && (
+        <dd className="mt-0.5 text-[10px] uppercase tracking-wide text-[var(--color-atlas-muted)]">
+          {hint}
+        </dd>
+      )}
+    </div>
+  );
+}

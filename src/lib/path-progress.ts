@@ -1,8 +1,12 @@
 import { loadGraph } from "./graph";
+import { pathTopicIds, requiredPathTopicIds } from "./paths";
 
 export interface ProgressPathSpec {
   pathId: string;
+  /** Every topic in the path, in order (includes optional ones). */
   topicIds: string[];
+  /** Only the topics that count toward completion. */
+  requiredTopicIds: string[];
 }
 
 export async function getProgressPathSpec(
@@ -14,9 +18,8 @@ export async function getProgressPathSpec(
 
   return {
     pathId: path.id,
-    topicIds: path.data.topics.map((topic) =>
-      typeof topic === "string" ? topic : topic.id,
-    ),
+    topicIds: pathTopicIds(path.data.topics),
+    requiredTopicIds: requiredPathTopicIds(path.data.topics),
   };
 }
 

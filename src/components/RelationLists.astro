@@ -1,5 +1,5 @@
 ---
-import { loadGraph, topicUrl, pathUrl, type TopicRelations } from "~/lib/graph";
+import { loadGraph, topicUrl, type TopicRelations } from "~/lib/graph";
 
 interface Props {
   relations: TopicRelations;
@@ -8,61 +8,50 @@ interface Props {
 const { relations } = Astro.props;
 const graph = await loadGraph();
 
-const sections: Array<{ label: string; help: string; ids: string[]; kind: "topic" | "path" }> = [
+// Note: "Appears in" is intentionally NOT in this list. Path memberships are
+// promoted to a separate AppearsInCard component above the neighborhood graph
+// so they double as a discovery CTA, not just an "see also" entry.
+const sections: Array<{ label: string; help: string; ids: string[] }> = [
   {
     label: "Requires",
     help: "Topics you should understand first.",
     ids: relations.prerequisites,
-    kind: "topic",
   },
   {
     label: "Related",
     help: "Topics that are conceptually nearby.",
     ids: relations.related,
-    kind: "topic",
   },
   {
     label: "Part of",
     help: "Larger topics this one belongs to.",
     ids: relations.partOf,
-    kind: "topic",
   },
   {
     label: "Contains",
     help: "Subtopics that are part of this one.",
     ids: relations.subtopics,
-    kind: "topic",
   },
   {
     label: "Next",
     help: "Where to go next, in suggested order.",
     ids: relations.nextSteps,
-    kind: "topic",
   },
   {
     label: "Leads to",
     help: "Topics that list this one as a next step.",
     ids: relations.leadsTo,
-    kind: "topic",
   },
   {
     label: "Required by",
     help: "Topics that depend on this one as a prerequisite.",
     ids: relations.requiredBy,
-    kind: "topic",
-  },
-  {
-    label: "Appears in",
-    help: "Learning paths that include this topic.",
-    ids: relations.appearsInRoadmaps,
-    kind: "path",
   },
 ];
 
 const visibleSections = sections.filter((s) => s.ids.length > 0);
 
 const resolveTopic = (id: string) => graph.topicsById.get(id);
-const resolvePath = (id: string) => graph.paths.find((p) => p.id === id);
 ---
 
 <section
@@ -90,23 +79,12 @@ const resolvePath = (id: string) => graph.paths.find((p) => p.id === id);
             <dd class="mt-1">
               <ul class="flex flex-col gap-1 text-sm">
                 {s.ids.map((id) => {
-                  if (s.kind === "topic") {
-                    const t = resolveTopic(id);
-                    if (!t) return null;
-                    return (
-                      <li>
-                        <a href={topicUrl(t.id)} class="no-underline hover:underline">
-                          {t.data.title}
-                        </a>
-                      </li>
-                    );
-                  }
-                  const p = resolvePath(id);
-                  if (!p) return null;
+                  const t = resolveTopic(id);
+                  if (!t) return null;
                   return (
                     <li>
-                      <a href={pathUrl(p.id)} class="no-underline hover:underline">
-                        {p.data.title}
+                      <a href={topicUrl(t.id)} class="no-underline hover:underline">
+                        {t.data.title}
                       </a>
                     </li>
                   );

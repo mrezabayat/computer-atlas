@@ -131,12 +131,19 @@ async function lintPath(file) {
     err(file, "missing or malformed frontmatter");
     return;
   }
-  const topicsMatch = split.fm.match(/^topics:\s*\n((?:\s+-\s+.+\n?)+)/m);
-  if (!topicsMatch) {
+  // Find the topics block: from "topics:" up to the next top-level key.
+  // Topics can either be `  - slug` (one per line) or
+  //   - ref: slug
+  //     optional: true       (multi-line objects)
+  // Count any line whose indentation is `^  -` (two-space + dash) as one entry.
+  const blockMatch = split.fm.match(
+    /^topics:\s*\n([\s\S]*?)(?=^[A-Za-z][\w-]*:|\Z)/m,
+  );
+  if (!blockMatch) {
     err(file, "no topics list found in frontmatter");
     return;
   }
-  const items = topicsMatch[1].split("\n").filter((l) => /^\s+-\s+/.test(l));
+  const items = blockMatch[1].split("\n").filter((l) => /^\s+-\s+/.test(l));
   if (items.length < 2) {
     err(file, `path has only ${items.length} topic(s); need at least 2`);
   }
