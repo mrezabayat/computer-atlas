@@ -19,6 +19,8 @@ topics:
     section: More machines
   - ref: sharding
     section: More machines
+  - ref: microservices
+    section: Architecture
   - ref: cdn
     section: Closer to users
   - ref: container
@@ -31,13 +33,19 @@ topics:
   - ref: serverless
     section: Operating it
     optional: true
+  - ref: service-mesh
+    section: Operating it
+    optional: true
+  - ref: cloud-provider
+    section: Operating it
+    optional: true
   - ref: cap-theorem
     section: The trade-offs
   - ref: eventual-consistency
     section: The trade-offs
-updated: 2026-06-07
+updated: 2026-06-08
 ---
 
 Most "scalable web app" advice is folk wisdom. This path is the underlying mental model: where the bottlenecks actually appear as load grows, what each scaling tool buys you, and what it costs.
 
-Start with single-machine speed (indexes, query plans, caches). Move to multi-machine (replication, sharding, CDN). End with the system architecture decisions (CAP, eventual consistency) that distinguish "works at scale" from "fails subtly in production".
+Start with single-machine speed (indexes, query plans, caches). Move to multi-machine (replication, sharding, CDN). Then work through the architecture and infrastructure decisions (microservices, containers, CAP, eventual consistency) that distinguish "works at scale" from "fails subtly in production".

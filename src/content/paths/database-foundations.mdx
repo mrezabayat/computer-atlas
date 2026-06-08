@@ -1,6 +1,6 @@
 ---
 title: Database Foundations
-summary: The six ideas every working programmer should know about relational databases — model, query language, design, indexing, and transactions.
+summary: The ideas every working programmer should know about relational databases — model, query language, design, indexing, transactions, and the NoSQL alternatives.
 audience: intermediate
 topics:
   - ref: database
@@ -21,12 +21,26 @@ topics:
     section: Performance and reliability
   - ref: transaction-acid
     section: Performance and reliability
+  - ref: schema-migration
+    section: Performance and reliability
+    optional: true
   - ref: nosql
     section: Beyond relational
+  - ref: key-value-store
+    section: Beyond relational
     optional: true
-updated: 2026-06-07
+  - ref: document-store
+    section: Beyond relational
+    optional: true
+  - ref: etl
+    section: Data pipelines
+    optional: true
+  - ref: data-warehouse
+    section: Data pipelines
+    optional: true
+updated: 2026-06-08
 ---
 
 Most applications stand or fall on how well they use their database. This short path walks through the relational model (the math), SQL (the language), normalisation (the design discipline), indexing (the performance lever), and ACID transactions (the consistency guarantee).
 
-If you've ever fixed a slow query or untangled a confusing schema, you've already used most of these — this path makes the mental model explicit.
+It then covers the NoSQL landscape and the data pipeline tools that sit above raw storage, so you know what to reach for when the relational model isn't the right fit.

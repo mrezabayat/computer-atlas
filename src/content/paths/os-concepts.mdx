@@ -26,6 +26,9 @@ topics:
     optional: true
   - ref: file-system
     section: Storage
+  - ref: inode
+    section: Storage
+    optional: true
   - ref: kernel
     section: The privileged core
   - ref: system-call
@@ -34,7 +37,13 @@ topics:
   - ref: interrupt
     section: The privileged core
     optional: true
-updated: 2026-06-07
+  - ref: shell
+    section: The privileged core
+    optional: true
+  - ref: daemon
+    section: The privileged core
+    optional: true
+updated: 2026-06-08
 ---
 
 The operating system is the layer of software you almost never see but constantly depend on. This path covers the seven ideas that, together, explain how a modern OS shares one machine between many programs safely and efficiently.

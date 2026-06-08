@@ -1,0 +1,41 @@
+---
+title: Distributed Systems Fundamentals
+summary: The ideas behind systems that span multiple machines — consensus, replication, consistency, and the infrastructure that glues it together.
+audience: advanced
+topics:
+  - ref: distributed-system
+    section: The problem
+  - ref: consensus
+    section: Agreement
+  - ref: replication
+    section: Copies and consistency
+  - ref: sharding
+    section: Copies and consistency
+  - ref: cap-theorem
+    section: Copies and consistency
+  - ref: eventual-consistency
+    section: Copies and consistency
+  - ref: microservices
+    section: Architecture
+  - ref: message-queue
+    section: Architecture
+  - ref: container
+    section: Infrastructure
+  - ref: kubernetes
+    section: Infrastructure
+    optional: true
+  - ref: serverless
+    section: Infrastructure
+    optional: true
+  - ref: service-mesh
+    section: Infrastructure
+    optional: true
+  - ref: cloud-provider
+    section: Infrastructure
+    optional: true
+updated: 2026-06-08
+---
+
+A distributed system is any system where the components run on different machines that can fail independently. That simple fact creates a cascade of hard problems: how do you agree on a value when messages can be lost? How many copies of data do you need? What do you give up when the network partitions?
+
+This path covers the theoretical foundations (consensus, CAP, eventual consistency) alongside the practical infrastructure (containers, Kubernetes, message queues) that modern distributed systems are built on.

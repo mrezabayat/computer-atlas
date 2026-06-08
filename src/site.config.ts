@@ -1,7 +1,7 @@
 export const SITE = {
   name: "Computer Atlas",
-  url: "https://computer-atlas.example.com",
-  repo: "https://github.com/your-org/computer-atlas",
+  url: "https://computer-atlas.mrb-bayat.workers.dev/",
+  repo: "https://github.com/mrezabayat/computer-atlas/",
   defaultBranch: "main",
 } as const;
 

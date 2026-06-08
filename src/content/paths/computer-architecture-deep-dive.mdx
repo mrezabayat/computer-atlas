@@ -1,0 +1,39 @@
+---
+title: Computer Architecture Deep Dive
+summary: From transistors to the instruction pipeline — how a modern CPU actually executes code, and how that shapes software performance.
+audience: advanced
+topics:
+  - ref: instruction-set
+    section: What the CPU understands
+  - ref: register
+    section: What the CPU understands
+  - ref: risc-vs-cisc
+    section: What the CPU understands
+    optional: true
+  - ref: cpu-pipeline
+    section: How instructions execute
+  - ref: branch-prediction
+    section: How instructions execute
+  - ref: out-of-order-execution
+    section: How instructions execute
+  - ref: simd
+    section: How instructions execute
+    optional: true
+  - ref: cache
+    section: Memory
+  - ref: memory-hierarchy
+    section: Memory
+  - ref: dram-vs-sram
+    section: Memory
+    optional: true
+  - ref: virtual-memory
+    section: Memory
+  - ref: dma
+    section: I/O
+    optional: true
+updated: 2026-06-08
+---
+
+Modern CPUs are not simple — they reorder instructions, predict branches, cache data at multiple levels, and execute several operations simultaneously. Understanding this machinery explains why a "fast" algorithm can be slow in practice, and why cache misses matter more than operation counts in real workloads.
+
+This path builds the mental model in layers: start with what an instruction set is, move through the pipeline stages, then work through the memory hierarchy that dominates real-world performance.
