@@ -1,0 +1,54 @@
+---
+title: Monorepo
+aliases: ["monorepository", "mono-repo"]
+category: software-engineering
+kind: concept
+summary: A single version-control repository that holds many projects or services together — sharing tooling, dependencies, and atomic cross-project changes — instead of splitting each into its own repo.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["version-control", "tooling", "architecture"]
+prerequisites: ["version-control"]
+related: ["git", "ci-cd"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **monorepo** is one big repository that contains many projects — multiple services, libraries, and apps — all versioned together. The alternative, sometimes called **polyrepo**, gives each project its own separate repo. In a monorepo, a single `git clone` gets you *everything*, and one commit can change several projects at once. It's how Google, Meta, and many others organize enormous codebases.
+
+## More detail
+
+The appeal of a monorepo is mostly about **shared state and atomic change**:
+
+- **One source of truth** — every team sees the same versions of every shared library; there's no "service A is two versions behind on the auth library."
+- **Atomic cross-project changes** — you can change a shared API and *every* caller in a single commit, so the repo is never in a broken intermediate state.
+- **Shared tooling and config** — one build system, one lint config, one CI setup for everything.
+- **Easy code sharing and discovery** — internal libraries are just folders, not published packages.
+
+The costs are real and grow with size:
+
+- **Scale** — a repo with millions of files strains [Git](/t/git); large adopters use specialized tooling (Google's internal system, Meta's Sapling, virtual file systems) to cope.
+- **Build/CI performance** — you must build and test *only what changed*, which requires dependency-aware build tools like **Bazel**, **Nx**, **Turborepo**, or **Pants**.
+- **Access control and coupling** — everyone can see everything, and it takes discipline to keep projects from becoming tangled.
+
+Crucially, "monorepo" is about *repository layout*, not architecture — a monorepo can hold microservices, and a polyrepo can hold a monolith. They're independent choices.
+
+## Why it matters
+
+How you split (or don't split) your code across repositories shapes daily developer experience: how dependencies are shared, how cross-cutting changes are made, and how CI is structured. The monorepo-vs-polyrepo decision is one of the first an engineering organization makes, and it's expensive to reverse, which is why it generates so much debate.
+
+## Real-world examples
+
+- **Google** famously keeps most of its code in a single monorepo with billions of lines, served by custom infrastructure.
+- A startup using **Turborepo** or **Nx** to keep its web app, mobile app, and shared component library in one repo with incremental builds.
+- An open-source project like **Babel** keeping dozens of related packages in one repo and publishing them together.
+
+## Common misconceptions
+
+- **"Monorepo means one big monolithic application."** It's about *one repository*, not one deployable; a monorepo commonly contains many independently-deployed services.
+- **"Monorepos don't scale."** They scale fine *with the right build tooling*; plain Git on a huge repo is what struggles, not the idea itself.
+
+## Learn next
+
+A monorepo is a way of organizing [version control](/t/version-control) with [Git](/t/git); making it fast relies heavily on a smart [CI/CD](/t/ci-cd) pipeline that builds only what changed.

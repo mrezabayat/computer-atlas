@@ -1,0 +1,48 @@
+---
+title: Touch Interface
+aliases: ["touchscreen", "touch ui", "multi-touch"]
+category: human-computer-interaction
+kind: concept
+summary: An interface operated by touching the screen directly with fingers — using taps, swipes, and gestures instead of a mouse and keyboard — the dominant way people interact with phones and tablets.
+level: beginner
+status: reviewed
+importance: important
+tags: ["ui", "mobile", "interaction"]
+prerequisites: ["user-interface"]
+related: ["gui", "accessibility"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **touch interface** lets you operate a device by touching the screen directly — tapping a button, swiping to scroll, pinching to zoom — instead of using a mouse and keyboard. By collapsing the pointer and the display into the same surface, touch made computing feel direct and intuitive: you manipulate things by touching them. It's the interaction model that powers smartphones and tablets, and it brought computing to billions of people who never used a traditional [GUI](/t/gui) with a mouse.
+
+## More detail
+
+Touch is a distinct interaction paradigm with its own constraints and conventions, not just a [GUI](/t/gui) without a mouse:
+
+- **Gestures** form the vocabulary: tap (click), long-press (context), swipe/drag (scroll, navigate), pinch and spread (zoom), and two-finger or edge gestures. These have to be *learned* and *discoverable*, which is a real design challenge since gestures are invisible.
+- **Fingers are imprecise.** A fingertip is far larger and less exact than a cursor, so touch targets must be big enough (Apple and Google recommend roughly 44–48px minimums) and well-spaced to avoid mis-taps — the "fat finger" problem.
+- **No hover.** A mouse can hover to reveal tooltips or menus; touch has no hover state, so designs that depend on hover break and must offer another path.
+- **Direct manipulation.** Because you touch the object itself, touch interfaces lean heavily on physical metaphors — momentum scrolling, things that drag and snap — to feel natural.
+
+Touch also reshaped design broadly: the rise of touch drove **responsive design** (interfaces that adapt to screen size and input type) and mobile-first thinking, since the same web page might be used with a fingertip or a cursor.
+
+## Why it matters
+
+Touch is the primary computing interface for most of the world. The smartphone — a slab that is almost entirely touchscreen — is the device through which billions of people access the internet, so designing well for touch isn't a niche skill but a default requirement. Its constraints (target size, no hover, gesture discoverability) shape how nearly all consumer software is designed today, and getting them wrong makes an app frustrating to use on the devices people use most.
+
+## Real-world examples
+
+- The **smartphone** itself — a multi-touch screen is its main and often only input.
+- **Pinch-to-zoom** on a map and **swipe-to-delete** on a list — gestures that feel obvious now but had to be invented and taught.
+- A website redesigned with larger tap targets and no hover-dependent menus so it works on phones — touch driving responsive design.
+
+## Common misconceptions
+
+- **"A touch interface is just a GUI you poke instead of click."** Touch has genuinely different constraints — imprecise input, no hover, gesture-based commands — that demand their own design patterns, not a shrunk-down desktop UI.
+- **"Bigger screens make touch precise."** Precision is limited by the fingertip, not the screen; touch targets must stay finger-sized regardless of display size.
+
+## Learn next
+
+A touch interface is a kind of [GUI](/t/gui) adapted for direct manipulation, and designing it well is central to [accessibility](/t/accessibility) on mobile.

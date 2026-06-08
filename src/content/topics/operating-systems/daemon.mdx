@@ -1,0 +1,54 @@
+---
+title: Daemon
+aliases: ["daemons", "background process", "service"]
+category: operating-systems
+kind: concept
+summary: A long-running background process with no controlling terminal, usually started at boot and supervised by the system, that quietly does work or waits for requests.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["os", "process", "background"]
+prerequisites: ["process"]
+related: ["kernel", "operating-system"]
+nextSteps: ["scheduler"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **daemon** is a program that runs quietly in the background, detached from any terminal, waiting to do its job — serving web pages, delivering mail, writing logs, syncing the clock. You never "see" a daemon the way you see an app window; it just sits there, usually started when the machine boots and shut down when it powers off. By convention many of their names end in *d*: `sshd`, `cron`, `systemd`, `journald`.
+
+## More detail
+
+A daemon is an ordinary [process](/t/process) with a few deliberate properties: no controlling terminal (so it survives the user logging out), a parent of PID 1 (the init system), and its standard input/output wired to nowhere or to a log.
+
+The classic Unix recipe for "daemonizing" is:
+
+1. **`fork()`** and let the parent exit — the child is now an orphan, adopted by init.
+2. **`setsid()`** — start a new session so the process has no controlling terminal.
+3. **`fork()` again** — guarantee it can never reacquire a terminal.
+4. **`chdir("/")`** — don't pin a mounted file system.
+5. **Close stdin/stdout/stderr** and redirect them (to `/dev/null` or a log).
+
+In practice you rarely write that by hand anymore. A **service manager** does the supervision: **systemd** on most Linux, **launchd** on macOS, **Windows Services** on Windows. The manager starts the daemon, restarts it if it crashes, collects its logs, enforces resource limits, and orders startup by dependency ("start the database before the web server"). Because a daemon has no terminal, its output goes to a logging facility — `syslog`, the systemd **journal**, or a file — not to a screen.
+
+Well-behaved daemons often start as root to bind a privileged port or open a device, then **drop privileges** to an unprivileged user for everything after.
+
+## Why it matters
+
+Almost everything a server *does* is a daemon: the web server listening on port 443, the database, the SSH login service, the metrics agent, the scheduled-job runner. Understanding the daemon lifecycle — how it's launched, supervised, restarted, and where its logs go — is most of what "running a service in production" actually means. When a service "won't start" or "keeps restarting," you're debugging daemon mechanics.
+
+## Real-world examples
+
+- `systemctl status sshd` shows whether the SSH daemon is running, its PID, and recent log lines; `journalctl -u nginx` tails a daemon's logs.
+- `cron` wakes up every minute as a daemon and runs scheduled jobs — backups, certificate renewals, cleanup scripts.
+- A containerized web app is typically one daemon process (the server) running as PID 1 inside the container, supervised by the orchestrator instead of systemd.
+
+## Common misconceptions
+
+- **"Daemon means something malicious."** No — the name is an old MIT joke (a helpful background spirit), not "demon." Malware sometimes *runs* as a daemon, but so does almost every legitimate service.
+- **"Daemons must run as root."** Many start as root only to grab a privileged resource, then drop to a low-privilege user; plenty never need root at all.
+
+## Learn next
+
+A daemon is just a [process](/t/process) the system keeps alive in the background — the [scheduler](/t/scheduler) decides when it actually gets the CPU.

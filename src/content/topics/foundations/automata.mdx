@@ -1,0 +1,49 @@
+---
+title: Automata
+aliases: ["automaton", "finite state machine", "state machine"]
+category: foundations
+kind: concept
+summary: Abstract machines that read input and move between states according to fixed rules — the mathematical models of computation, from simple finite-state machines up to the Turing machine.
+level: advanced
+status: reviewed
+importance: important
+tags: ["theory", "computation", "state-machine"]
+prerequisites: []
+related: ["formal-language", "computability"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+An **automaton** is an idealized machine that reads input one symbol at a time and reacts by changing its internal **state**. Picture a turnstile: it has two states (locked, unlocked), and inputs (insert coin, push) move it between them. That's a tiny automaton. Automata theory studies these abstract machines in increasing power — from ones with just a handful of states up to the all-powerful Turing machine — to understand precisely what each kind of machine can and cannot compute.
+
+## More detail
+
+Automata form a ladder of capability, each rung able to recognize a richer class of [formal languages](/t/formal-language):
+
+- **Finite automata (FSM)** — a fixed set of states and transitions, with *no memory* beyond the current state. They recognize **regular languages** (exactly what regular expressions match). Simple, fast, and everywhere — but they can't count without bound.
+- **Pushdown automata** — a finite automaton plus a **stack**. The stack lets them handle nesting, so they recognize **context-free languages** — the basis of parsing programming languages.
+- **Turing machines** — a finite controller plus an unbounded **tape** it can read and write freely. This is the most powerful model; anything computable at all can be computed by one. (See [Turing machine](/t/turing-machine).)
+
+Two flavors of finite automata are worth knowing: **deterministic (DFA)**, where each input leads to exactly one next state, and **nondeterministic (NFA)**, which may have several — a famous theorem proves they recognize the *same* languages, and any NFA can be converted to a DFA.
+
+The pattern across the ladder is that **more memory means more power**: no memory (FSM), a stack (pushdown), or an unlimited tape (Turing). This directly connects to [computability](/t/computability) — the Turing machine sits at the top precisely because it captures everything that can be computed.
+
+## Why it matters
+
+Automata are the formal models that let us *prove* what computation can do. They're also intensely practical: finite-state machines are everywhere in real software — regular-expression engines, lexical analyzers in compilers, network protocol handlers, vending machines, game AI, and UI workflows are all naturally expressed as state machines. The theory both grounds computer science and gives engineers a clean, bug-resistant way to model any system that moves through a fixed set of states.
+
+## Real-world examples
+
+- A **regular-expression engine** compiles your pattern into a finite automaton and runs the input through it.
+- A **compiler's lexer** is a finite-state machine that turns characters into tokens.
+- **Protocol and UI state machines** (a TCP connection's states, a checkout flow) model exactly which transitions are legal from each state.
+
+## Common misconceptions
+
+- **"Automata are purely theoretical."** The Turing machine is a thought tool, but finite-state machines are deployed constantly in real code — regex, parsers, protocols, and embedded controllers.
+- **"A finite-state machine can compute anything with enough states."** No — without unbounded memory it provably can't recognize, for instance, arbitrarily nested parentheses; that needs at least a stack.
+
+## Learn next
+
+Each class of automaton recognizes a matching class of [formal language](/t/formal-language), and the Turing machine at the top defines the limits studied in [computability](/t/computability).

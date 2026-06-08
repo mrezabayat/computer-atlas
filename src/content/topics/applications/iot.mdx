@@ -1,0 +1,52 @@
+---
+title: IoT
+aliases: ["internet of things", "connected devices", "smart devices"]
+category: applications
+kind: concept
+summary: The Internet of Things — everyday physical objects embedded with sensors and network connectivity, letting them collect data and be monitored or controlled remotely.
+level: beginner
+status: reviewed
+importance: important
+tags: ["iot", "embedded", "networking"]
+prerequisites: ["embedded-system"]
+related: ["cloud-provider"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+The **Internet of Things (IoT)** is the idea of connecting everyday physical objects to the internet so they can sense, report, and be controlled remotely. A thermostat that learns your schedule and adjusts from your phone, a doorbell that streams video, a factory machine that reports its own wear, a fitness band tracking your steps — these are all IoT. At its core, IoT is an [embedded system](/t/embedded-system) (a small computer inside a product) plus **network connectivity**, turning a once-dumb object into one that participates in the digital world.
+
+## More detail
+
+A typical IoT system has several layers:
+
+- **Devices ("things")** — embedded hardware with sensors (temperature, motion, GPS) and/or actuators (motors, relays), usually low-power and cheap.
+- **Connectivity** — how they reach the network: Wi-Fi, Bluetooth, cellular, or low-power long-range protocols (LoRaWAN, Zigbee) and lightweight messaging like MQTT.
+- **The cloud** — a [cloud provider](/t/cloud-provider) backend that ingests data from millions of devices, stores and analyzes it, and pushes commands back.
+- **Edge computing** — because sending every reading to the cloud is slow and costly, more processing happens *on or near the device* (the "edge"), with only summaries sent up.
+
+The defining challenges are **scale, power, and security**:
+
+- **Scale** — coordinating huge fleets of intermittently-connected devices.
+- **Power and cost** — many run on batteries for years, forcing extreme efficiency.
+- **Security** — IoT is notorious for it. Cheap devices ship with default passwords and rarely get updates, making them easy targets. The **Mirai** botnet (2016) hijacked hundreds of thousands of insecure cameras and routers to launch record-breaking attacks — a permanent cautionary tale.
+
+## Why it matters
+
+IoT extends computing off the screen and into the physical world, with tens of billions of connected devices in homes, factories, cities, farms, and hospitals. It enables remote monitoring, automation, and data-driven optimization across nearly every industry — smart manufacturing, precision agriculture, connected health, smart cities. It also concentrates real risks: weak IoT security has caused some of the largest cyberattacks ever, and always-on sensors raise serious privacy questions.
+
+## Real-world examples
+
+- A **smart thermostat** or video doorbell controlled from a phone and learning from usage data.
+- **Industrial IoT** sensors on factory machines predicting failures before they happen (predictive maintenance).
+- The **Mirai botnet**, built from insecure IoT cameras, taking down major internet services — the field's defining security lesson.
+
+## Common misconceptions
+
+- **"IoT just means smart home gadgets."** The bigger impact is industrial, agricultural, medical, and civic — sensors optimizing factories, farms, and cities, not just consumer toys.
+- **"Connecting a device to the internet is harmless."** Each connected device is an attack surface; poorly-secured IoT has fueled massive botnets and breaches, making security central, not optional.
+
+## Learn next
+
+An IoT device is an [embedded system](/t/embedded-system) with connectivity, typically backed by a [cloud provider](/t/cloud-provider) that aggregates its data.

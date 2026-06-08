@@ -1,0 +1,49 @@
+---
+title: Scientific Computing
+aliases: ["computational science", "numerical computing", "hpc"]
+category: applications
+kind: field
+summary: Using computers to model, simulate, and analyze scientific and engineering problems — from weather forecasts to drug discovery — through numerical methods running on everything from laptops to supercomputers.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["science", "computing", "simulation"]
+prerequisites: ["python"]
+related: ["gpu", "spreadsheet"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Scientific computing** is using computers as instruments of science — to simulate things too big, too small, too fast, too slow, or too dangerous to experiment on directly. You can't put the whole atmosphere in a lab, so we *simulate* it to forecast weather. You can't easily watch a galaxy form or a protein fold, so we compute it. By turning the equations of physics, chemistry, and biology into numbers a computer can crunch, scientific computing has become a third pillar of science alongside theory and experiment.
+
+## More detail
+
+The work centers on **numerical methods** — algorithms that approximate the answers to mathematical problems (differential equations, linear algebra, optimization) that have no neat closed-form solution. Continuous reality is broken into discrete pieces (a grid, a mesh, time steps) and solved step by step.
+
+The field's practical toolkit:
+
+- **Languages and libraries** — [Python](/t/python) with NumPy, SciPy, and pandas dominates today for its readability; Julia, R, MATLAB, and Fortran/C++ (for the heaviest numerics) are also common. Crucially, the slow parts call fast compiled, [SIMD](/t/simd)-optimized routines underneath.
+- **Hardware** — from a laptop up to **HPC** (high-performance computing) clusters and supercomputers with thousands of nodes. [GPUs](/t/gpu) are now central, since their massive parallelism suits the dense linear algebra these problems involve.
+- **Concerns unique to the field** — *numerical precision* and error accumulation, *stability* of methods, *reproducibility*, and parallelizing computations across many processors.
+
+Scientific computing overlaps heavily with data science and machine learning (which is, at bottom, large-scale numerical optimization on GPUs), and it's where many parallel-computing and GPU techniques were first pushed to their limits.
+
+## Why it matters
+
+Simulation has become indispensable across science and engineering: weather and climate forecasting, drug and materials discovery, aircraft and car design, astrophysics, genomics, and financial modeling all depend on it. It lets researchers explore scenarios that are impossible, unethical, or far too expensive to test physically, and it's a major driver of demand for the most powerful computers ever built — the same parallel hardware that now also powers AI.
+
+## Real-world examples
+
+- **Weather and climate models** simulating the atmosphere on supercomputers to forecast days ahead and project decades out.
+- **Drug discovery** simulating how molecules bind to proteins, narrowing millions of candidates before any lab work.
+- **Engineering simulation** — crash tests, airflow, and stress analysis done computationally before a physical prototype is ever built.
+
+## Common misconceptions
+
+- **"Scientific computing is just fast math on big computers."** The hard parts are the *methods* — choosing numerical algorithms that are accurate, stable, and don't accumulate catastrophic error — not merely raw speed.
+- **"A simulation is the same as reality."** Models are approximations with assumptions and discretization error; they're powerful but must be validated against real measurements, not trusted blindly.
+
+## Learn next
+
+The dominant language here is [Python](/t/python); heavy workloads lean on the [GPU](/t/gpu), and the humbler everyday cousin for tabular calculation is the [spreadsheet](/t/spreadsheet).

@@ -1,0 +1,55 @@
+---
+title: Formal Language
+aliases: ["formal languages", "grammar", "chomsky hierarchy"]
+category: foundations
+kind: concept
+summary: A precisely-defined set of strings built from an alphabet according to formal rules (a grammar) — the mathematical foundation for parsing, programming languages, and computation theory.
+level: advanced
+status: reviewed
+importance: important
+tags: ["theory", "languages", "grammar"]
+prerequisites: []
+related: ["automata", "computability"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **formal language** is a set of strings — sequences of symbols — defined by exact rules rather than by meaning or usage. "Every string of balanced parentheses" is a formal language. "Every valid arithmetic expression" is another. Unlike human languages, there's no ambiguity or judgment call: a string is either *in* the language or it isn't, decided purely by the rules. This precision is what lets us define programming languages exactly, and reason mathematically about what machines can recognize.
+
+## More detail
+
+A formal language is built from an **alphabet** (a finite set of symbols) and a **grammar** (rules for which strings are valid). Grammars and the languages they generate form the **Chomsky hierarchy**, a ladder of increasing power, each level matched to a kind of machine that can recognize it:
+
+| Grammar | Language | Recognized by |
+|---|---|---|
+| Regular | Regular | Finite [automata](/t/automata) |
+| Context-free | Context-free | Pushdown automata (stack) |
+| Context-sensitive | Context-sensitive | Linear-bounded automata |
+| Unrestricted | Recursively enumerable | [Turing machines](/t/turing-machine) |
+
+The two lower levels are the workhorses of real software:
+
+- **Regular languages** describe simple patterns — exactly what **regular expressions** match, recognized by a finite-state machine. Great for tokens (numbers, identifiers), but provably *unable* to count nesting (regex can't match balanced parentheses).
+- **Context-free languages** describe nested structure — what programming-language **grammars** (in BNF) define, and what **parsers** build into syntax trees.
+
+This hierarchy ties directly to [computability](/t/computability): the more expressive the language, the more powerful the machine needed to recognize it, all the way up to the Turing machine.
+
+## Why it matters
+
+Formal languages are the theory that makes [compilers](/t/compiler) and interpreters possible. Every programming language is defined by a formal grammar; the first stages of any compiler — lexing with regular languages, parsing with context-free grammars — are direct applications. The same theory explains *why* certain tasks have the difficulty they do: it's a theorem, not an accident, that you can't validate nested HTML with a pure regular expression. It also forms the bridge from language to the machines of computation theory.
+
+## Real-world examples
+
+- **Regular expressions** matching email addresses or log patterns are regular languages in action.
+- A programming language's **grammar** (e.g., the formal spec of C or Python) is a context-free language that its parser implements.
+- The classic insight "you can't parse HTML with regex" is really a statement about formal-language classes: HTML's nesting is context-free, beyond a regular language's power.
+
+## Common misconceptions
+
+- **"A formal language is a programming language."** Programming languages *are* formal languages, but the term is broader — any precisely-defined set of strings qualifies, including simple regex patterns.
+- **"Regular expressions can match anything."** They're limited to *regular* languages — they fundamentally cannot handle arbitrary nesting, which requires at least a context-free grammar.
+
+## Learn next
+
+Formal languages are recognized by [automata](/t/automata) of matching power, and the hierarchy connects upward to [computability](/t/computability) and the Turing machine.

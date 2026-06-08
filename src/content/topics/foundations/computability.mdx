@@ -1,0 +1,49 @@
+---
+title: Computability
+aliases: ["computability theory", "halting problem", "decidability"]
+category: foundations
+kind: concept
+summary: The study of what can be computed by an algorithm at all — and the proof that some problems, like the halting problem, can never be solved by any computer.
+level: advanced
+status: reviewed
+importance: important
+tags: ["theory", "computation", "logic"]
+prerequisites: ["algorithms"]
+related: ["automata", "complexity-theory"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Computability theory** asks the most basic question in all of computer science: *what can be computed at all?* Not "how fast" — that's [complexity theory](/t/complexity-theory) — but whether a problem can be solved by *any* algorithm, given unlimited time and memory. The startling answer, proven in the 1930s before computers even existed, is that some perfectly well-defined problems are **undecidable**: no program can ever solve them. There are hard limits on what computation can do, and we know exactly where some of them are.
+
+## More detail
+
+The foundational result is the **halting problem**: can you write a program that, given any program and its input, decides whether it will eventually stop or loop forever? Alan Turing proved in 1936 that **you cannot** — no such universal halt-checker can exist. The proof is a self-referential trap (closely related to the liar paradox): assume the checker exists, then build a program that does the opposite of what the checker predicts about itself, and you get a contradiction.
+
+Key ideas in the field:
+
+- **Decidable** problems — a guaranteed algorithm exists that always halts with the right yes/no answer.
+- **Undecidable** problems — no such algorithm can exist (the halting problem, and by **reduction**, many others).
+- **The Church–Turing thesis** — the claim that anything *intuitively* computable can be computed by a [Turing machine](/t/turing-machine). Every reasonable model of computation proposed since (lambda calculus, register machines, modern CPUs) has turned out to be exactly equivalent in power.
+
+Once one problem is known undecidable, others are proven undecidable by reduction — showing that solving them would also solve the halting problem. **Rice's theorem** generalizes this: essentially *any* non-trivial question about what a program *does* (not just how it's written) is undecidable.
+
+## Why it matters
+
+Computability draws the outer boundary of computing — it tells us which problems are forever beyond *any* software, no matter how powerful the hardware. That's not just philosophy: it's why a compiler can't perfectly detect all infinite loops, why no antivirus can perfectly decide whether arbitrary code is malicious, and why fully general program verification is impossible. Knowing a problem is undecidable saves you from chasing a solution that provably cannot exist.
+
+## Real-world examples
+
+- **The halting problem** means no tool can perfectly determine, for all programs, whether they'll hang — static analyzers must approximate.
+- **Rice's theorem** implies that perfectly deciding non-trivial program properties (e.g., "does this code ever access a null pointer, exactly?") is undecidable in general.
+- The undecidability of certain type-system or grammar questions shapes how real programming languages are designed.
+
+## Common misconceptions
+
+- **"Undecidable means too slow to compute."** No — it means *impossible*, for any algorithm, with any amount of time. That's stronger than merely intractable.
+- **"More powerful computers could solve undecidable problems."** They can't. Undecidability is a limit of computation itself, independent of speed, memory, or hardware.
+
+## Learn next
+
+Computability is grounded in models like the [Turing machine](/t/turing-machine) and [automata](/t/automata); its sibling [complexity theory](/t/complexity-theory) asks how hard the *solvable* problems are.

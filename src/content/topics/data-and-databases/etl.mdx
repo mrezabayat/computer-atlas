@@ -1,0 +1,49 @@
+---
+title: ETL
+aliases: ["extract transform load", "elt", "data pipeline"]
+category: data-and-databases
+kind: concept
+summary: Extract, Transform, Load — the process of pulling data out of source systems, reshaping and cleaning it, and loading it into a destination like a data warehouse for analysis.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["database", "analytics", "pipeline"]
+prerequisites: ["database"]
+related: ["data-warehouse"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**ETL** stands for **Extract, Transform, Load** — the assembly line that moves data from where it's *created* to where it's *analyzed*. **Extract** pulls data out of source systems (app databases, APIs, log files). **Transform** cleans and reshapes it — fixing formats, merging sources, computing fields, removing duplicates. **Load** writes the result into a destination, usually a [data warehouse](/t/data-warehouse). Without ETL, an organization's data stays trapped in dozens of disconnected systems that can't be analyzed together.
+
+## More detail
+
+A few things make ETL its own discipline rather than "just copying data":
+
+- **Extract** has to handle many source shapes — relational tables, JSON APIs, CSV exports, event streams — and ideally pull only what changed since last time (*incremental* extraction) rather than everything.
+- **Transform** is where most of the work lives: standardizing date and currency formats, joining customer records across systems, deduplicating, validating, and aggregating. This is also where data quality is enforced.
+- **Load** writes into the destination, either replacing data or appending incrementally.
+
+A major modern shift is **ELT** (Extract, *Load*, Transform): with cheap, powerful cloud [data warehouses](/t/data-warehouse), it's often better to load raw data first and transform it *inside* the warehouse using its compute, rather than transforming in a separate stage beforehand. Tools like **dbt** popularized doing transformations as version-controlled SQL in the warehouse.
+
+ETL/ELT runs as scheduled **pipelines** (orchestrated by tools like Airflow, Dagster, or Prefect) — dependency graphs of steps that run nightly, hourly, or continuously, with retries, monitoring, and alerting when a step fails.
+
+## Why it matters
+
+ETL is the unglamorous plumbing that makes analytics, business intelligence, and machine learning possible at all. The quality of every dashboard and every trained model is capped by the quality of the pipeline that fed it — "garbage in, garbage out." A huge share of real-world data engineering work is building and maintaining these pipelines.
+
+## Real-world examples
+
+- A nightly pipeline that extracts orders from the app's Postgres database, web events from an analytics service, and refunds from a payments API, joins them, and loads a unified "sales" table into the warehouse.
+- **dbt** projects that define warehouse transformations as SQL models with tests and documentation, run on a schedule.
+- **Airflow** DAGs orchestrating hundreds of interdependent extract/load/transform tasks across a company's data platform.
+
+## Common misconceptions
+
+- **"ETL is a one-time data migration."** A few are, but most ETL is *ongoing* — pipelines that run continuously to keep the warehouse fresh.
+- **"ETL and ELT are completely different."** Same three operations; ELT just reorders them to exploit a powerful warehouse, doing the transform step last and in-place.
+
+## Learn next
+
+ETL pipelines usually load into a [data warehouse](/t/data-warehouse), built on the same foundations as any other [database](/t/database).

@@ -1,0 +1,48 @@
+---
+title: Firewall
+aliases: ["packet filter", "network firewall"]
+category: networks-and-internet
+kind: concept
+summary: A barrier that filters network traffic against a set of rules, allowing or blocking packets by address, port, or protocol to protect a network or host.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["networking", "security", "firewall"]
+prerequisites: ["packet"]
+related: ["nat", "router"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **firewall** is a filter that decides which network traffic is allowed through and which gets dropped. It sits at a boundary — between your computer and the network, or between a private network and the internet — and checks every [packet](/t/packet) against a list of rules. "Allow web traffic on port 443, block everything else inbound" is a firewall rule. It's the most basic and universal network defense.
+
+## More detail
+
+Firewalls have grown in sophistication over the decades:
+
+- **Packet filtering** — the original form. Each packet is judged in isolation by its source/destination IP, port, and protocol. Fast, stateless, but blind to context.
+- **Stateful inspection** — the firewall tracks *connections*. It remembers that you opened a connection to a web server, so it knows the reply packets are expected and lets them back in, while blocking unsolicited inbound traffic. This is the modern baseline.
+- **Application-layer / next-generation firewalls (NGFW)** — inspect the actual content (HTTP, DNS), can identify applications regardless of port, and integrate intrusion detection.
+- **Web Application Firewalls (WAF)** — specialized for HTTP, filtering for attacks like SQL injection and XSS.
+
+A typical default policy is **default-deny**: block everything, then explicitly allow what's needed. Firewalls run in many places — on your laptop (host firewall), in your home [router](/t/router), as a dedicated appliance at a company's edge, and as software rules in the cloud (AWS Security Groups). They commonly sit right alongside [NAT](/t/nat) on the same device.
+
+## Why it matters
+
+A firewall is the first and most universal line of network defense: it shrinks a system's **attack surface** by ensuring only intended services are reachable. A database that should never be exposed to the internet, an admin port that should only accept connections from inside the office — the firewall is what enforces those boundaries. Misconfigured firewall rules (or an accidentally-open port) are behind a large share of breaches.
+
+## Real-world examples
+
+- A cloud **security group** that allows inbound port 443 from anywhere but restricts SSH (port 22) to the company's office IP range.
+- `ufw` or `iptables`/`nftables` on a Linux server defining which ports accept connections.
+- A WAF in front of a web app blocking requests that look like SQL injection before they reach the application.
+
+## Common misconceptions
+
+- **"A firewall makes me safe."** It controls *network reachability* — it does nothing about a vulnerability in a service you *do* expose, a phishing email, or malware already inside.
+- **"Firewalls only block incoming traffic."** They can filter outbound traffic too — useful for stopping malware from "phoning home" or exfiltrating data.
+
+## Learn next
+
+Firewalls operate on [packets](/t/packet) and usually live on the same device as [NAT](/t/nat) and the [router](/t/router) at a network's edge.

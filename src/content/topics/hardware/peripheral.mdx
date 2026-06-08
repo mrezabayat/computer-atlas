@@ -1,0 +1,54 @@
+---
+title: Peripheral
+aliases: ["peripherals", "input output device", "io device"]
+category: hardware
+kind: concept
+summary: Any device attached to a computer that isn't the core CPU and memory — keyboards, mice, displays, printers, drives, cameras — through which the machine takes input and produces output.
+level: beginner
+status: reviewed
+importance: important
+tags: ["hardware", "io"]
+prerequisites: ["bus"]
+related: ["motherboard"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **peripheral** is any piece of hardware you connect to a computer that isn't the core processor and memory — the keyboard and mouse you type and click with, the monitor that shows the picture, the printer, the webcam, the external drive, the headphones. The word literally means "on the edge": peripherals sit around the central computing core and are how the machine *interacts with the world*. Without them, a computer could compute but couldn't take input or show you anything.
+
+## More detail
+
+Peripherals are usually grouped by direction:
+
+- **Input** — keyboard, mouse, touchscreen, microphone, scanner, camera, game controller.
+- **Output** — monitor, printer, speakers.
+- **Storage / both** — external drives, USB sticks (input *and* output).
+
+They connect through standardized **ports and buses**: USB (the universal modern connector), HDMI/DisplayPort for video, Bluetooth and Wi-Fi for wireless, and older ones like PS/2 and parallel ports. Each peripheral needs a **device driver** — software in the operating system that knows how to talk to that specific hardware and exposes it to applications in a uniform way.
+
+A couple of important mechanics:
+
+- Peripherals signal the CPU using [interrupts](/t/interrupt) — a keypress or arriving network data raises an interrupt so the OS reacts promptly rather than constantly polling.
+- High-throughput peripherals (drives, network cards) use [DMA](/t/dma) to move data into memory without burdening the CPU with every byte.
+
+The line between "peripheral" and "core component" is fuzzy and has shifted over time — a network card was once a peripheral and is now usually built into the [motherboard](/t/motherboard).
+
+## Why it matters
+
+Peripherals are the entire input/output story of a computer — the bridge between raw computation and human use or the physical world. The concepts that make them work (ports, drivers, interrupts, DMA) are foundational to operating systems and a recurring source of real-world friction ("the driver isn't installed," "the device isn't recognized"). Every useful computer is really a CPU plus the peripherals that connect it to people and data.
+
+## Real-world examples
+
+- Plugging in a USB keyboard: the OS detects it, loads a driver, and keystrokes start raising interrupts the system handles.
+- A printer that "works" only after installing its driver — the hardware is fine, but the software bridge was missing.
+- An external SSD using USB and DMA to transfer files quickly without saturating the CPU.
+
+## Common misconceptions
+
+- **"Peripherals are just optional accessories."** Some are essential — without a display and keyboard, a personal computer is unusable. "Peripheral" describes position (around the core), not importance.
+- **"Plugging it in is enough."** Most peripherals also need a **driver**; without the right software, the OS may not know how to use the device.
+
+## Learn next
+
+Peripherals attach to the [motherboard](/t/motherboard) over the [bus](/t/bus), and signal the CPU using [interrupts](/t/interrupt).

@@ -1,0 +1,48 @@
+---
+title: DRAM vs SRAM
+aliases: ["dram", "sram", "dynamic ram", "static ram"]
+category: hardware
+kind: concept
+summary: The two main kinds of volatile memory — DRAM is dense and cheap but slow and needs refreshing; SRAM is fast and stable but bulky and expensive, so it's used for CPU caches.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["memory", "hardware", "cache"]
+prerequisites: ["memory"]
+related: ["cache", "memory-hierarchy"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+There are two main technologies for the fast, volatile [memory](/t/memory) inside a computer, and they make opposite trade-offs. **DRAM** (dynamic RAM) is cheap and dense — it's what your gigabytes of main memory are made of — but it's relatively slow and has to be constantly "refreshed" to avoid forgetting. **SRAM** (static RAM) is much faster and doesn't need refreshing, but it's bulky and expensive, so it's used only where speed is critical and the amount is small — chiefly the [cache](/t/cache) right next to the CPU.
+
+## More detail
+
+The difference comes down to how each stores a single bit:
+
+- **DRAM** stores each bit as charge in a **single tiny capacitor** (plus one transistor). Capacitors leak, so DRAM must be **refreshed** thousands of times per second — rewritten before it forgets. The upside: one capacitor + one transistor per bit is *tiny*, so you can pack billions of bits cheaply.
+- **SRAM** stores each bit in a **latch of six transistors** that actively holds its value as long as it has power — no refresh needed, and access is very fast. The downside: six transistors per bit means it takes far more chip area, costs much more, and can't reach the same densities.
+
+This is exactly why the [memory hierarchy](/t/memory-hierarchy) exists. You can't make all memory SRAM (too expensive and bulky) or all of it as slow as DRAM (too slow for the CPU). So computers layer them: a small amount of blazing-fast SRAM as cache, backed by a large pool of cheaper DRAM as main memory, backed in turn by even cheaper, slower storage.
+
+Both are **volatile** — they lose their contents when power is removed — which distinguishes them from [flash memory](/t/flash-memory).
+
+## Why it matters
+
+The DRAM/SRAM trade-off is the physical reason computers are built as a hierarchy of memory rather than one big uniform pool. It explains why CPUs have only a few megabytes of cache but gigabytes of RAM, why cache misses are so costly, and why memory access patterns matter so much for performance. Understanding it demystifies a lot of what otherwise looks like arbitrary hardware design.
+
+## Real-world examples
+
+- The "16 GB RAM" in a laptop is DRAM; the "32 MB L3 cache" on its CPU is SRAM.
+- A CPU's L1/L2/L3 caches are SRAM precisely because they must keep up with the processor's clock.
+- DRAM refresh consuming a small but constant amount of power is part of why idle memory still draws energy.
+
+## Common misconceptions
+
+- **"SRAM is just better than DRAM."** It's faster, but far more expensive and less dense — which is why we use a little of it (cache) and a lot of DRAM (main memory), not all SRAM.
+- **"SRAM is non-volatile because it's 'static.'"** "Static" only means it doesn't need refreshing; it still loses everything when the power goes off. Both DRAM and SRAM are volatile.
+
+## Learn next
+
+This trade-off is the reason for the [memory hierarchy](/t/memory-hierarchy); SRAM is what the CPU [cache](/t/cache) is built from.

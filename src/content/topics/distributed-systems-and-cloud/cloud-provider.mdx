@@ -1,0 +1,50 @@
+---
+title: Cloud Provider
+aliases: ["cloud computing", "aws", "public cloud"]
+category: distributed-systems-and-cloud
+kind: concept
+summary: A company that rents computing — servers, storage, networking, and managed services — on demand over the internet, so you don't have to build and run your own data center.
+level: beginner
+status: reviewed
+importance: important
+tags: ["cloud", "infrastructure"]
+prerequisites: ["distributed-system"]
+related: ["serverless", "container", "kubernetes"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **cloud provider** rents you computing instead of selling you hardware. Rather than buying servers, wiring up a data center, and maintaining it, you ask the provider for a server (or a database, or storage) over the internet, use it for as long as you need, and pay for what you use. The big three are **Amazon Web Services (AWS)**, **Microsoft Azure**, and **Google Cloud (GCP)**. The pitch: turn a giant up-front capital expense into a usage-based bill, and turn months of procurement into an API call.
+
+## More detail
+
+Cloud services are usually grouped by how much the provider manages for you:
+
+- **IaaS (Infrastructure as a Service)** — raw building blocks: virtual machines, block storage, networks. You manage the OS and everything above. (AWS EC2, Azure VMs.)
+- **PaaS (Platform as a Service)** — you deploy your app; the provider runs the OS, runtime, and scaling. (App Engine, Azure App Service.)
+- **SaaS (Software as a Service)** — finished applications delivered over the web (Gmail, Salesforce).
+- **Serverless / FaaS** — you supply functions; the platform handles everything else. (See [serverless](/t/serverless).)
+
+Providers organize capacity into **regions** (geographic areas) and **availability zones** (isolated data centers within a region) so you can place workloads near users and survive a single data-center failure. They also offer hundreds of **managed services** — databases, queues, [container](/t/container) orchestration ([Kubernetes](/t/kubernetes)), machine learning, CDNs — so teams assemble systems instead of building each piece.
+
+Two recurring themes: **elasticity** (scale up for a traffic spike, scale down after, pay accordingly) and the risk of **vendor lock-in** (the deeper you use a provider's proprietary services, the harder it is to leave).
+
+## Why it matters
+
+The cloud changed who can build at scale: a two-person startup can now rent the same caliber of infrastructure as a bank, paying pennies until it grows. Cloud providers run a large fraction of all internet services today, and "where and how do we run this" is now a default architectural question for nearly every software project.
+
+## Real-world examples
+
+- **Netflix** runs almost entirely on AWS, scaling thousands of servers up and down with viewing demand.
+- A startup launches a global app on managed databases and serverless functions with no servers of its own to patch.
+- A major AWS region outage taking down large swaths of the web is a recurring reminder of how concentrated this infrastructure has become.
+
+## Common misconceptions
+
+- **"The cloud is just someone else's computer."** True at the base, but the value is the *managed services and elasticity* layered on top, not just rented hardware.
+- **"The cloud is always cheaper."** It's cheaper to *start* and to handle variable load; at steady, predictable, very large scale, owning hardware can win — which is why some companies repatriate workloads.
+
+## Learn next
+
+Two popular ways to run code on a cloud provider are [serverless](/t/serverless) functions and [container](/t/container)-based deployments orchestrated by [Kubernetes](/t/kubernetes).

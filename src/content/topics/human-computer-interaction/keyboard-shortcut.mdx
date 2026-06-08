@@ -1,0 +1,50 @@
+---
+title: Keyboard Shortcut
+aliases: ["keyboard shortcuts", "hotkey", "accelerator key"]
+category: human-computer-interaction
+kind: concept
+summary: A key combination that triggers a command directly, letting experienced users work faster than navigating menus — a classic trade-off between discoverability and efficiency.
+level: beginner
+status: reviewed
+importance: important
+tags: ["ui", "interaction", "productivity"]
+prerequisites: ["user-interface"]
+related: ["gui", "command-line-interface"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **keyboard shortcut** is a key combination — Ctrl+C, Cmd+Z, Ctrl+Shift+T — that runs a command instantly, without reaching for the mouse or hunting through menus. Shortcuts trade **discoverability** for **speed**: a beginner won't *find* them, but once learned they make frequent actions dramatically faster, because your hands never leave the keyboard. They're a small but pervasive part of interface design and one of the clearest examples of designing differently for novices versus experts.
+
+## More detail
+
+Shortcuts embody a core HCI principle: **accelerators for expert users**. A good interface lets newcomers succeed by exploring visible menus, *and* lets experts go fast via shortcuts — the same command reachable two ways. The menu item that also lists its shortcut (`Save  Ctrl+S`) is doing exactly this, teaching the accelerator as you use the slow path.
+
+Design considerations that make shortcuts good or bad:
+
+- **Consistency and convention.** Ctrl/Cmd+C/V/Z/S are near-universal; violating these ingrained expectations frustrates users badly. Platform conventions differ (Ctrl on Windows/Linux, Cmd on macOS).
+- **Mnemonics.** Memorable mappings (**S**ave, **C**opy, **B**old) are far easier to retain than arbitrary ones.
+- **Discoverability aids** — showing shortcuts in menus and tooltips, or a searchable **command palette** (Ctrl/Cmd+K, popularized by editors like VS Code) that surfaces every command *and* its shortcut.
+- **Conflict and customization.** Power tools let users remap keys and define their own; conflicts between app and OS shortcuts are a common annoyance.
+
+Shortcuts also connect to broader interaction styles: the [command-line interface](/t/command-line-interface) is the extreme keyboard-first end of the spectrum, while a pure [GUI](/t/gui) leans on pointing and clicking — most modern apps blend both.
+
+## Why it matters
+
+For software people use all day — editors, design tools, spreadsheets, terminals — keyboard shortcuts are a major driver of real productivity. The speed difference between a mouse-driven and a shortcut-driven workflow compounds over thousands of daily actions. They're also an instructive design problem: getting the novice/expert balance right, respecting conventions, and keeping commands discoverable is a microcosm of good interface design, and they matter for [accessibility](/t/accessibility), since keyboard operability is essential for users who can't use a pointer.
+
+## Real-world examples
+
+- **Ctrl/Cmd+Z** (undo) and **Ctrl/Cmd+S** (save) are so ingrained that breaking them feels like a bug.
+- A **command palette** (Cmd+K / Ctrl+Shift+P) in editors and modern apps that searches every action and shows its shortcut.
+- Power users of tools like Vim, Photoshop, or Excel working almost entirely from the keyboard for speed.
+
+## Common misconceptions
+
+- **"Shortcuts are just a nice-to-have."** For frequently-used professional tools they're a serious productivity multiplier — and for keyboard-only users, essential accessibility.
+- **"Every command should have a shortcut."** Too many shortcuts are unmemorable and conflict-prone; the value is in accelerating the *frequent* actions, with the rest reachable via menus or a command palette.
+
+## Learn next
+
+Shortcuts sit between the [GUI](/t/gui) and the keyboard-first [command-line interface](/t/command-line-interface), accelerating the [user interface](/t/user-interface) for expert users.

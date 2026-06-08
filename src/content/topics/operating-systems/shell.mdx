@@ -1,0 +1,57 @@
+---
+title: Shell
+aliases: ["command shell", "bash", "zsh"]
+category: operating-systems
+kind: concept
+summary: The program that reads the commands you type, expands and parses them, and asks the OS to run them — the text interface between a user and the operating system.
+level: beginner
+status: reviewed
+importance: important
+tags: ["os", "cli", "shell"]
+prerequisites: ["operating-system", "process"]
+related: ["system-call"]
+nextSteps: ["command-line-interface"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **shell** is the program that turns the text you type into work the operating system does. You type `ls`, the shell figures out you mean the `ls` program, asks the OS to run it, and shows you the result. It's a thin but powerful layer wrapped *around* the OS — the name comes from being the outer "shell" between you and the kernel. Common ones are **bash**, **zsh**, and **fish** on Unix, and **PowerShell** on Windows.
+
+## More detail
+
+At its heart a shell is a **read–evaluate loop**: read a line, make sense of it, run it, repeat. For each command it:
+
+1. **Reads** a line of input.
+2. **Expands** it — fills in variables (`$HOME`), globs (`*.txt`), and command substitutions (`$(date)`).
+3. **Parses** it into a command plus arguments, pipes, and redirections.
+4. **Runs** it — for an external program, the shell **`fork`s** a child [process](/t/process) and **`exec`s** the program; for a *built-in* like `cd` or `export`, it does the work itself.
+5. **Waits** for the result (unless you backgrounded it with `&`) and reports the exit status.
+
+The features that make shells powerful are mostly about wiring processes together:
+
+- **Pipes** (`a | b`) connect one program's output to the next program's input.
+- **Redirection** (`> file`, `2>&1`) points file descriptors at files instead of the terminal.
+- **Job control** lets you suspend, background, and foreground running commands.
+- **Scripting** adds variables, conditionals, loops, and functions, turning the shell into a full (if quirky) programming language for automating tasks.
+
+Crucially, a shell is just a normal user-space program — not part of the kernel. You can have many installed and swap between them. It reaches the OS the same way any program does: through [system calls](/t/system-call).
+
+## Why it matters
+
+The shell is how you actually drive a server, automate repetitive work, and glue small tools into pipelines. It's the lingua franca of operations, CI pipelines, Dockerfiles, and setup scripts. And because every command is `fork`/`exec`/pipe/redirect underneath, learning the shell is one of the most direct ways to *see* core OS concepts in action.
+
+## Real-world examples
+
+- `cat access.log | grep 500 | wc -l` strings three programs into a pipeline to count server errors — each stage is a separate process the shell connects.
+- A CI job is usually just a shell script: install dependencies, build, test, deploy, each line a command whose exit status decides whether the pipeline continues.
+- Pressing **Ctrl-C** tells the shell to send `SIGINT` to the foreground job — the shell is mediating between your keystroke and the running process.
+
+## Common misconceptions
+
+- **"The shell is the terminal."** No. The *terminal* (or terminal emulator) is the window that draws text and captures keystrokes; the *shell* is the program running inside it that interprets your commands. You can run a shell with no terminal at all (in a script).
+- **"The shell is part of the operating system kernel."** It's an ordinary program in user space — replaceable, and one of several you can install.
+
+## Learn next
+
+The broader idea of driving software by typing commands is the [command-line interface](/t/command-line-interface). Each command the shell launches becomes a [process](/t/process).

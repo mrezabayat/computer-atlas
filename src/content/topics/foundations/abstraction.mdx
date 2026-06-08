@@ -1,0 +1,51 @@
+---
+title: Abstraction
+aliases: ["abstraction layer", "information hiding"]
+category: foundations
+kind: concept
+summary: Hiding complexity behind a simpler interface — the core technique that lets us build and reason about large systems by ignoring lower-level details until we need them.
+level: beginner
+status: reviewed
+importance: important
+tags: ["foundations", "design"]
+prerequisites: []
+related: ["data-structure", "algorithms"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Abstraction** is the art of hiding detail. A steering wheel is an abstraction: you turn it to steer, without knowing anything about the steering rack, hydraulics, or wheel geometry underneath. Software is built the same way — each layer offers a simple interface and hides the messy machinery behind it. You call `print("hello")` without thinking about character encodings, system calls, or pixels. Abstraction is arguably *the* central technique of computer science: it's how we build things too complicated for any one person to hold in their head all at once.
+
+## More detail
+
+Abstraction works by separating **what** something does from **how** it does it — the *interface* from the *implementation*. As long as the interface stays stable, the implementation can change underneath without breaking anything that uses it.
+
+It shows up at every level of computing, stacked on top of one another:
+
+- **Hardware**: transistors → [logic gates](/t/logic-gates) → CPU → instruction set.
+- **Software**: machine code → assembly → high-level languages → libraries → frameworks.
+- **Data**: bits → numbers → [data structures](/t/data-structure) → objects → APIs.
+
+Related ideas: **encapsulation** (bundling data with the operations on it and hiding the internals), **information hiding** (exposing only what callers need), and the **leaky abstraction** (Joel Spolsky's observation that abstractions sometimes fail to fully hide what's beneath — a network file system that's mostly transparent until the network goes slow).
+
+The skill of engineering is largely choosing the *right* abstractions: ones that are simple to use, hard to misuse, and don't leak their underlying complexity at the wrong moment.
+
+## Why it matters
+
+Without abstraction, every programmer would have to understand the entire stack from electrons to application — impossible. Abstraction is what makes division of labor, reuse, and large-scale software possible at all. It's also where much of the *cost* and *risk* in systems lives: a good abstraction multiplies productivity for everyone who builds on it, while a bad or leaky one spreads confusion and bugs across everything above it.
+
+## Real-world examples
+
+- A **function** hides its implementation behind a name and a signature — the most basic software abstraction.
+- A **file** is an abstraction over scattered disk blocks; a **process** is an abstraction over shared hardware.
+- **HTTP** lets a browser talk to any server without knowing the language, framework, or hardware behind it.
+
+## Common misconceptions
+
+- **"More abstraction is always better."** Every layer adds indirection and can hide useful detail; over-abstraction makes code harder to follow, not easier. Good design uses the *fewest* abstractions that do the job.
+- **"Abstractions hide complexity completely."** Many *leak* — performance, errors, and edge cases from lower layers eventually surface, which is why understanding what's underneath still matters.
+
+## Learn next
+
+[Data structures](/t/data-structure) and [algorithms](/t/algorithms) are abstractions over raw memory and computation — clean interfaces over fiddly mechanics.

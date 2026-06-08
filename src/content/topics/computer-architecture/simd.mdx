@@ -1,0 +1,54 @@
+---
+title: SIMD
+aliases: ["single instruction multiple data", "vector instructions"]
+category: computer-architecture
+kind: concept
+summary: Single Instruction, Multiple Data — a CPU feature that applies one operation to many data elements at once, accelerating the vector and array math common in graphics, media, and machine learning.
+level: advanced
+status: reviewed
+importance: important
+tags: ["cpu", "architecture", "parallelism"]
+prerequisites: ["instruction-set"]
+related: ["cpu", "gpu"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+Normally a CPU instruction does one thing to one piece of data: add these two numbers. **SIMD** — Single Instruction, Multiple Data — lets a single instruction do the *same* operation to a whole batch of numbers simultaneously: add these *eight* pairs of numbers in one shot. When you have to do the same arithmetic to thousands of elements — pixels in an image, samples in audio, weights in a neural network — SIMD does it in a fraction of the instructions, and a fraction of the time.
+
+## More detail
+
+SIMD works on **vector registers** — wide registers (128, 256, or 512 bits) that hold several values packed together. A 256-bit register can hold eight 32-bit floats; one vector-add instruction adds two such registers element-wise, producing eight results at once. This is **data parallelism**: one instruction stream, many data lanes.
+
+It's exposed through extensions to the CPU's [instruction set](/t/instruction-set):
+
+- **x86**: MMX → SSE → AVX → AVX-512 (progressively wider).
+- **ARM**: NEON, and the scalable **SVE**.
+
+Programmers reach SIMD in several ways, from least to most manual:
+
+- **Auto-vectorization** — the compiler detects a loop doing uniform work and emits vector instructions automatically.
+- **Intrinsics** — special functions that map directly to SIMD instructions, for hand-tuned control.
+- **Libraries** — BLAS, image and video codecs, and ML runtimes that are already heavily vectorized.
+
+SIMD is distinct from **multithreading** (many cores doing different work) — it's parallelism *within* a single instruction stream. It's also the conceptual ancestor of how a [GPU](/t/gpu) works, taken to an extreme (thousands of lanes).
+
+## Why it matters
+
+SIMD delivers large speedups on exactly the workloads that dominate modern computing: graphics, audio/video encoding, scientific computing, cryptography, and especially the dense linear algebra at the heart of machine learning. A vectorized inner loop can be 4–16× faster than the scalar version on the same core — performance that would otherwise require many more cores. Understanding it explains why data layout ("array of structs" vs "struct of arrays") and memory alignment have such an outsized effect on numeric code.
+
+## Real-world examples
+
+- Image filters, video codecs (H.264/H.265), and audio processing rely on SIMD to hit real-time performance.
+- **NumPy** and deep-learning frameworks call SIMD-optimized BLAS routines under the hood for their matrix math.
+- Fast JSON and UTF-8 parsers (like simdjson) use AVX instructions to validate and parse gigabytes per second.
+
+## Common misconceptions
+
+- **"SIMD is the same as multi-core parallelism."** No — multi-core runs *independent* instruction streams; SIMD applies *one* instruction to many data elements within a single core.
+- **"The compiler always vectorizes my loops."** Auto-vectorization is fragile — data dependencies, branches, and unfriendly memory layouts often prevent it, which is why performance-critical code is sometimes vectorized by hand.
+
+## Learn next
+
+SIMD is an extension of the CPU's [instruction set](/t/instruction-set); pushed to thousands of parallel lanes, the same data-parallel idea becomes the [GPU](/t/gpu).

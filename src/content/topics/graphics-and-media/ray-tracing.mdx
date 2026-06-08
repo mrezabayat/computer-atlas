@@ -1,0 +1,52 @@
+---
+title: Ray Tracing
+aliases: ["ray tracing", "path tracing"]
+category: graphics-and-media
+kind: concept
+summary: A rendering technique that simulates light by tracing the paths of rays through a scene — producing physically accurate reflections, shadows, and lighting at a high computational cost.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["graphics", "rendering", "lighting"]
+prerequisites: ["pixel"]
+related: ["rasterization", "shader", "gpu"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Ray tracing** renders images by imitating how light actually behaves. For each [pixel](/t/pixel) on screen, it traces a ray *backwards* from the eye into the scene, finds what that ray hits, and works out how light reaches that point — bouncing off mirrors, passing through glass, casting shadows. Because it simulates the physics of light, ray tracing produces stunningly realistic reflections, refractions, and soft shadows that older methods fake with tricks. The catch is cost: simulating all that light is enormously expensive to compute.
+
+## More detail
+
+The contrast with [rasterization](/t/rasterization) is the key to understanding it. Rasterization asks, for each triangle, "which pixels does this cover?" — fast, but lighting effects like reflections and shadows have to be approximated with clever hacks. Ray tracing instead asks, for each pixel, "what light arrives here?" — slower, but physically grounded.
+
+The basic algorithm:
+
+1. Shoot a ray from the camera through each pixel.
+2. Find the nearest surface it intersects.
+3. From that point, cast more rays — toward light sources (for shadows), and in reflected/refracted directions (for mirrors and glass).
+4. Combine the results to compute the pixel's color, recursing as rays bounce.
+
+**Path tracing** is the modern, more complete form: it traces many random light paths per pixel and averages them to capture **global illumination** — the subtle way light bounces between surfaces — at the cost of noise that must be denoised. It's what film studios (Pixar, etc.) have used for offline rendering for years, where a single frame can take hours.
+
+The recent shift is **real-time ray tracing**: dedicated hardware (NVIDIA's RTX "RT cores," and support in modern consoles) plus AI denoising and upscaling now make limited ray tracing feasible at interactive frame rates, usually *combined* with rasterization (a hybrid pipeline) rather than replacing it.
+
+## Why it matters
+
+Ray tracing is how computer graphics achieves photorealism. It's the technology behind the lifelike lighting in animated films and visual effects, and increasingly the realistic reflections and shadows in video games. Understanding the rasterization-vs-ray-tracing trade-off — speed versus physical accuracy — explains the central tension in real-time graphics and why games are only now adopting techniques that film has used for decades.
+
+## Real-world examples
+
+- **Pixar and visual-effects studios** render films with path tracing, accepting hours per frame for photorealistic results.
+- **Modern games** (and consoles like the PS5/Xbox Series) use real-time ray tracing for reflections and shadows, often hybridized with rasterization.
+- **NVIDIA RTX** GPUs include dedicated ray-tracing cores plus AI denoising to make it fast enough to be interactive.
+
+## Common misconceptions
+
+- **"Ray tracing replaced rasterization."** In real time it usually *augments* it — a hybrid pipeline rasterizes most of the scene and ray-traces specific effects, because full ray tracing is still too expensive for everything.
+- **"Ray tracing is new."** The technique dates to the 1970s–80s and has long been standard for offline film rendering; what's new is doing it fast enough for *real-time* graphics.
+
+## Learn next
+
+The faster, traditional alternative is [rasterization](/t/rasterization); both run on the [GPU](/t/gpu) and are programmed with [shaders](/t/shader).

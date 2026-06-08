@@ -1,0 +1,52 @@
+---
+title: Blue-Green Deployment
+aliases: ["blue green deployment", "red-black deployment"]
+category: operations-and-reliability
+kind: concept
+summary: A release strategy that runs two identical production environments — one live, one idle — and switches all traffic to the new version at once, so rollback is instant.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["deployment", "ops", "release"]
+prerequisites: ["deployment"]
+related: ["canary-deployment"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Blue-green deployment** is a way to release new software with a near-instant undo button. You keep **two identical production environments**: "blue" (the current live version) and "green" (idle). To deploy, you install the new version on green, test it while it's still receiving no real traffic, then flip a switch so *all* users go to green at once. Blue sits there untouched. If anything goes wrong, you flip back to blue instantly — no rebuild, no scramble. The two environments swap roles with each release.
+
+## More detail
+
+The mechanics center on a **traffic switch** — usually a load balancer or router — that points at whichever environment is "live."
+
+1. Blue is live and serving everyone.
+2. Deploy the new version to green; run smoke tests and health checks against it privately.
+3. Flip the router so all traffic now hits green.
+4. Keep blue intact for a while as an instant rollback target. Next release, blue becomes the staging environment.
+
+The big advantages are **instant rollback** (just flip back) and **zero-downtime cutover**. But it has real costs and caveats:
+
+- **Double the infrastructure** — you run two full production environments (mitigated in the cloud, where you can spin green up only during a release).
+- **Database migrations are the hard part** — both versions may share one database, so schema changes must be backward-compatible (the expand/contract pattern), since a rollback can't easily un-migrate data.
+- **All-at-once exposure** — unlike a [canary](/t/canary-deployment), every user hits the new version simultaneously, so a bug that passed tests reaches everyone before you notice.
+
+## Why it matters
+
+Blue-green is one of the foundational zero-downtime deployment strategies, and its instant-rollback property makes risky releases far less scary. It directly supports reliability goals: a bad deploy is recovered in seconds rather than the minutes-to-hours a rebuild-and-redeploy would take. It's a key tool in the modern [deployment](/t/deployment) toolkit alongside canary releases and feature flags.
+
+## Real-world examples
+
+- A team cuts over to a new app version by repointing the load balancer, then flips back the instant error rates spike — recovering in seconds.
+- A cloud setup that spins up the "green" environment only for the duration of a release to avoid paying for two environments full-time.
+- Pairing blue-green with [feature flags](/t/feature-flag) so individual features can still be toggled after the environment switch.
+
+## Common misconceptions
+
+- **"Blue-green and canary are the same thing."** Blue-green switches *all* traffic at once with instant rollback; a [canary](/t/canary-deployment) shifts traffic *gradually* to limit who's exposed to a bad release.
+- **"Rollback is always trivial."** Flipping traffic back is instant, but if the new version already changed the shared database, rolling back code without corrupting data takes careful, backward-compatible migrations.
+
+## Learn next
+
+Blue-green is one [deployment](/t/deployment) strategy; the gradual alternative that limits blast radius is the [canary deployment](/t/canary-deployment).

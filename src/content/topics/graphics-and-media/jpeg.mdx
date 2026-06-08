@@ -1,0 +1,54 @@
+---
+title: JPEG
+aliases: ["jpg", "jpeg compression"]
+category: graphics-and-media
+kind: technology
+summary: The most common lossy image format — it shrinks photographs dramatically by discarding visual detail the human eye barely notices, trading some quality for much smaller files.
+level: beginner
+status: reviewed
+importance: important
+tags: ["image", "compression", "format"]
+prerequisites: ["image-format"]
+related: ["codec", "png"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**JPEG** is the format behind most photographs you see online. Its trick is **lossy compression**: it permanently throws away some image detail to make the file far smaller — but it throws away the details your eyes are least likely to notice, so a JPEG can be a fraction of the original size while still looking fine. That trade-off is why a photo that would be tens of megabytes raw becomes a couple hundred kilobytes as a JPEG, making photography on the web practical.
+
+## More detail
+
+JPEG (named for the Joint Photographic Experts Group, 1992) compresses by exploiting limits of human vision, in roughly these steps:
+
+1. **Color transform** — convert to a brightness + color representation (YCbCr), separating luminance from chrominance.
+2. **Chroma subsampling** — store color at lower resolution than brightness, because eyes are much more sensitive to brightness detail than color detail.
+3. **Discrete Cosine Transform (DCT)** — break the image into 8×8 blocks and express each as a sum of frequency patterns.
+4. **Quantization** — aggressively round off the high-frequency (fine-detail) components, which is where the data is actually discarded. A "quality" setting controls how aggressive this is.
+5. **Entropy coding** — losslessly pack what remains.
+
+Two important consequences:
+
+- **It's lossy and generational.** Each re-save discards more detail; repeatedly editing and re-saving a JPEG degrades it ("generation loss"). At high compression you see **artifacts** — blocky 8×8 regions and "ringing" around sharp edges.
+- **It's bad at sharp edges and text.** The frequency-based approach suits smooth photographic gradients but smears crisp lines — which is exactly where [PNG](/t/png) wins.
+
+JPEG has no transparency. Successors like JPEG 2000, WebP, AVIF, and JPEG XL compress better, but classic JPEG remains nearly universal.
+
+## Why it matters
+
+JPEG made digital photography and the image-rich web possible. By cutting photo file sizes by 10× or more with little visible loss, it's the reason pages full of photos load quickly and phones can store thousands of pictures. It remains one of the most widely used file formats in the world, and its DCT-based approach is conceptually the same family of techniques used in [video codecs](/t/video-codec).
+
+## Real-world examples
+
+- Practically every photo on a website or shared by phone is a JPEG.
+- A camera's "quality" setting trades file size against compression artifacts — both are the JPEG quantization step in action.
+- Over-compressed images showing blocky squares and halos around edges are classic JPEG artifacts.
+
+## Common misconceptions
+
+- **"JPEG is lossless if I set quality to 100."** Even at maximum quality, JPEG's color subsampling and DCT rounding usually discard *some* data; for truly lossless images use [PNG](/t/png).
+- **"Re-saving a JPEG doesn't hurt it."** Each save re-compresses and loses more detail; repeated edit-and-save cycles visibly degrade the image.
+
+## Learn next
+
+JPEG is one [image format](/t/image-format); its lossless counterpart for sharp graphics is [PNG](/t/png), and the same compression ideas extend to the [video codec](/t/video-codec).

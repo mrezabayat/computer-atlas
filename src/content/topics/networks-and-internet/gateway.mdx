@@ -1,0 +1,49 @@
+---
+title: Gateway
+aliases: ["default gateway", "network gateway"]
+category: networks-and-internet
+kind: concept
+summary: A network node that bridges two different networks — most commonly the "default gateway," the router that forwards traffic from your local network out to the rest of the internet.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["networking", "router"]
+prerequisites: ["router", "ip-address"]
+related: ["nat", "firewall"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **gateway** is the doorway between two networks. When a device on your home or office network wants to reach anything *outside* that network — a website, an app's servers — it sends the traffic to its **default gateway**, the router that knows how to forward it onward. Your laptop doesn't know how to reach the whole internet; it just knows "send anything that isn't local to the gateway, and let it figure out the next hop."
+
+## More detail
+
+Every device configured for a network gets a **default gateway** address (often something like `192.168.1.1`). The rule a device follows is simple: if the destination IP is on my local subnet, deliver it directly; otherwise, hand it to the gateway. The gateway — usually a [router](/t/router) — then forwards the packet toward its destination, hop by hop.
+
+The word "gateway" is used at different levels:
+
+- **Default gateway** — the router connecting a local network (LAN) to the wider internet. This is the everyday meaning.
+- **Protocol gateway** — a node that translates between *different* protocols or data formats, not just different networks (e.g., an email gateway, a VoIP-to-PSTN gateway).
+- **API gateway** — in software architecture, a single entry point that routes client requests to backend services (a different but related "doorway" idea).
+
+A home router typically bundles several roles into one box: it's the default gateway, it does [NAT](/t/nat) so all your devices share one public IP, it runs a [firewall](/t/firewall), and it hands out addresses via DHCP.
+
+## Why it matters
+
+The gateway is the concept that makes "the local network" and "the internet" connect. Almost every networking problem — "I can reach local devices but not the internet," or vice versa — comes down to gateway and routing configuration. Understanding it is the difference between networking feeling like magic and feeling like plumbing you can reason about.
+
+## Real-world examples
+
+- `ip route` (Linux) or `route print` (Windows) shows your default gateway — the address everything non-local is sent to.
+- "Can ping the router but not Google" is a classic symptom: the local link works, but the gateway can't reach the outside (or DNS is broken).
+- A corporate network may route all internet-bound traffic through a single security gateway that inspects and logs it.
+
+## Common misconceptions
+
+- **"Gateway and router mean the same thing."** A router is a device; "gateway" is a *role* — the router your traffic exits through. A router can be a gateway, but the gateway concept is about the boundary it sits on.
+- **"The gateway assigns my IP address."** That's usually DHCP (often running on the same box), not the gateway function itself.
+
+## Learn next
+
+The device that usually plays the gateway role is a [router](/t/router); on the way out it typically performs [NAT](/t/nat) and runs a [firewall](/t/firewall).

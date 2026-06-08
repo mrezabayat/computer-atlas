@@ -1,0 +1,51 @@
+---
+title: Runbook
+aliases: ["runbooks", "playbook", "operational runbook"]
+category: operations-and-reliability
+kind: concept
+summary: A documented, step-by-step procedure for handling a specific operational task or failure — so any on-call engineer can respond correctly under pressure without reinventing the fix.
+level: beginner
+status: reviewed
+importance: important
+tags: ["ops", "incidents", "documentation"]
+prerequisites: ["incident-response"]
+related: ["sre"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **runbook** is a written recipe for a specific operational situation: "if the queue backs up, here's exactly what to check and what to do." When something breaks at 3 a.m., the on-call engineer shouldn't have to figure out the response from scratch — a good runbook walks them through diagnosis and remediation step by step. It captures the hard-won knowledge of "how we fix this" so it isn't trapped in one expert's head, and so the response is consistent no matter who's holding the pager.
+
+## More detail
+
+A useful runbook is concrete and actionable, not a vague overview. It typically includes:
+
+- **When to use it** — the symptom or alert that triggers it ("API latency alert firing").
+- **Diagnosis steps** — specific dashboards to check, queries to run, what healthy vs. unhealthy looks like.
+- **Remediation steps** — the actual commands or actions to take, in order, with expected results.
+- **Escalation** — who to call and when to escalate if the steps don't resolve it.
+- **Rollback / safety notes** — how to undo, and what *not* to do.
+
+Runbooks are most valuable when they're **linked directly from alerts** — the alert that wakes you up points straight at the runbook for that exact problem. They're living documents: every incident and [postmortem](/t/incident-response) is a chance to create a new runbook or fix an outdated one.
+
+The aspirational end state is **automation**. A runbook that's followed identically every time is a script waiting to be written; mature teams progressively turn manual runbooks into automated remediation ("auto-healing"), leaving humans for the genuinely novel problems. This connects to the [SRE](/t/sre) goal of reducing **toil** — repetitive manual operational work.
+
+## Why it matters
+
+Runbooks are what make on-call sustainable and incidents survivable. They shrink **time to recovery** by removing guesswork during the worst moments, they let less-experienced engineers handle problems safely, and they prevent the dangerous situation where only one person knows how to fix a critical system. They turn institutional operational knowledge into a durable, shareable asset rather than tribal lore — and they're the on-ramp to automating that response entirely.
+
+## Real-world examples
+
+- An alert for "disk usage above 90%" linking to a runbook that lists exactly which logs to rotate and how to expand the volume.
+- A new on-call engineer resolving a database failover by following the runbook step by step, without needing to wake a senior engineer.
+- A team converting a frequently-used manual runbook into an automated script that runs on the alert, eliminating the toil entirely.
+
+## Common misconceptions
+
+- **"A runbook is just documentation."** General docs explain how a system works; a runbook is a *procedure* for a specific situation, written to be followed under stress with minimal thinking.
+- **"Write it once and you're done."** Stale runbooks are dangerous — they send engineers down wrong paths during incidents. They have to be maintained and validated as the system changes.
+
+## Learn next
+
+Runbooks are a key tool during [incident response](/t/incident-response) and embody the [SRE](/t/sre) drive to reduce repetitive operational toil.

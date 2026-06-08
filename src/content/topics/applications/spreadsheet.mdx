@@ -1,0 +1,50 @@
+---
+title: Spreadsheet
+aliases: ["spreadsheets", "excel", "google sheets"]
+category: applications
+kind: technology
+summary: A grid of cells holding data and formulas that recalculate automatically — the world's most widely used programming tool, even though most users don't think of it as programming.
+level: beginner
+status: reviewed
+importance: important
+tags: ["productivity", "data", "end-user"]
+prerequisites: []
+related: ["scientific-computing", "relational-model"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **spreadsheet** is a grid of cells you fill with numbers, text, and — crucially — **formulas** that compute results from other cells. Change one number, and everything that depends on it updates automatically. That simple idea, pioneered by VisiCalc in 1979 and now embodied in Excel and Google Sheets, became one of the most important applications in computing history. Hundreds of millions of people use spreadsheets daily to budget, plan, analyze, and model — making the spreadsheet arguably the most widely used *programming* environment in the world, even though hardly anyone calls it that.
+
+## More detail
+
+What makes a spreadsheet powerful is **automatic recalculation through a dependency graph**. Each formula cell references others; when a value changes, the spreadsheet recomputes everything downstream, in the right order. That's the same reactive, dataflow idea that underlies many modern programming tools — it's just wrapped in an interface anyone can use.
+
+Core capabilities:
+
+- **Formulas and functions** — arithmetic, lookups (`VLOOKUP`, `XLOOKUP`), conditionals, statistics, and hundreds more.
+- **What-if modeling** — change inputs and instantly see outcomes ripple through, ideal for budgets, forecasts, and scenarios.
+- **Charts and pivot tables** — summarize and visualize data without writing code.
+- **A "good enough" database** — small datasets in rows and columns, though this resemblance to the [relational model](/t/relational-model) is also where trouble starts.
+
+The deepest insight is that spreadsheets are **end-user programming**: ordinary people build genuine computational models — sometimes enormously complex ones — without ever learning a traditional programming language. This is a triumph of accessible design and also a source of risk.
+
+## Why it matters
+
+Spreadsheets put computational power into the hands of non-programmers on a scale nothing else has matched, and they quietly run a staggering share of the world's business logic — finance, operations, science, small business, research. Understanding them is understanding both a foundational application *and* a profound lesson in interface design: how a well-chosen abstraction (the recalculating grid) can turn a complex capability (programming) into something hundreds of millions of people use without a manual.
+
+## Real-world examples
+
+- **Microsoft Excel** and **Google Sheets** running everything from household budgets to corporate financial models.
+- A startup's entire early operations — finances, inventory, planning — living in a handful of shared spreadsheets.
+- Scientists using a spreadsheet for quick data analysis before reaching for heavier [scientific computing](/t/scientific-computing) tools.
+
+## Common misconceptions
+
+- **"Spreadsheets aren't programming."** Building formulas with logic, lookups, and dependencies *is* programming — spreadsheets are the most popular programming environment on Earth, just not labeled as one.
+- **"A spreadsheet is a fine database."** For small data it works, but spreadsheets lack the integrity, concurrency, and validation of a real database; famous, costly errors (including ones that affected public policy) have come from overgrown spreadsheets used where a [database](/t/relational-model) was needed.
+
+## Learn next
+
+For heavier numerical work, the step up from a spreadsheet is [scientific computing](/t/scientific-computing); for structured data at scale, the [relational model](/t/relational-model) of databases.

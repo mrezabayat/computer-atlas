@@ -1,0 +1,51 @@
+---
+title: Service Mesh
+aliases: ["sidecar proxy", "istio", "linkerd"]
+category: distributed-systems-and-cloud
+kind: technology
+summary: An infrastructure layer that handles service-to-service communication for microservices — routing, retries, encryption, and observability — usually via sidecar proxies, so application code doesn't have to.
+level: advanced
+status: reviewed
+importance: important
+tags: ["microservices", "networking", "cloud"]
+prerequisites: ["microservices"]
+related: ["kubernetes", "container"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **service mesh** takes all the tricky parts of services talking to each other over a network — retrying failed calls, balancing load, encrypting traffic, measuring latency — and moves them *out* of your application code into a dedicated infrastructure layer. Each service gets a little helper proxy alongside it that intercepts all its network traffic. Your code just calls "the orders service"; the mesh handles everything about *how* that call actually travels.
+
+## More detail
+
+In a [microservices](/t/microservices) system with dozens or hundreds of services, every service needs the same networking concerns solved: timeouts, retries, circuit breaking, mutual TLS, load balancing, traffic splitting, and per-call metrics. Without a mesh, each team reimplements these in every language they use. A service mesh solves them once, in the platform.
+
+The common design is the **sidecar proxy**: next to each service instance runs a small proxy (often Envoy) that intercepts all inbound and outbound traffic. The proxies form the **data plane** — they do the actual work. A central **control plane** (Istio, Linkerd) configures all the proxies: it pushes routing rules, certificates, and policy, and collects telemetry.
+
+What that buys you:
+
+- **mTLS everywhere** — encrypted, authenticated service-to-service traffic with automatic certificate rotation (a building block of [zero trust](/t/zero-trust)).
+- **Traffic control** — canary releases, blue-green, retries, timeouts, circuit breaking — configured declaratively, not coded.
+- **Observability** — uniform metrics, traces, and logs for every call, for free.
+
+The cost is real: more moving parts, extra latency per hop, and significant operational complexity — which is why meshes pay off mainly at larger scale.
+
+## Why it matters
+
+As microservice counts grow, the *network between services* becomes the hardest part of the system. A service mesh standardizes that layer so reliability, security, and observability are consistent across every service regardless of language — and so platform teams can change networking behavior without redeploying application code.
+
+## Real-world examples
+
+- **Istio** (control plane) with **Envoy** sidecars is the canonical Kubernetes service mesh.
+- **Linkerd** is a lighter-weight alternative focused on simplicity and low overhead.
+- A team rolls out a risky change to 1% of traffic by editing a mesh traffic-split rule — no application redeploy, instant rollback.
+
+## Common misconceptions
+
+- **"Every microservices app needs a mesh."** Below a certain scale the operational overhead outweighs the benefit; a library or API gateway is often enough.
+- **"A service mesh replaces Kubernetes."** No — it runs *on top of* an orchestrator like [Kubernetes](/t/kubernetes), handling the network layer that orchestration leaves to you.
+
+## Learn next
+
+A service mesh exists to tame [microservices](/t/microservices) at scale, and almost always runs on [Kubernetes](/t/kubernetes) using [container](/t/container) sidecars.

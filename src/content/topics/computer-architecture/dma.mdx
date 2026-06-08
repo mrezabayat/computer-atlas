@@ -1,0 +1,53 @@
+---
+title: DMA
+aliases: ["direct memory access"]
+category: computer-architecture
+kind: concept
+summary: Direct Memory Access — hardware that lets devices transfer data to and from main memory without routing every byte through the CPU, freeing the processor for other work.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["architecture", "io", "memory"]
+prerequisites: ["bus"]
+related: ["interrupt", "memory"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+When a disk, network card, or sound device needs to move a chunk of data into [memory](/t/memory), there are two ways to do it. The slow way: the CPU copies every single byte itself, one at a time, doing nothing else. The fast way, **Direct Memory Access (DMA)**: the CPU tells a dedicated **DMA controller** "move this block from the device into memory at this address," and then goes off to do other work. The controller handles the whole transfer on its own and taps the CPU on the shoulder (via an [interrupt](/t/interrupt)) only when it's done. DMA is why your CPU isn't pegged at 100% every time you copy a large file.
+
+## More detail
+
+Without DMA, the CPU does **programmed I/O** — it personally reads each word from the device and writes it to memory. For a multi-megabyte transfer that's millions of instructions spent just shuffling bytes.
+
+With DMA, the flow is:
+
+1. The CPU programs the DMA controller with a source, a destination, and a length.
+2. The controller takes control of the [bus](/t/bus) and transfers the data directly between the device and memory.
+3. When the transfer finishes, the controller raises an [interrupt](/t/interrupt) so the CPU can process the now-ready data.
+
+Some consequences and refinements:
+
+- **Bus contention** — while DMA uses the bus, the CPU may be briefly blocked from memory ("cycle stealing"); controllers balance this so the CPU isn't starved.
+- **Cache coherence** — because DMA writes to memory *behind the CPU's back*, the CPU's [cache](/t/cache) can hold stale copies; systems must invalidate or snoop the cache to stay correct.
+- **Modern forms** — high-speed buses like PCIe have devices act as **bus masters** doing their own DMA; **RDMA** (Remote DMA) extends the idea across a network, letting one machine write directly into another's memory.
+
+## Why it matters
+
+DMA is fundamental to making I/O fast and the CPU efficient. Every high-throughput data path — disk, network, GPU, audio — relies on it. It's the difference between a CPU that spends its time *computing* and one that spends its time *copying*. It also underlies whole performance techniques like zero-copy networking, and it's a recurring concern in systems security (a malicious device doing DMA can read memory it shouldn't, which is why IOMMUs exist to police device access).
+
+## Real-world examples
+
+- Copying a large file: the disk controller DMAs data straight into memory while the CPU runs your other programs.
+- A network card DMAing incoming packets into kernel buffers, then interrupting once a batch has arrived (a key part of high-rate packet handling).
+- A GPU DMAing textures and model weights from system memory into its own VRAM over PCIe.
+
+## Common misconceptions
+
+- **"The CPU still copies the data, just faster."** No — the whole point is that the *controller* moves the data; the CPU is free to do unrelated work during the transfer.
+- **"DMA is old/legacy."** The simple ISA DMA controller is legacy, but the *concept* is everywhere in modern hardware — PCIe bus mastering and RDMA are DMA at high speed.
+
+## Learn next
+
+DMA moves data over the [bus](/t/bus) and signals completion with an [interrupt](/t/interrupt); because it writes memory directly, it interacts closely with the CPU [cache](/t/cache).

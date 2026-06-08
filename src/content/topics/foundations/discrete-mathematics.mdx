@@ -1,0 +1,50 @@
+---
+title: Discrete Mathematics
+aliases: ["discrete math"]
+category: foundations
+kind: field
+summary: The branch of mathematics dealing with distinct, separate values — logic, sets, combinatorics, graphs, and proof — that forms the mathematical foundation of computer science.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["theory", "mathematics", "foundations"]
+prerequisites: []
+related: ["graph-theory", "boolean-logic"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Discrete mathematics** is the math of *separate, countable things* — whole numbers, yes/no values, finite sets, networks of nodes — as opposed to the smooth, continuous quantities of calculus. Computers are discrete machines: everything is ultimately distinct bits and finite steps. So discrete math, not calculus, is the mathematics that underpins computer science. It's the toolkit for reasoning precisely about the objects programs actually manipulate.
+
+## More detail
+
+Discrete math is less a single subject than a family of closely related ones, each feeding directly into computing:
+
+- **Logic** — propositions, predicates, and proof. The basis of [boolean logic](/t/boolean-logic), circuit design, and reasoning about program correctness.
+- **Set theory** — collections, unions, intersections, relations, functions. The vocabulary underneath databases and type systems.
+- **Combinatorics** — counting arrangements and possibilities; essential for probability, algorithm analysis, and "how many cases are there?"
+- **Graph theory** — nodes and edges modeling networks, dependencies, and relationships. (See [graph theory](/t/graph-theory).)
+- **Number theory and modular arithmetic** — the math behind hashing and cryptography.
+- **Recurrences and induction** — proving statements about all sizes of input, and analyzing recursive algorithms.
+
+A central skill the field teaches is **proof** — induction in particular, which mirrors [recursion](/t/recursion) and is how you show an algorithm is correct *for all inputs*, not just the ones you tested.
+
+## Why it matters
+
+Almost every deeper topic in computer science is applied discrete math. Algorithm analysis is combinatorics; databases are set theory and logic; cryptography is number theory; compilers and verification are formal logic; networks and dependency resolution are graph theory. You can write programs without it, but you can't *reason rigorously* about whether they're correct or efficient without the language and tools discrete math provides.
+
+## Real-world examples
+
+- Counting how many operations a nested loop performs (combinatorics) to derive its [Big O](/t/big-o).
+- Using **modular arithmetic** to build hash functions and public-key cryptography.
+- Modeling task dependencies as a graph and topologically sorting them — the math behind build systems and package managers.
+
+## Common misconceptions
+
+- **"You need calculus to do computer science."** Some areas (graphics, ML) use continuous math, but the core of CS rests on *discrete* math far more than on calculus.
+- **"Discrete math is just abstract theory with no practical use."** It's the opposite — it directly models the finite, countable structures that every program manipulates.
+
+## Learn next
+
+Two pillars of discrete math with their own deep importance to computing are [graph theory](/t/graph-theory) and [boolean logic](/t/boolean-logic).

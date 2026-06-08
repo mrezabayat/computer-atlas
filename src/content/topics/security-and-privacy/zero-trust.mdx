@@ -1,0 +1,48 @@
+---
+title: Zero Trust
+aliases: ["zero trust architecture", "zero-trust security"]
+category: security-and-privacy
+kind: concept
+summary: A security model that trusts no network location by default — every request must be authenticated, authorized, and encrypted, whether it comes from outside the network or inside it.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["security", "zero-trust", "network"]
+prerequisites: ["authentication", "authorization"]
+related: ["threat-model"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Zero trust** flips the old security assumption on its head. The traditional model was a castle and moat: build a strong perimeter (firewall, VPN), and once you're *inside* the network, you're trusted. Zero trust says: **trust nothing based on where it is.** Every request — even one coming from the desk next to the server — has to prove who it is, prove it's allowed, and travel encrypted. "Never trust, always verify."
+
+## More detail
+
+The model exists because the perimeter stopped meaning anything. Employees work from home, services run across multiple clouds, and attackers who breach the perimeter once could historically roam freely ("lateral movement"). Zero trust assumes the attacker may already be inside.
+
+Its core principles:
+
+- **Verify explicitly** — authenticate and authorize every request using all available signals (user identity, device health, location, behavior), not just an IP address.
+- **Least privilege** — grant the minimum access needed, for the shortest time. (Builds directly on [authorization](/t/authorization).)
+- **Assume breach** — segment the network so a compromise in one place can't spread; encrypt traffic everywhere; log and inspect continuously.
+
+In practice this means strong [authentication](/t/authentication) (often phishing-resistant MFA), per-request authorization at an identity-aware proxy or gateway, micro-segmentation instead of one flat internal network, and mutual TLS between services rather than implicit trust.
+
+## Why it matters
+
+Zero trust is now the default architecture guidance from major security bodies (including the US federal government's mandate for agencies). As remote work and multi-cloud became universal, the "inside is safe" assumption became a liability — a single stolen VPN credential could expose everything. Zero trust limits the blast radius of any one compromise.
+
+## Real-world examples
+
+- **Google's BeyondCorp** removed the corporate VPN: employees access internal apps through an identity-aware proxy that checks user and device on every request, from any network.
+- A microservices backend using **mutual TLS** so that even internal service-to-service calls are authenticated and encrypted — a service can't be impersonated just because it's "inside."
+
+## Common misconceptions
+
+- **"Zero trust is a product you buy."** It's an architecture and a set of principles, not a single appliance — though many products help implement pieces of it.
+- **"Zero trust means no one can access anything."** It means access is *verified per request and scoped tightly*, not that access is denied — legitimate users with the right context get in smoothly.
+
+## Learn next
+
+Zero trust is built on strong [authentication](/t/authentication) and fine-grained [authorization](/t/authorization); deciding where to apply it is guided by your [threat model](/t/threat-model).

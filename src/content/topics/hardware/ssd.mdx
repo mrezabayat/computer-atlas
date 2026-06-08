@@ -1,0 +1,52 @@
+---
+title: SSD
+aliases: ["solid state drive", "solid-state drive"]
+category: hardware
+kind: technology
+summary: A storage device that keeps data in flash memory chips with no moving parts — far faster than a spinning hard drive, and now the default storage in most computers.
+level: beginner
+status: reviewed
+importance: important
+tags: ["storage", "ssd", "flash"]
+prerequisites: ["storage"]
+related: ["flash-memory", "hdd"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+An **SSD** (solid-state drive) stores your files in [flash memory](/t/flash-memory) chips instead of on a spinning magnetic platter. "Solid-state" means **no moving parts** — nothing spins, nothing seeks. That makes it dramatically faster than the old hard disk it replaced, more rugged, silent, and lower-power. The single biggest speed upgrade most computers got in the last fifteen years was swapping a hard drive for an SSD.
+
+## More detail
+
+An SSD is built from [flash memory](/t/flash-memory) plus a **controller** chip that manages it. Because flash has quirks — it's written in pages but erased in larger blocks, and each cell wears out after many writes — the controller does substantial work behind the scenes:
+
+- **Wear leveling** — spreading writes evenly across cells so no single area wears out early.
+- **Garbage collection and TRIM** — reclaiming blocks of deleted data so future writes stay fast.
+- **Error correction** — flash is noisy, so SSDs use heavy ECC.
+
+SSDs come in interfaces that matter a lot for speed:
+
+- **SATA SSDs** — use the old hard-drive interface; a big jump over [HDDs](/t/hdd) but capped by SATA's bandwidth (~550 MB/s).
+- **NVMe SSDs** — connect over PCIe (often as an M.2 stick) and are several times faster again (multiple GB/s), because they were designed for flash rather than inheriting a disk-era protocol.
+
+Flash cells also trade density against endurance: SLC (1 bit/cell) is fastest and most durable, while QLC (4 bits/cell) is cheaper and denser but slower and shorter-lived — which is why capacities rose and prices fell.
+
+## Why it matters
+
+The move from HDD to SSD transformed everyday computing: boot times went from a minute to seconds, applications launch instantly, and laptops got thinner, quieter, and more battery-efficient. SSDs also reshaped data centers and databases, where low **latency** (not just throughput) is critical — random reads that crippled a spinning disk are trivial for flash. Today SSDs are the default, and HDDs survive mainly for cheap bulk capacity.
+
+## Real-world examples
+
+- Replacing an old laptop's hard drive with an SSD is the classic cheap upgrade that makes the machine feel new.
+- An **NVMe M.2** drive in a modern desktop reading data at several gigabytes per second.
+- Databases and game consoles adopting SSDs specifically to cut load and query latency.
+
+## Common misconceptions
+
+- **"SSDs wear out fast, so they're unreliable."** Flash cells do have limited write cycles, but wear leveling and modern endurance mean a typical consumer SSD outlasts the useful life of the computer for normal use.
+- **"All SSDs are equally fast."** Interface (SATA vs. NVMe) and flash type (SLC→QLC) cause large, real differences in speed and endurance.
+
+## Learn next
+
+An SSD is [storage](/t/storage) built from [flash memory](/t/flash-memory); the slower, mechanical alternative it largely replaced is the [HDD](/t/hdd).

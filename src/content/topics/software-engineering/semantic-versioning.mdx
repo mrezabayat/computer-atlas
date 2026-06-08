@@ -1,0 +1,56 @@
+---
+title: Semantic Versioning
+aliases: ["semver", "version numbers"]
+category: software-engineering
+kind: concept
+summary: A convention for version numbers — MAJOR.MINOR.PATCH — where each part signals the kind of change (breaking, feature, fix), so the people who depend on your software can update safely.
+level: beginner
+status: reviewed
+importance: important
+tags: ["versioning", "releases", "dependencies"]
+related: ["ci-cd"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Semantic Versioning** (SemVer) is a simple rule for version numbers that makes them *mean something*. A version looks like **`MAJOR.MINOR.PATCH`** — for example `2.4.1`. The three numbers tell you what changed:
+
+- **MAJOR** (the `2`) — a **breaking** change; code that used the old version may stop working.
+- **MINOR** (the `4`) — a **new feature** added in a backward-compatible way; existing code keeps working.
+- **PATCH** (the `1`) — a **bug fix** with no new features and no breaking changes.
+
+So upgrading from `2.4.1` to `2.4.7` should be safe, `2.4.1` to `2.6.0` should add features without breaking you, but `2.4.1` to `3.0.0` is a warning: read the changelog, something changed that could break your code.
+
+## More detail
+
+SemVer turns a version number into a *contract* between a library and everyone who depends on it. That contract is what makes automated dependency management possible. Package managers let you express which updates you'll accept automatically:
+
+- `^2.4.1` ("caret") — accept any `2.x.y` ≥ `2.4.1`: minor and patch updates, but not `3.0.0`.
+- `~2.4.1` ("tilde") — accept patch updates only (`2.4.x`).
+- `2.4.1` — exactly this version.
+
+Conventions worth knowing:
+
+- **`0.x.y`** versions are "anything goes" — pre-1.0 software is allowed to break on minor bumps.
+- **Pre-release tags** like `1.0.0-beta.2` and **build metadata** like `1.0.0+exp.sha.5114f85` extend the scheme.
+- Tools like **`semantic-release`** read structured commit messages (Conventional Commits) to compute the next version and publish automatically from [CI/CD](/t/ci-cd).
+
+## Why it matters
+
+Modern software is built on deep dependency trees — a typical app pulls in hundreds of packages, each depending on others. SemVer is the shared language that lets all those updates happen without constant manual coordination: a tool can safely apply a patch fix to a library five levels deep because the version number *promises* it won't break anything. When maintainers violate SemVer (ship a breaking change in a minor release), they break that promise and thousands of builds downstream.
+
+## Real-world examples
+
+- `npm install`, `pip`, and `cargo` all resolve dependency versions using SemVer ranges in your manifest.
+- A Dependabot/Renovate bot automatically opening a pull request to bump a patch release, trusting SemVer that it's safe.
+- A library's `3.0.0` release whose changelog opens with a "Breaking changes" section — exactly what a MAJOR bump signals.
+
+## Common misconceptions
+
+- **"The version number is just a label the author picks."** Under SemVer it's a promise about compatibility; the numbers are supposed to be *earned* by the nature of the change.
+- **"A bigger version means better/more mature."** Not necessarily — a project on `47.0.0` just makes frequent breaking changes; one on `1.2.0` may be older and rock-solid.
+
+## Learn next
+
+Semantic versioning is often automated as part of a release [CI/CD](/t/ci-cd) pipeline that computes and publishes the next version on every change.

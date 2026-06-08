@@ -1,0 +1,48 @@
+---
+title: Syntax vs Semantics
+aliases: ["syntax and semantics", "syntax versus semantics"]
+category: programming-languages
+kind: concept
+summary: Syntax is the grammar — which arrangements of symbols are legal; semantics is the meaning — what a legal program actually does when it runs.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["languages", "compiler", "theory"]
+prerequisites: ["programming-language"]
+related: ["compiler", "parsing"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Syntax** is the grammar of a language — which arrangements of symbols are even allowed. **Semantics** is the meaning — what a grammatically valid program actually *does*. The English sentence "colorless green ideas sleep furiously" is syntactically fine but semantically nonsense. In code, `x = 1 / 0` is perfectly valid syntax, but its meaning — divide by zero — is an error. A language processor checks syntax first, then worries about meaning.
+
+## More detail
+
+**Syntax** is what a parser enforces: balanced braces, keywords in the right place, well-formed expressions. A *syntax error* means the source couldn't even be turned into a structured form — the compiler gave up before understanding any meaning.
+
+**Semantics** divides into two layers:
+
+- **Static semantics** — meaning that can be checked *without running* the program: type compatibility, scope and name resolution, "variable used before it's declared." Caught by the compiler after parsing.
+- **Dynamic semantics** — what actually happens *at run time*: the order expressions evaluate in, what `+` does to two particular values, what a null dereference does.
+
+The two are independent. Two programs can share an identical syntactic shape but mean different things — `a + b` is numeric addition in one language and string concatenation in another. And the same meaning can be written with wildly different syntax: every language spells "loop over a list" differently. Formally, **grammars** (e.g., BNF) describe syntax, while **operational** or **denotational semantics** describe meaning.
+
+## Why it matters
+
+This split is the backbone of how [compilers](/t/compiler) and interpreters are structured, and it explains why *"it compiles"* is not the same as *"it's correct."* Syntax errors are the cheap ones — caught instantly. The expensive bugs are semantic: the code is perfectly legal but means the wrong thing. Knowing which layer an error lives in (parse error vs. type error vs. runtime fault) is half of debugging.
+
+## Real-world examples
+
+- A missing semicolon or unbalanced bracket is a **syntax** error — flagged before the program runs at all.
+- `"5" + 3` yields `"53"` in JavaScript but is a type error in Python: identical syntax, different **semantics**.
+- A **linter** mostly checks syntax and style; a **type checker** and your **tests** check semantics.
+
+## Common misconceptions
+
+- **"If it parses, it's correct."** Parsing only proves the grammar is satisfied. The meaning can still be completely wrong.
+- **"Syntax is the hard part of a language."** The grammar is usually the easy part; the depth — and most of the bugs — lives in the semantics (type rules, evaluation order, edge cases).
+
+## Learn next
+
+[Parsing](/t/parsing) is the step that turns valid syntax into a structured tree; the [compiler](/t/compiler) is what enforces both the grammar and the static semantics.

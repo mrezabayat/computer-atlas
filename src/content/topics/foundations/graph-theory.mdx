@@ -1,0 +1,55 @@
+---
+title: Graph Theory
+aliases: ["graphs", "network theory"]
+category: foundations
+kind: field
+summary: The study of graphs — collections of nodes connected by edges — which model networks, relationships, and dependencies across computing and beyond.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["theory", "graphs", "mathematics"]
+prerequisites: ["discrete-mathematics"]
+related: ["tree", "data-structure"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Graph theory** studies **graphs**: dots (called **nodes** or **vertices**) connected by lines (called **edges**). That's it — and yet this tiny idea models an astonishing range of things. A social network is a graph (people connected by friendships). A road map is a graph (intersections connected by streets). The web is a graph (pages connected by links). Whenever you have *things* and *relationships between them*, you have a graph, and graph theory is the toolkit for reasoning about it.
+
+## More detail
+
+Graphs come in varieties that capture different situations:
+
+- **Directed vs. undirected** — do edges have a direction (follower → followee) or not (mutual friendship)?
+- **Weighted vs. unweighted** — do edges carry a value (distance, cost, capacity)?
+- **Cyclic vs. acyclic** — a **DAG** (directed acyclic graph) has no cycles and models dependencies and orderings. A [tree](/t/tree) is a special connected, acyclic graph.
+
+On top of these sit the classic **algorithms** that show up constantly in software:
+
+- **Traversal** — BFS (breadth-first) and DFS (depth-first) to explore or search a graph.
+- **Shortest path** — Dijkstra's and A* for routing and navigation.
+- **Minimum spanning tree** — connecting everything at least cost.
+- **Topological sort** — ordering a DAG so dependencies come first.
+- **Connectivity, cycles, matching, and coloring** — each underpinning real problems (and some, like graph coloring, are famously [NP-hard](/t/complexity-theory)).
+
+A graph is both a mathematical object and a [data structure](/t/data-structure) (stored as an adjacency list or matrix), which is why graph theory sits right at the boundary of math and practical programming.
+
+## Why it matters
+
+Graphs are one of the most broadly applicable models in all of computing. Routing and navigation, social-network analysis, recommendation engines, dependency resolution in package managers and build systems, compiler optimization, network design, and the link analysis behind search engines (PageRank) are *all* graph problems. Recognizing that a messy real-world problem is "really" a graph problem instantly gives you a whole library of proven algorithms to apply.
+
+## Real-world examples
+
+- **GPS navigation** runs shortest-path algorithms over a graph of roads.
+- **Package managers and build tools** topologically sort a dependency DAG to decide install/build order.
+- **Search engines** model the web as a graph and rank pages by their link structure.
+
+## Common misconceptions
+
+- **"A graph is a chart or a plot."** In this field a "graph" is a network of nodes and edges, not a bar or line chart — same word, unrelated meaning.
+- **"Graph algorithms are niche."** They're everywhere — routing, social apps, dependencies, and search are all graph problems, often hiding in plain sight.
+
+## Learn next
+
+A [tree](/t/tree) is the most common special case of a graph, and graphs are stored and manipulated as a [data structure](/t/data-structure).

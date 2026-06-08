@@ -1,0 +1,53 @@
+---
+title: Memory Management
+aliases: ["memory allocation", "stack and heap"]
+category: programming-languages
+kind: concept
+summary: How a running program acquires and releases memory — the stack and the heap, allocation and freeing, and the strategies (manual, GC, ownership) that prevent leaks and corruption.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["memory", "runtime", "languages"]
+prerequisites: ["memory", "programming-language"]
+related: ["garbage-collection", "virtual-memory"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Memory management** is how a running program gets the memory it needs and gives it back when it's done. Every variable, object, and buffer has to live somewhere in RAM; something has to decide *where* it goes and *when* that space can be reused. Get it wrong and the program either leaks memory until it dies, or frees something too early and corrupts its own data.
+
+## More detail
+
+A program's memory is split into two regions that behave very differently:
+
+- **The stack** — fast, automatic, last-in-first-out. Each function call pushes a frame holding its local variables and return address; returning pops it. Sizes are known in advance and freeing is essentially free. It's why local variables "just work."
+- **The heap** — flexible storage for data whose size or lifetime isn't known up front. You **allocate** a block and must arrange for it to be **freed** later. This is where all the hard problems live.
+
+Languages take different approaches to the heap:
+
+- **Manual** (C, C++): you call `free`/`delete` yourself. Maximum control, classic bugs — leaks, *use-after-free*, *double-free*, dangling pointers.
+- **Garbage collection** (Java, Python, Go, JavaScript): the runtime automatically reclaims objects nothing references anymore. (See [garbage collection](/t/garbage-collection).)
+- **Ownership / RAII** (Rust, modern C++): the compiler tracks who owns each allocation and frees it deterministically when it goes out of scope — no garbage collector, no manual frees.
+- **Region / arena**: allocate many objects together and free the whole region at once — common in compilers and game engines.
+
+Underneath all of these, the OS hands out memory in pages and gives each process its own private [virtual memory](/t/virtual-memory) address space; an *allocator* like `malloc` sub-divides those pages for the program.
+
+## Why it matters
+
+Memory bugs are among the most damaging in all of software. Microsoft and Google have each reported that roughly **70% of their serious security vulnerabilities** are memory-safety failures — buffer overflows and use-after-free in C/C++. A language's memory-management strategy also shapes its entire character: its performance ceiling, its safety guarantees, and how much the programmer has to think about memory at all.
+
+## Real-world examples
+
+- A long-running server whose memory usage climbs forever under load has a **leak** — references kept alive that should have been dropped.
+- **Rust's** borrow checker rejects use-after-free *at compile time*, which is much of why it's prized for systems programming.
+- A C program that reads past the end of a buffer (a **buffer overflow**) is the root of countless historic exploits.
+
+## Common misconceptions
+
+- **"Garbage-collected languages can't leak."** They can — a cache, a global, or an un-removed event listener keeps objects *reachable* forever, and the GC won't touch reachable memory.
+- **"The stack and the heap are different hardware."** They're just two disciplined ways of using the same RAM, distinguished by *how* allocation and freeing work, not by where the bytes physically sit.
+
+## Learn next
+
+[Garbage collection](/t/garbage-collection) is the most common automatic strategy; [virtual memory](/t/virtual-memory) is how the operating system gives each program the address space it manages.

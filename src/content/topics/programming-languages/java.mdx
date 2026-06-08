@@ -1,0 +1,49 @@
+---
+title: Java
+aliases: ["jvm"]
+category: programming-languages
+kind: language
+summary: A statically typed, object-oriented language that compiles to bytecode and runs on the JVM — "write once, run anywhere" — long dominant in enterprise backends and Android.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["java", "language", "jvm"]
+prerequisites: ["programming-language"]
+related: ["type-system", "garbage-collection", "compiler"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Java** is built around two big ideas: nearly everything is an object, and your code runs on a virtual machine instead of directly on the hardware. You compile Java *once* into **bytecode**, and that same bytecode runs unchanged anywhere a Java Virtual Machine (JVM) exists — Windows, macOS, Linux, a phone, a mainframe. That "write once, run anywhere" promise, plus industrial-strength tooling and decades of libraries, made Java the backbone of enterprise software and the original language of Android.
+
+## More detail
+
+Java was created at Sun Microsystems by James Gosling and released in 1995. Its defining properties:
+
+- **Statically typed and class-based object-oriented** — types are checked at compile time, and code is organized into classes.
+- **Compiled to JVM bytecode** by `javac`, not to native machine code. The JVM interprets that bytecode and **JIT-compiles** hot paths to native code at runtime, so long-running Java approaches C++ speed.
+- **Garbage collected** — a generational collector (G1 by default; ZGC and Shenandoah for very low pause times) frees memory automatically.
+- **Verbose but predictable**, with an enormous ecosystem: Spring, Hibernate, and the Maven/Gradle build tools.
+
+The real star is the **JVM** — one of the most heavily optimized managed runtimes ever built. It's a shared platform: Kotlin, Scala, Clojure, and Groovy all compile to the same bytecode and run on it. Modern Java (records, sealed classes, and virtual threads in Java 21+) is far more concise than the ceremony-heavy Java of 2005, while keeping near-total backward compatibility.
+
+## Why it matters
+
+Java runs an enormous share of the world's backend systems — banks, trading platforms, telecom, government, and big-tech services — and was the native language of Android for over a decade. Learning it also means learning the JVM, a mature, observable, ferociously optimized runtime that an entire family of languages depends on.
+
+## Real-world examples
+
+- Much of **Netflix's** backend runs as JVM microservices.
+- Core data infrastructure — **Apache Kafka, Elasticsearch, Hadoop, Cassandra** — is written in Java.
+- **Android** apps were historically written in Java (now mostly Kotlin, also on the JVM).
+- **Minecraft: Java Edition** is, famously, Java.
+
+## Common misconceptions
+
+- **"Java and JavaScript are related."** Only by a 1990s marketing decision — they're completely different languages with different designers, runtimes, and uses.
+- **"Java is slow."** Startup is heavyweight and memory use is high, but the JIT makes steady-state server Java competitive with C++ on many workloads.
+
+## Learn next
+
+Java's compile-time checking is a strong [type system](/t/type-system); its automatic memory model is [garbage collection](/t/garbage-collection); and `javac` plus the JVM is a [compiler](/t/compiler) toolchain in action.

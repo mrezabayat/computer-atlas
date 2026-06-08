@@ -1,0 +1,54 @@
+---
+title: Video Codec
+aliases: ["video compression", "h264", "h265", "av1"]
+category: graphics-and-media
+kind: technology
+summary: An encoder/decoder that compresses video by exploiting redundancy within and between frames — the reason streaming and storing high-resolution video is feasible at all.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["video", "codec", "compression"]
+prerequisites: ["codec"]
+related: ["jpeg"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **video codec** is the technology that squeezes video down to a manageable size. Raw video is astronomically large — uncompressed 4K can be gigabytes *per second*. A video codec compresses that by a factor of hundreds, mostly by noticing that video is enormously repetitive: each frame looks a lot like the one before it, and within a frame, neighboring areas look similar. By storing mainly the *differences* rather than every full frame, codecs make streaming, downloading, and storing video possible. Without them, there is no Netflix, no YouTube, no video calls.
+
+## More detail
+
+A video codec combines two kinds of compression:
+
+- **Spatial (intra-frame)** — compress a single frame much like [JPEG](/t/jpeg) does, using frequency transforms to discard fine detail the eye won't miss.
+- **Temporal (inter-frame)** — the big win. Instead of storing every frame fully, store occasional complete **keyframes (I-frames)** and, in between, only the *changes* — described as **motion vectors** ("this block moved here") plus small corrections (**P-** and **B-frames**). A mostly-static scene compresses dramatically.
+
+This is why a fast-moving, scene-cutting action sequence needs far more bitrate than a talking head against a still background — there's more change to encode.
+
+Codecs are **lossy** and tunable: a **bitrate** setting trades quality against file size, and over-compression produces blocking and smearing artifacts. The major codecs form a generational ladder:
+
+- **H.264 / AVC** — the long-dominant standard, near-universal compatibility.
+- **H.265 / HEVC** and **VP9** — roughly half the bitrate for the same quality, but HEVC carries licensing complexity.
+- **AV1** — a newer, royalty-free codec backed by an industry alliance, more efficient still and increasingly used by streaming services.
+
+Encoding is far more expensive than decoding, and modern devices include **hardware encoders/decoders** so phones can record and play 4K without draining the battery.
+
+## Why it matters
+
+Video is the overwhelming majority of internet traffic, and video codecs are what make that possible within real-world bandwidth and storage. Each codec generation that halves the bitrate for the same quality directly cuts streaming costs, enables higher resolutions, and makes video viable on slower connections. The choice of codec is a major engineering and business decision for any streaming or video-calling service, balancing efficiency, device support, and licensing.
+
+## Real-world examples
+
+- **Netflix and YouTube** encode each video into multiple codecs and bitrates, adapting to your device and connection.
+- **Video calls** (Zoom, FaceTime) rely on real-time codecs that prioritize low latency over perfect quality.
+- A phone recording 4K uses a **hardware H.265/AV1 encoder** to compress on the fly without overheating.
+
+## Common misconceptions
+
+- **"A video codec is the same as a file format like MP4."** The codec is the *compression algorithm* (H.264, AV1); the container (MP4, MKV) is the wrapper that bundles the compressed video with audio and metadata.
+- **"Higher resolution is all that matters for quality."** Bitrate and codec efficiency matter just as much — a well-encoded 1080p stream can look better than a starved, over-compressed 4K one.
+
+## Learn next
+
+A video codec is a specialized [codec](/t/codec), and its intra-frame compression works much like still-image [JPEG](/t/jpeg).

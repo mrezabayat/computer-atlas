@@ -1,0 +1,54 @@
+---
+title: HDD
+aliases: ["hard disk drive", "hard drive", "spinning disk"]
+category: hardware
+kind: technology
+summary: A storage device that records data magnetically on spinning platters read by a moving head — cheap per gigabyte and high-capacity, but far slower than an SSD.
+level: beginner
+status: reviewed
+importance: important
+tags: ["storage", "hdd", "disk"]
+prerequisites: ["storage"]
+related: ["ssd"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+An **HDD** (hard disk drive) stores data the old-fashioned, mechanical way: on round magnetic **platters** that spin at high speed, with a tiny **read/write head** floating just above the surface on an arm that swings in and out to reach different tracks. It's essentially a record player for data. For decades it was *the* way computers stored files. It's now been overtaken by the [SSD](/t/ssd) for everyday use, but survives because it's still the cheapest way to store huge amounts of data.
+
+## More detail
+
+The mechanics define the HDD's strengths and weaknesses:
+
+- **Platters** spin at a fixed rate — commonly 5,400 or 7,200 RPM (faster in enterprise drives).
+- **Heads** on a moving **actuator arm** position over the right **track**; data is read as the platter rotates underneath.
+- **Capacity** comes from packing tracks densely and stacking multiple platters; modern drives reach 20+ TB.
+
+Two kinds of delay dominate performance, both physical:
+
+- **Seek time** — moving the head to the right track (milliseconds).
+- **Rotational latency** — waiting for the right sector to spin under the head.
+
+Because of this, HDDs are decent at **sequential** access (reading a big file laid out contiguously) but terrible at **random** access (jumping around), where the head has to keep repositioning. An SSD, with no moving parts, is hundreds of times faster at random reads — which is the whole reason it took over.
+
+HDDs are also more fragile (a physical shock can crash the head into the platter) and slower to wake from idle.
+
+## Why it matters
+
+The spinning disk shaped decades of software design — databases, file systems, and operating systems were all built to minimize seeks and favor sequential access, assumptions that still echo in their designs even though SSDs changed the rules. And the HDD isn't dead: for **bulk, cold, and archival storage** — backups, data centers storing petabytes, surveillance footage — its low cost per terabyte keeps it firmly in use where capacity matters more than speed.
+
+## Real-world examples
+
+- A cloud provider's "cold storage" or backup tier running on racks of high-capacity HDDs because price-per-TB beats speed there.
+- An external USB hard drive used for cheap bulk backups of photos and video.
+- A network-attached storage (NAS) box at home stuffed with large HDDs for media libraries.
+
+## Common misconceptions
+
+- **"HDDs are obsolete."** For *performance* they've lost to SSDs, but for cheap high-capacity bulk storage they remain the economical choice and are still made in huge quantities.
+- **"Defragmenting helps every drive."** Defragmentation helps *HDDs* by reducing head movement; on an SSD it's pointless and even harmful, since there's no head and it just causes wear.
+
+## Learn next
+
+The HDD is mechanical [storage](/t/storage); its faster, solid-state successor is the [SSD](/t/ssd).

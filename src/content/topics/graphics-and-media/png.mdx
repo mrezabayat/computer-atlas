@@ -1,0 +1,49 @@
+---
+title: PNG
+aliases: ["portable network graphics"]
+category: graphics-and-media
+kind: technology
+summary: A lossless image format that preserves every pixel exactly and supports transparency — ideal for graphics, logos, screenshots, and text, where JPEG's lossy compression would smear detail.
+level: beginner
+status: reviewed
+importance: important
+tags: ["image", "compression", "format"]
+prerequisites: ["image-format"]
+related: ["jpeg"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**PNG** is the format you use when every pixel has to stay exactly right. Unlike [JPEG](/t/jpeg), which throws away detail to shrink photos, PNG is **lossless** — it compresses the file *without* changing a single pixel, so what you save is exactly what you get back. It also supports **transparency**, letting parts of an image be see-through. That makes PNG the natural choice for logos, icons, screenshots, diagrams, and anything with sharp edges or text — the cases where JPEG would introduce ugly smearing.
+
+## More detail
+
+PNG (1996) was created partly as a free, patent-unencumbered replacement for the older GIF format. Its key properties:
+
+- **Lossless compression** — using the DEFLATE algorithm (the same one in ZIP), often with a "filter" step that predicts each pixel from its neighbors so the data compresses better. You can save and re-save endlessly with no quality loss.
+- **Alpha transparency** — a full **alpha channel** gives each pixel a transparency level, enabling smooth edges that blend onto any background (a big improvement over GIF's single transparent color).
+- **Sharp-edge friendly** — because it doesn't use lossy frequency compression, crisp lines, text, and flat color regions stay perfectly clean.
+
+The trade-off is the mirror image of JPEG: PNG files are **much larger for photographs**, because lossless compression can't exploit the "throw away invisible detail" trick that makes photos compress so well. So the rule of thumb is: **photos → JPEG, graphics/logos/screenshots → PNG.**
+
+PNG handles flat color regions extremely well (a solid-color logo compresses tiny) but struggles to shrink complex photographic gradients. Modern formats like WebP and AVIF offer both lossy and lossless modes, but PNG remains the universal default for lossless web graphics.
+
+## Why it matters
+
+PNG is the workhorse for all the non-photographic imagery on the web and in software: UI elements, icons, logos, charts, and screenshots. Its lossless fidelity and transparency are essential for design work, where exact pixels and clean compositing matter. Knowing when to reach for PNG versus JPEG is one of the most practical pieces of everyday graphics knowledge — pick wrong and you either bloat your page (PNG photo) or smear your logo (JPEG graphic).
+
+## Real-world examples
+
+- App icons, website logos, and UI buttons are PNGs, using transparency to sit on any background.
+- A **screenshot** saved as PNG keeps text crisp and readable, whereas JPEG would blur it.
+- A diagram or chart with flat colors and sharp lines compresses to a small, pixel-perfect PNG.
+
+## Common misconceptions
+
+- **"PNG is always better than JPEG because it's lossless."** For photographs, PNG produces far larger files for no visible benefit; JPEG is the right tool there. "Better" depends entirely on the image type.
+- **"PNG supports animation."** Standard PNG is a single image; animation needs the separate APNG extension (or GIF/WebP). The base format is static.
+
+## Learn next
+
+PNG is one [image format](/t/image-format); its lossy counterpart for photographs is [JPEG](/t/jpeg).

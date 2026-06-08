@@ -1,0 +1,49 @@
+---
+title: Convolutional Neural Network
+aliases: ["cnn", "convnet"]
+category: artificial-intelligence
+kind: concept
+summary: A neural-network architecture that uses convolution to detect local patterns — edges, textures, shapes — in grid-like data such as images; the workhorse of computer vision for a decade.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["ai", "neural-network", "vision"]
+prerequisites: ["neural-network"]
+related: ["computer-vision"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **convolutional neural network (CNN)** is a [neural network](/t/neural-network) designed for images. A plain neural network treats every pixel as an independent input, which throws away the most important fact about an image: nearby pixels are related, and a pattern (an edge, an eye, a wheel) means the same thing wherever it appears. A CNN exploits this by sliding small **filters** across the image, looking for local patterns and reusing the same pattern-detector everywhere. That makes it dramatically more efficient and effective at seeing than a generic network.
+
+## More detail
+
+The defining operation is **convolution**: a small grid of weights (a **kernel**, say 3×3) slides across the image, computing a weighted sum at each position to produce a **feature map**. Key properties make this powerful:
+
+- **Parameter sharing** — the same kernel is used across the whole image, so a network learns "an edge detector" once instead of separately for every location. Far fewer parameters than a fully-connected layer.
+- **Translation invariance** — a feature is recognized wherever it appears.
+- **Hierarchy** — stacked convolutional layers learn a hierarchy: early layers detect edges and colors, middle layers detect textures and parts, deep layers detect whole objects.
+
+A typical CNN interleaves **convolution layers**, **activation functions** (ReLU), and **pooling layers** (which downsample to summarize a region), ending in fully-connected layers for the final prediction. Landmark architectures — **LeNet** (1998), **AlexNet** (2012, which ignited the deep-learning boom by winning ImageNet), **VGG**, **ResNet** — progressively went deeper and more accurate.
+
+Since around 2020, **vision transformers** have matched or beaten CNNs on many large-scale tasks, but CNNs remain ubiquitous for their efficiency, especially with limited data or compute.
+
+## Why it matters
+
+CNNs are what made computer vision work well enough to deploy. The 2012 AlexNet result on ImageNet is widely seen as the spark of the modern deep-learning era — it showed that a deep CNN trained on GPUs could crush previous approaches. For a decade they powered nearly all practical image recognition, and the core idea of exploiting local structure with shared filters extends beyond images to audio and time-series data.
+
+## Real-world examples
+
+- **Image classification and object detection** — photo tagging, medical imaging (spotting tumors in scans), defect detection in manufacturing.
+- **Face recognition** and the autofocus/scene-detection in phone cameras.
+- **Self-driving** perception stacks historically built heavily on CNNs to detect lanes, pedestrians, and signs.
+
+## Common misconceptions
+
+- **"CNNs are obsolete now that we have transformers."** Vision transformers lead on some large-scale benchmarks, but CNNs are still widely used for their efficiency and strong performance with modest data.
+- **"A CNN understands what an object *is*."** It learns statistical visual patterns; it can be fooled by adversarial pixels or unusual angles that wouldn't trouble a human.
+
+## Learn next
+
+A CNN is a specialized [neural network](/t/neural-network), and it's the architecture that long powered [computer vision](/t/computer-vision).

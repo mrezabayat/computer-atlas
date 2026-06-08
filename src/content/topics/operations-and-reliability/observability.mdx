@@ -1,0 +1,49 @@
+---
+title: Observability
+aliases: ["o11y", "telemetry"]
+category: operations-and-reliability
+kind: concept
+summary: The ability to understand a system's internal state from the data it emits — metrics, logs, and traces — so you can debug problems you didn't anticipate, not just the ones you alerted on.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["ops", "observability", "monitoring"]
+prerequisites: ["monitoring"]
+related: ["logging", "sre"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Observability** is how well you can understand what's happening *inside* a running system just by looking at the data it produces. [Monitoring](/t/monitoring) tells you *that* something is wrong ("error rate is up"); observability is what lets you figure out *why* ("requests from this region, hitting this service, calling this slow database query"). The distinction matters most for the failures you never predicted — in a complex system, you can't pre-build a dashboard for every possible problem, so you need to be able to ask new questions of your data after the fact.
+
+## More detail
+
+Observability is conventionally built on **three pillars** of telemetry:
+
+- **Metrics** — numeric measurements over time (request rate, latency, CPU). Cheap to store, great for dashboards and alerts, but aggregated — they tell you *what*, not *which*.
+- **Logs** — timestamped records of discrete events. Rich detail, but high volume and hard to search at scale. (See [logging](/t/logging).)
+- **Traces** — the path of a single request as it hops across services, with timing at each step. Essential for debugging latency in [microservices](/t/microservices), where one user action touches a dozen systems.
+
+The key idea separating observability from plain monitoring is **high-cardinality, ad-hoc querying**: being able to slice telemetry by arbitrary dimensions (user ID, build version, region) you didn't decide on in advance. That's what lets you debug "unknown unknowns."
+
+Standards and tooling have consolidated: **OpenTelemetry** provides vendor-neutral instrumentation; platforms like Prometheus/Grafana, Honeycomb, Datadog, and Jaeger store and query the data.
+
+## Why it matters
+
+As systems became distributed and dynamic — microservices, containers, autoscaling — the old model of "watch a fixed set of dashboards" stopped being enough. Failures emerge from *interactions* no one anticipated. Observability is the practice that keeps complex systems debuggable, dramatically shortening the time to find and fix problems (a key reliability metric, MTTR — mean time to resolution). Without it, on-call engineers are debugging blind.
+
+## Real-world examples
+
+- A distributed **trace** showing a slow checkout was caused by one downstream service's database call, not the checkout service itself.
+- Slicing latency metrics by app version to discover a regression appeared only in the latest deploy.
+- **OpenTelemetry** instrumentation feeding traces, metrics, and logs into a single platform an on-call engineer queries during an incident.
+
+## Common misconceptions
+
+- **"Observability is just monitoring with a fancier name."** Monitoring watches known signals and alerts; observability is about being able to investigate *unanticipated* problems by querying rich telemetry freely.
+- **"Collect everything and you'll have observability."** Volume isn't insight — without good instrumentation, useful dimensions, and the ability to correlate across signals, you just have expensive noise.
+
+## Learn next
+
+Observability builds on [monitoring](/t/monitoring) and [logging](/t/logging), and is a core practice of [SRE](/t/sre).

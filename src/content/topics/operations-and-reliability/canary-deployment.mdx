@@ -1,0 +1,54 @@
+---
+title: Canary Deployment
+aliases: ["canary release", "progressive delivery"]
+category: operations-and-reliability
+kind: concept
+summary: A release strategy that rolls a new version out to a small fraction of users first, watches its metrics, and gradually increases the share only if it's healthy — limiting the blast radius of a bad release.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["deployment", "ops", "release"]
+prerequisites: ["deployment"]
+related: ["blue-green-deployment", "feature-flag"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **canary deployment** releases new software cautiously, to a small group first. Instead of switching everyone to the new version at once, you send maybe 1% of traffic to it, watch closely, and only widen the rollout — 5%, 25%, 100% — if everything looks healthy. If the new version misbehaves, only that small fraction of users was affected, and you roll back before most people ever saw it. The name comes from the "canary in a coal mine": a small early warning that protects everyone else.
+
+## More detail
+
+A canary rollout is a controlled, **gradual traffic shift** with automated checks at each step:
+
+1. Deploy the new version alongside the old one.
+2. Route a small percentage of traffic to it.
+3. Compare the canary's **metrics** — error rate, latency, resource use — against the stable version (and against your [SLOs](/t/slo-sli-sla)).
+4. If healthy, increase the percentage; if not, automatically roll back.
+
+What makes canaries powerful:
+
+- **Limited blast radius** — a bad release harms a small, contained group instead of everyone (the key contrast with [blue-green](/t/blue-green-deployment), which exposes all users at once).
+- **Real-traffic validation** — the new version is judged on actual production load and behavior, not just a staging test.
+- **Automation** — modern tools (Argo Rollouts, Flagger, Spinnaker) automate the analyze-and-promote loop based on metrics, so a human isn't watching dashboards by hand.
+
+Canaries pair naturally with [feature flags](/t/feature-flag): the flag controls *who* sees a feature, the canary controls *how much traffic* hits a new deployment — overlapping tools for the same goal of de-risking releases. The main requirement is good [observability](/t/observability): you can only trust a canary if you can accurately compare its health to the baseline.
+
+## Why it matters
+
+Canary deployments turn releasing into a low-risk, reversible, gradual process — central to continuous delivery at scale. They catch the bugs that slip through testing (the ones that only appear under real production load and data) while they're still affecting a tiny minority of users. For large services, where a bad global release could affect millions instantly, canarying is essential rather than optional.
+
+## Real-world examples
+
+- A service rolls a new build to 1% of users, an automated analysis compares error rates to the stable version, and the rollout auto-promotes to 100% over an hour — or auto-rolls-back on a regression.
+- Large platforms (Google, Netflix, Meta) canary virtually every production change, often region by region.
+- Combining a canary with a [feature flag](/t/feature-flag) so a risky feature is both gradually deployed *and* individually toggleable.
+
+## Common misconceptions
+
+- **"Canary and blue-green are interchangeable."** Both reduce release risk, but a canary shifts traffic *gradually* to limit exposure, while [blue-green](/t/blue-green-deployment) flips *everyone* at once with instant rollback.
+- **"A canary needs no monitoring."** It's the opposite — a canary is only as good as your ability to compare its metrics to the baseline; weak [observability](/t/observability) makes it a guess.
+
+## Learn next
+
+The all-at-once alternative is [blue-green deployment](/t/blue-green-deployment); canaries pair closely with [feature flags](/t/feature-flag) and depend on solid [observability](/t/observability).

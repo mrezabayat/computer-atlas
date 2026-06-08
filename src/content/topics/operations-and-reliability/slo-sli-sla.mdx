@@ -1,0 +1,47 @@
+---
+title: SLO, SLI, SLA
+aliases: ["slo", "sli", "sla", "service level objective", "error budget"]
+category: operations-and-reliability
+kind: concept
+summary: The vocabulary of reliability targets — an SLI measures how well a service is doing, an SLO is the goal for that measure, and an SLA is the contractual promise (with penalties) to a customer.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["sre", "ops", "reliability"]
+prerequisites: ["sre"]
+related: ["monitoring"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+These three acronyms are how reliability gets turned from a vague wish ("the site should be up") into something measurable and negotiable. An **SLI** is a *measurement* of how the service is actually doing (e.g., "99.95% of requests succeeded this month"). An **SLO** is the *target* you set for that measurement ("99.9% should succeed"). An **SLA** is a *contract* with a customer that promises a level of service and spells out what happens — usually refunds — if you miss it. In short: SLI = the number, SLO = the goal, SLA = the promise.
+
+## More detail
+
+- **SLI — Service Level Indicator.** A carefully chosen metric reflecting user experience: availability, latency (e.g., 95th-percentile response time), error rate, throughput. Good SLIs measure what users actually feel, not internal vanity metrics.
+- **SLO — Service Level Objective.** The target value for an SLI over a window ("99.9% availability over 28 days"). Internal, owned by the team, and the basis for alerting and prioritization.
+- **SLA — Service Level Agreement.** An external, contractual commitment to customers, with financial or legal consequences for breaches. SLAs are deliberately set *looser* than SLOs, so the team gets an internal warning well before a contract is at risk.
+
+The most powerful idea built on these is the **error budget**: if your SLO is 99.9%, you're *allowed* 0.1% unreliability — that's your budget. As long as you're within it, you can ship fast and take risks. Burn through it, and the policy shifts to stability: freeze risky launches and focus on reliability. This reframes the classic tension between feature velocity and reliability as a shared, quantified trade-off rather than an argument.
+
+A crucial reality check: **100% is the wrong target.** Chasing perfect reliability costs exponentially more for diminishing returns, and users usually can't tell the difference between 99.9% and 99.99% given everything else (their own network) that can fail.
+
+## Why it matters
+
+SLOs and error budgets are the heart of how [SRE](/t/sre) makes reliability an engineering discipline rather than a vibe. They give teams an objective, shared way to decide "is the service reliable enough?" and "should we ship this risky change or pay down reliability debt?" — replacing endless judgment calls with a number everyone agreed on in advance. They also align engineering with the business by tying reliability to real user experience and real contractual stakes.
+
+## Real-world examples
+
+- A cloud provider's **SLA** promising 99.95% monthly uptime, with service credits if they fall short.
+- A team setting a **99.9% SLO** on checkout latency and using the **error budget** to decide whether to freeze deploys after a rough week.
+- An **SLI** defined as "proportion of requests served in under 300 ms," tracked on a [monitoring](/t/monitoring) dashboard.
+
+## Common misconceptions
+
+- **"SLA, SLO, and SLI are interchangeable."** They're a deliberate hierarchy: the indicator (measurement), the objective (internal goal), and the agreement (external contract) are distinct and set at different strictness.
+- **"Aim for 100% reliability."** Perfect uptime is prohibitively expensive and usually pointless; the right target is "reliable enough that users don't notice," which the error budget makes explicit.
+
+## Learn next
+
+These targets are central to [SRE](/t/sre) and are tracked through [monitoring](/t/monitoring) and observability.

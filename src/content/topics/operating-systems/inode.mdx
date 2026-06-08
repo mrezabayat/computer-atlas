@@ -1,0 +1,62 @@
+---
+title: Inode
+aliases: ["inodes", "index node"]
+category: operating-systems
+kind: concept
+summary: The on-disk record a Unix-style file system keeps for each file — everything about it except its name and its contents.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["os", "filesystem", "storage"]
+prerequisites: ["file-system"]
+related: ["kernel", "storage"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+An **inode** is the file system's record card for a single file. It holds everything *about* the file — how big it is, who owns it, what permissions it has, when it was last touched, and where on disk its bytes actually live — but it does **not** hold the file's name or its contents. The name lives in a directory; the contents live in data blocks. The inode is the glue in the middle.
+
+## More detail
+
+On Unix-like file systems (ext4, XFS, APFS, ZFS), every file is one inode, identified by an **inode number**. A directory is just a table mapping names to inode numbers:
+
+```
+directory entry      inode                data blocks
+"report.pdf"  ───►   inode #84213  ───►   [block 9001][block 9002]...
+```
+
+An inode typically stores:
+
+- **Mode** — file type (regular, directory, symlink, device) and permission bits.
+- **Owner** — user and group IDs.
+- **Size** in bytes.
+- **Timestamps** — `atime` (accessed), `mtime` (modified), `ctime` (inode changed).
+- **Link count** — how many directory entries point at this inode.
+- **Block pointers / extents** — where the data lives, via direct pointers plus single, double, and triple **indirect blocks** (or modern *extent* ranges).
+
+Two facts fall straight out of this design:
+
+- **Hard links** are simply multiple names pointing at the *same* inode. `ln a b` doesn't copy anything — it adds a directory entry and bumps the link count. The file's data is freed only when the link count hits zero **and** no process still has it open.
+- A file system has a **fixed number of inodes**, set at format time. You can run out of inodes while gigabytes of space remain free — common on a box with millions of tiny files. `df -i` shows inode usage separately from `df -h`.
+
+Not every file system works this way: FAT has no inodes, and Windows' NTFS uses **MFT records** that serve a similar role.
+
+## Why it matters
+
+The inode model explains a lot of otherwise-mysterious Unix behaviour: why renaming a file inside one file system is instant (you only rewrite a directory entry), why hard links and symlinks differ, why deleting a file that a running program still has open *doesn't* reclaim the space, and why a "disk full" error can appear when `df -h` says there's room. If you understand inodes, the file system stops being magic.
+
+## Real-world examples
+
+- `ls -i` prints each file's inode number; `stat report.pdf` dumps the whole inode (size, owner, link count, timestamps).
+- `df -i` on a busy mail or build server often shows 100% inode usage with plenty of free bytes — the fix is fewer, larger files, not a bigger disk.
+- A long-running process writing to a log file you already `rm`'d keeps the disk filling up: the link count is 0 but the open count isn't, so the blocks aren't freed until the process exits or reopens the file.
+
+## Common misconceptions
+
+- **"The filename is part of the file."** It isn't — the name lives in the directory entry, and one file (inode) can have many names.
+- **"Deleting a file frees its space immediately."** Only when both the link count and the open-file count reach zero. Until then the bytes stay allocated.
+
+## Learn next
+
+The layer that organizes inodes, directories, and free space into a usable tree is the [file system](/t/file-system). The physical medium underneath is [storage](/t/storage).

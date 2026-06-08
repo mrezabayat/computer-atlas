@@ -1,0 +1,48 @@
+---
+title: Document Store
+aliases: ["document database", "mongodb"]
+category: data-and-databases
+kind: concept
+summary: A NoSQL database that stores data as self-contained documents (usually JSON), each holding nested fields and arrays, instead of rows split across relational tables.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["nosql", "database", "document"]
+prerequisites: ["nosql"]
+related: ["key-value-store"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **document store** keeps your data as **documents** — flexible, self-contained records that look like JSON, with nested fields and lists inside them. Instead of splitting a customer and their orders across several tables joined by keys, you can store one customer document that *contains* its orders. Each document carries its own structure, so different records in the same collection can have different fields. The best-known example is **MongoDB**.
+
+## More detail
+
+A document store is a kind of [NoSQL](/t/nosql) database optimized for storing and querying semi-structured data:
+
+- **Documents** are typically JSON (stored efficiently as BSON in MongoDB), grouped into **collections** (the rough analog of tables).
+- **Schema-flexible** — there's no fixed table definition. You can add a field to one document without altering anything else. The application, not the database, usually owns the "shape."
+- **Rich queries** — you can filter and index on nested fields (`order.items.sku`), not just top-level keys, which is what distinguishes a document store from a plain [key-value store](/t/key-value-store).
+- **Denormalized by design** — related data is often embedded in one document so a read needs no joins. The trade-off is duplication and more work to keep copies consistent.
+
+The big design decision is **embed vs. reference**: embed related data for fast single-document reads, or reference it (store an ID) to avoid duplication — the same normalization tension as relational databases, made an application-level choice.
+
+## Why it matters
+
+Document stores map naturally onto the objects in application code — a document looks a lot like the JSON an API already sends and receives, which removes the impedance mismatch an [ORM](/t/orm) exists to paper over in the relational world. That developer ergonomics, plus easy horizontal scaling, made them a default choice for many web and mobile backends, content systems, and catalogs where the data is naturally hierarchical and the schema evolves quickly.
+
+## Real-world examples
+
+- **MongoDB** storing each user's profile, settings, and activity as one document.
+- A product catalog where each item document has different attributes (a book has an author, a shirt has a size) without needing dozens of mostly-empty columns.
+- **Couchbase**, **Amazon DocumentDB**, and **Firestore** powering app backends that sync JSON to clients.
+
+## Common misconceptions
+
+- **"Document stores have no schema, so there's nothing to design."** The schema just moves into your application code — and an inconsistent shape across documents becomes *your* problem to handle at read time.
+- **"Document stores can't do joins or transactions."** Modern ones (MongoDB included) added multi-document transactions and lookup/join operations; the old "NoSQL means no guarantees" framing is outdated.
+
+## Learn next
+
+A document store is one branch of [NoSQL](/t/nosql); the simpler sibling that stores opaque values by key is the [key-value store](/t/key-value-store).

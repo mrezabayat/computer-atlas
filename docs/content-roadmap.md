@@ -1,39 +1,51 @@
 # Computer Atlas — Content Roadmap
 
-> **Status (2026-06-04):** Ring 1 is **complete** — all 93 Core topics across all 16 categories exist (`npm run audit:importance` reports `Ring 1: COMPLETE`, `npm run audit:orphans` reports 100% connected). The Atlas has 92 topics and 10 learning paths.
+> **Status (2026-06-08):** Rings 1 and 2 are both **complete**. The Atlas has **205 topics** (all `status: reviewed`) and **16 learning paths**, 100% connected (`npm run audit:importance` reports `core=91 important=114`, `npm run audit:orphans` reports 100% connected, `lint:content` clean).
 >
-> The active ring is **Ring 2**. See the "Ring 2 plan" section just below.
+> - **Ring 1 (Core):** 93/93 ✅
+> - **Ring 2 (Important):** 114/114 written and reviewed ✅
+> - **Ring 3 (Supplemental):** 0 / ~74 — **this is now the active ring.** See the per-category Supplemental lists below.
+>
+> The "Ring 2 plan" section below is retained as a record of how Ring 2 was executed.
 
 ---
 
 ## Ring 2 plan
 
-**Goal:** every topic with `importance: important` in this roadmap exists in `src/content/topics/`, at minimum as a `status: draft` skeleton; ideally with full prose.
+**Goal:** every topic with `importance: important` in this roadmap exists in `src/content/topics/` with full prose and `status: reviewed`. The first half (creating the files with full drafts) is largely done; the remaining work is (a) writing the 66 missing Important topics and (b) promoting the 47 written drafts to `reviewed`.
 
-### Pre-flight check (done before Ring 2 batches start)
+### Pre-flight check (done before Ring 2 batches started)
 
-- **`secondaryCategories`?** Not yet. The few cross-listed topics in Ring 1 (`virtual-memory`, `tls`, `gpu`) are handled cleanly via `related`/`partOf`. Ring 2 will add more multi-fit topics (`memory-management`, `interrupt`, `system-call`, `cache-coherence`, etc.); revisit if `related` starts feeling abusive. Decision deferred to mid-Ring 2.
-- **Pagefind index size**: at 92 indexed pages the index is 1.2 MB across 116 files; the whole `dist/` is 4.1 MB. Pagefind ships chunks lazily, so even at 1000 pages the user-visible cost is dozens of KB per query. **No action needed before ~300 topics**; re-measure then.
-- **A-Z index scale**: `/topics/` renders fine with 92 items. At ~250 items, consider per-letter sub-pages or always-on filter.
-- **CI runtime**: `npm run check && npm run build && npm run lint:content` currently completes in well under a minute. Will stay healthy through Ring 2.
+- **`secondaryCategories`?** Still not added. The cross-listed topics (`virtual-memory`, `tls`, `gpu`, plus newer multi-fit ones like `memory-hierarchy`, `interrupt`, `system-call`, `cache-coherence`) are still handled cleanly via `related`/`partOf`. No pain yet — keep deferring until `related` starts feeling abusive.
+- **Pagefind index size**: re-measure at ~200 topics (we're at 139). Pagefind ships chunks lazily, so the user-visible cost stays low. **No action needed before ~300 topics.**
+- **A-Z index scale**: `/topics/` still renders fine. At ~250 items, consider per-letter sub-pages or always-on filter.
+- **CI runtime**: `npm run check && npm run build && npm run lint:content` still completes in well under a minute.
 
-### Batch order (mirrors Ring 1 — learner demand first)
+### Remaining Ring 2 work (66 topics) — one category at a time, learner demand first
 
-The same per-category sequence as Ring 1, since the audience that benefits from "Important" OS topics is the same one that benefited from "Core" OS topics:
+Work a single category to completion, run the audit gate, then move on. **Started categories (stragglers) first** — they slot into dense, well-linked neighborhoods:
 
-1. Operating Systems Important — system-call, context-switch, interrupt, paging, mutex, deadlock, inode, daemon, shell.
-2. Programming Languages Important — javascript-language, c, rust, java, go, syntax-vs-semantics, parsing, memory-management.
-3. Foundations Important — hexadecimal, abstraction, complexity-theory, hash-table, tree, linked-list, stack-and-queue (+ deeper math topics).
-4. Networks Important — osi-model, https, websocket, rest-api, cdn, firewall, gateway, nat.
-5. Databases Important — nosql, key-value-store, document-store, etl, data-warehouse, query-plan, schema-migration, orm.
-6. Software Engineering Important — unit-test, integration-test, refactoring, technical-debt, agile, monorepo, semantic-versioning, feature-flag.
-7. Computer Architecture Important — risc-vs-cisc, branch-prediction, out-of-order-execution, simd, cache-coherence, memory-hierarchy, dma.
-8. Security Important — oauth, xss, sql-injection, threat-model, csrf, vulnerability, zero-trust.
-9. Distributed Systems Important — cap-theorem, kubernetes, message-queue, eventual-consistency, service-mesh, cloud-provider, serverless.
-10. AI Important — gradient-descent, embedding, reinforcement-learning, computer-vision, natural-language-processing, convolutional-neural-network, attention-mechanism.
-11. Cleanup batch — Hardware Important (motherboard, clock, etc.), HCI Important, Graphics Important, Apps Important, History Important, Ops Important.
+1. Operating Systems — **done:** system-call, context-switch, interrupt, paging, mutex, deadlock. **left:** inode, daemon, shell.
+2. Programming Languages — **done:** python, javascript-language, c, rust, go, parsing. **left:** java, syntax-vs-semantics, memory-management.
+3. Networks — **done:** osi-model, https, websocket, rest-api, cdn. **left:** gateway, firewall, nat.
+4. Databases — **done:** nosql, key-value-store, query-plan, orm. **left:** document-store, etl, data-warehouse, schema-migration.
+5. Software Engineering — **done:** unit-test, integration-test, refactoring, technical-debt, agile. **left:** monorepo, semantic-versioning, feature-flag.
+6. Computer Architecture — **done:** risc-vs-cisc, cache-coherence, memory-hierarchy. **left:** branch-prediction, out-of-order-execution, simd, dma.
+7. Security — **done:** oauth, xss, sql-injection, threat-model, csrf. **left:** vulnerability, zero-trust.
+8. Distributed Systems — **done:** cap-theorem, kubernetes, message-queue, eventual-consistency, serverless. **left:** service-mesh, cloud-provider.
+9. AI — **done:** gradient-descent, embedding, reinforcement-learning, computer-vision. **left:** natural-language-processing, convolutional-neural-network, attention-mechanism.
+10. Foundations — **done:** hexadecimal, hash-table, tree, linked-list, stack-and-queue. **left:** abstraction, complexity-theory, computability, graph-theory, discrete-mathematics, formal-language, automata.
 
-Estimated ~120 topics across ~12 batches.
+**Then the zero-progress "cleanup" categories** (no Ring 2 topics written yet):
+
+11. Hardware — motherboard, clock, peripheral, ssd, hdd, flash-memory, dram-vs-sram.
+12. Operations — observability, slo-sli-sla, blue-green-deployment, canary-deployment, downtime, runbook.
+13. History — grace-hopper, dennis-ritchie, eniac, unix-history, free-software-movement, ethics-in-computing.
+14. Graphics — ray-tracing, shader, jpeg, png, video-codec.
+15. HCI — design-system, usability-test, keyboard-shortcut, touch-interface.
+16. Applications — native-vs-web, iot, scientific-computing, spreadsheet.
+
+**Plus a review pass** on the 47 written-but-`draft` Important topics (already-written prose; promote the solid ones to `reviewed`).
 
 ### Definition of done for Ring 2
 
@@ -41,7 +53,7 @@ Estimated ~120 topics across ~12 batches.
 - `find-orphans` stays ≤ 5 (or ≥ 95%).
 - `lint-content` clean.
 - Build + Pagefind under 5 s end-to-end.
-- One additional learning path per shipped category that closely matches its Important set (so ~6 more paths total).
+- Every shipped category has at least one learning path that touches its Important set. (16 paths exist as of 2026-06-08; audit coverage as the remaining Important topics land, and add paths for any category still uncovered.)
 - Hub pages still scale (re-measure A-Z page render and Pagefind index size at ~200 topics).
 
 ### When to start Ring 3
@@ -76,7 +88,7 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] recursion                     priority: 5   (core+high)
 
 ### Important (Ring 2)
-- [ ] hexadecimal                   priority: 4
+- [x] hexadecimal                   priority: 4
 - [ ] abstraction                   priority: 4
 - [ ] complexity-theory             priority: 4
 - [ ] computability                 priority: 3
@@ -84,10 +96,10 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [ ] discrete-mathematics          priority: 3
 - [ ] formal-language               priority: 3
 - [ ] automata                      priority: 3
-- [ ] hash-table                    priority: 4
-- [ ] tree                          priority: 4
-- [ ] linked-list                   priority: 3
-- [ ] stack-and-queue               priority: 3
+- [x] hash-table                    priority: 4
+- [x] tree                          priority: 4
+- [x] linked-list                   priority: 3
+- [x] stack-and-queue               priority: 3
 
 ### Supplemental (Ring 3)
 - [ ] lambda-calculus
@@ -137,12 +149,12 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] virtual-memory                priority: 5   (cross-listed with OS; primary in OS)
 
 ### Important (Ring 2)
-- [ ] risc-vs-cisc                  priority: 3
+- [x] risc-vs-cisc                  priority: 3
 - [ ] branch-prediction             priority: 2
 - [ ] out-of-order-execution        priority: 2
 - [ ] simd                          priority: 2
-- [ ] cache-coherence               priority: 2
-- [ ] memory-hierarchy              priority: 3
+- [x] cache-coherence               priority: 2
+- [x] memory-hierarchy              priority: 3
 - [ ] dma                           priority: 2
 
 ### Supplemental (Ring 3)
@@ -166,12 +178,12 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] file-system                   priority: 5
 
 ### Important (Ring 2)
-- [ ] system-call                   priority: 4
-- [ ] context-switch                priority: 3
-- [ ] interrupt                     priority: 4
-- [ ] paging                        priority: 3
-- [ ] mutex                         priority: 3
-- [ ] deadlock                      priority: 3
+- [x] system-call                   priority: 4
+- [x] context-switch                priority: 3
+- [x] interrupt                     priority: 4
+- [x] paging                        priority: 3
+- [x] mutex                         priority: 3
+- [x] deadlock                      priority: 3
 - [ ] inode                         priority: 2
 - [ ] daemon                        priority: 2
 - [ ] shell                         priority: 3
@@ -196,13 +208,13 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 
 ### Important (Ring 2)
 - [x] python                        priority: 4
-- [ ] javascript-language           priority: 5
-- [ ] c                             priority: 4
-- [ ] rust                          priority: 3
+- [x] javascript-language           priority: 5
+- [x] c                             priority: 4
+- [x] rust                          priority: 3
 - [ ] java                          priority: 3
-- [ ] go                            priority: 3
+- [x] go                            priority: 3
 - [ ] syntax-vs-semantics           priority: 3
-- [ ] parsing                       priority: 3
+- [x] parsing                       priority: 3
 - [ ] memory-management             priority: 3
 
 ### Supplemental (Ring 3)
@@ -227,11 +239,11 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] design-pattern                priority: 4
 
 ### Important (Ring 2)
-- [ ] unit-test                     priority: 4
-- [ ] integration-test              priority: 3
-- [ ] refactoring                   priority: 3
-- [ ] technical-debt                priority: 3
-- [ ] agile                         priority: 3
+- [x] unit-test                     priority: 4
+- [x] integration-test              priority: 3
+- [x] refactoring                   priority: 3
+- [x] technical-debt                priority: 3
+- [x] agile                         priority: 3
 - [ ] monorepo                      priority: 2
 - [ ] semantic-versioning           priority: 2
 - [ ] feature-flag                  priority: 2
@@ -256,14 +268,14 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] normalization                 priority: 3
 
 ### Important (Ring 2)
-- [ ] nosql                         priority: 4
-- [ ] key-value-store               priority: 3
+- [x] nosql                         priority: 4
+- [x] key-value-store               priority: 3
 - [ ] document-store                priority: 3
 - [ ] etl                           priority: 3
 - [ ] data-warehouse                priority: 3
-- [ ] query-plan                    priority: 3
+- [x] query-plan                    priority: 3
 - [ ] schema-migration              priority: 3
-- [ ] orm                           priority: 3
+- [x] orm                           priority: 3
 
 ### Supplemental (Ring 3)
 - [ ] columnar-store
@@ -287,11 +299,11 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] tls                           priority: 5   (cross-listed in Security; primary in Networks)
 
 ### Important (Ring 2)
-- [ ] osi-model                     priority: 3
-- [ ] https                         priority: 3
-- [ ] websocket                     priority: 3
-- [ ] rest-api                      priority: 4
-- [ ] cdn                           priority: 3
+- [x] osi-model                     priority: 3
+- [x] https                         priority: 3
+- [x] websocket                     priority: 3
+- [x] rest-api                      priority: 4
+- [x] cdn                           priority: 3
 - [ ] gateway                       priority: 2
 - [ ] firewall                      priority: 3
 - [ ] nat                           priority: 2
@@ -316,13 +328,13 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] container                     priority: 5   (core+high)
 
 ### Important (Ring 2)
-- [ ] cap-theorem                   priority: 3
-- [ ] kubernetes                    priority: 4
-- [ ] message-queue                 priority: 3
-- [ ] eventual-consistency          priority: 3
+- [x] cap-theorem                   priority: 3
+- [x] kubernetes                    priority: 4
+- [x] message-queue                 priority: 3
+- [x] eventual-consistency          priority: 3
 - [ ] service-mesh                  priority: 2
 - [ ] cloud-provider                priority: 3
-- [ ] serverless                    priority: 3
+- [x] serverless                    priority: 3
 
 ### Supplemental (Ring 3)
 - [ ] raft
@@ -344,11 +356,11 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] tls                           priority: 5   (cross-listed)
 
 ### Important (Ring 2)
-- [ ] oauth                         priority: 4
-- [ ] xss                           priority: 3
-- [ ] sql-injection                 priority: 3
-- [ ] threat-model                  priority: 3
-- [ ] csrf                          priority: 2
+- [x] oauth                         priority: 4
+- [x] xss                           priority: 3
+- [x] sql-injection                 priority: 3
+- [x] threat-model                  priority: 3
+- [x] csrf                          priority: 2
 - [ ] vulnerability                 priority: 3
 - [ ] zero-trust                    priority: 3
 
@@ -417,10 +429,10 @@ Cross-listing convention: a topic appears in exactly one category's filesystem f
 - [x] large-language-model          priority: 5
 
 ### Important (Ring 2)
-- [ ] gradient-descent              priority: 4
-- [ ] embedding                     priority: 3
-- [ ] reinforcement-learning        priority: 3
-- [ ] computer-vision               priority: 3
+- [x] gradient-descent              priority: 4
+- [x] embedding                     priority: 3
+- [x] reinforcement-learning        priority: 3
+- [x] computer-vision               priority: 3
 - [ ] natural-language-processing   priority: 3
 - [ ] convolutional-neural-network  priority: 3
 - [ ] attention-mechanism           priority: 3

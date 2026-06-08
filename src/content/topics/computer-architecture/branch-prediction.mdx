@@ -1,0 +1,48 @@
+---
+title: Branch Prediction
+aliases: ["branch predictor"]
+category: computer-architecture
+kind: concept
+summary: A CPU technique that guesses the outcome of a branch (an if or a loop) before it's actually known, so the pipeline can keep executing instead of stalling — and rolls back if the guess was wrong.
+level: advanced
+status: reviewed
+importance: important
+tags: ["cpu", "architecture", "pipeline"]
+prerequisites: ["cpu-pipeline"]
+related: ["out-of-order-execution"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+Modern CPUs run instructions on an assembly line (a [pipeline](/t/cpu-pipeline)), starting the next instruction before the previous one finishes. But a **branch** — an `if`, a loop, a function call — creates a problem: the CPU doesn't yet know *which* instruction comes next until the condition is evaluated. Rather than wait and let the pipeline sit idle, the CPU **guesses** which way the branch will go and races ahead on that assumption. **Branch prediction** is the machinery that makes those guesses, and it's astonishingly good — modern predictors are right well over 95% of the time.
+
+## More detail
+
+When a branch is encountered, the pipeline has a dozen-plus instructions in flight, but it doesn't know the branch's direction for several cycles. The cost of waiting (a **pipeline stall**) is high, so the CPU predicts and **speculatively executes** the predicted path.
+
+- **Correct prediction** — the speculative work is kept; effectively the branch was free.
+- **Misprediction** — the CPU must **flush** all the wrongly-executed instructions and restart from the correct path, wasting ~15–20 cycles on a deep pipeline.
+
+Predictors learn from history. Simple ones use a table of 2-bit saturating counters indexed by branch address; advanced ones (like TAGE) correlate the current branch with the recent pattern of *other* branches, capturing complex behavior. There's also a **branch target buffer** that predicts *where* a taken branch goes, not just whether it's taken.
+
+A famous and sobering footnote: speculative execution driven by branch prediction is the basis of the **Spectre** class of security vulnerabilities (2018) — the CPU's transient, mispredicted execution leaves measurable traces in the cache that attackers can read.
+
+## Why it matters
+
+Branch prediction is one of the biggest reasons modern CPUs are fast. Deep pipelines only pay off if they stay full, and branches occur every handful of instructions, so without good prediction the pipeline would constantly stall. It also has a direct effect on the code you write: a branch the predictor *can't* learn (truly random) is far more expensive than a predictable one — which is why sorting data before a loop, or going branchless, can dramatically speed up hot code.
+
+## Real-world examples
+
+- Sorting an array before summing only its large elements can run several times faster than summing the unsorted array — because the branch becomes predictable. (A famous Stack Overflow demonstration.)
+- **Spectre** (CVE-2017-5753) weaponized speculative execution after a mispredicted branch to leak memory across security boundaries.
+- Compilers emit hints and arrange code (and `__builtin_expect`/`[[likely]]`) to help the predictor along on hot paths.
+
+## Common misconceptions
+
+- **"A mispredict just makes things a little slower."** On a deep modern pipeline a single mispredict can cost 15–20 cycles — enough that branchy hot loops are a real performance concern.
+- **"Predictable branches are slow."** It's the opposite: a consistently-taken or consistently-not-taken branch is essentially free; *unpredictable* branches are the expensive ones.
+
+## Learn next
+
+Branch prediction keeps the [CPU pipeline](/t/cpu-pipeline) full, and works hand-in-hand with [out-of-order execution](/t/out-of-order-execution) to extract instruction-level parallelism.

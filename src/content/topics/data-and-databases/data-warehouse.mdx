@@ -1,0 +1,53 @@
+---
+title: Data Warehouse
+aliases: ["data warehousing", "olap", "analytics database"]
+category: data-and-databases
+kind: concept
+summary: A database optimized for analytics — large-scale querying and aggregation over historical data from across an organization — rather than for the fast small transactions of an operational database.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["database", "analytics", "olap"]
+prerequisites: ["database"]
+related: ["etl", "sql"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **data warehouse** is a database built for *asking big questions*, not for running an app. The databases behind a live application are tuned to read and write a few rows very fast ("get order #4821"). A data warehouse is tuned for the opposite: scanning millions or billions of rows to answer analytical questions ("what were total sales by region, per month, for the last three years?"). It pulls data together from many sources into one place designed for reporting and analysis.
+
+## More detail
+
+The split is often described as **OLTP vs. OLAP**:
+
+- **OLTP** (Online Transaction Processing) — the operational databases that run the business, optimized for many small, fast reads and writes.
+- **OLAP** (Online Analytical Processing) — the warehouse, optimized for large scans and aggregations over historical data.
+
+What makes a warehouse fast at analytics:
+
+- **Columnar storage** — data is stored column-by-column rather than row-by-row, so a query that sums one column reads only that column. (See the broader idea under [SQL](/t/sql) engines.)
+- **Denormalized schemas** — typically **star** or **snowflake** schemas: a central "fact" table (sales) surrounded by "dimension" tables (date, product, customer).
+- **Massively parallel processing (MPP)** — queries are split across many nodes.
+- **Separation of storage and compute** — modern cloud warehouses scale the two independently.
+
+Data lands in the warehouse via [ETL](/t/etl) pipelines that extract it from operational systems, clean it, and load it. A related newer pattern is the **data lake** (raw files in cheap object storage) and the **lakehouse** that blends the two.
+
+## Why it matters
+
+Almost every data-driven decision — dashboards, business intelligence, financial reporting, product analytics, and the feature pipelines that feed machine learning — runs on a data warehouse. Separating analytics from the operational database is also what keeps a heavy "scan everything" report from slowing down (or taking down) the live application.
+
+## Real-world examples
+
+- **Snowflake**, **Google BigQuery**, and **Amazon Redshift** are the dominant cloud data warehouses.
+- A company's nightly [ETL](/t/etl) job loading yesterday's orders, web events, and support tickets into a warehouse so analysts can query them together each morning.
+- A BI tool like Tableau or Looker running dashboards entirely against the warehouse, never touching production databases.
+
+## Common misconceptions
+
+- **"A data warehouse is just a big regular database."** It's architecturally different — columnar, denormalized, parallel — and deliberately *bad* at the fast single-row writes an operational database excels at.
+- **"Warehouses hold live data."** They usually hold data loaded on a schedule (or streamed with some lag); they're a snapshot for analysis, not the system of record.
+
+## Learn next
+
+Data gets into a warehouse through [ETL](/t/etl) pipelines, and you query it with [SQL](/t/sql) — the same language, very different engine underneath.

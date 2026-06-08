@@ -1,0 +1,49 @@
+---
+title: Flash Memory
+aliases: ["nand flash", "flash storage"]
+category: hardware
+kind: technology
+summary: Non-volatile memory that stores data by trapping charge in transistor cells — retaining it without power, and the technology inside SSDs, USB sticks, and phone storage.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["storage", "flash", "memory"]
+prerequisites: ["memory"]
+related: ["ssd"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Flash memory** is storage that *remembers without power*. Unlike the [RAM](/t/memory) in a computer, which forgets everything the instant it loses power, flash holds onto its data — which is why it's used wherever you need persistence in a small, rugged, solid-state form: USB drives, phone and camera storage, and the [SSDs](/t/ssd) inside modern computers. It stores each bit by trapping electric charge inside a special transistor, and that trapped charge stays put for years.
+
+## More detail
+
+Each flash cell is a **floating-gate transistor**: an electrically isolated gate that can hold charge. Whether charge is trapped or not encodes the bit, and because the gate is insulated, the charge remains even with the power off.
+
+Flash has distinctive behavior that shapes everything built on it:
+
+- **Read in pages, erase in blocks** — you can read or write a small page, but you can only *erase* in much larger blocks. Rewriting data therefore means erasing and rewriting whole blocks, which is why flash devices need clever controllers.
+- **Limited write endurance** — each cell wears out after a finite number of program/erase cycles (thousands to tens of thousands), so **wear leveling** spreads writes around.
+- **Bits per cell** — **SLC** stores 1 bit/cell (fast, durable, expensive); **MLC/TLC/QLC** store 2/3/4 bits/cell, packing in more capacity at the cost of speed and endurance. This trade-off is why flash got cheap enough to replace hard drives.
+
+The dominant type is **NAND flash** (dense, used for storage); **NOR flash** is faster for random reads and used for firmware. Modern NAND is built in 3D — stacking cells in vertical layers (**3D NAND**) to keep increasing density.
+
+## Why it matters
+
+Flash memory is the technology that made the mobile and solid-state era possible. Every smartphone, tablet, USB stick, memory card, and SSD relies on it. Its falling price per gigabyte (driven by more bits per cell and 3D stacking) is what let storage become huge, cheap, fast, and pocket-sized all at once — reshaping not just computers but cameras, cars, and embedded devices everywhere.
+
+## Real-world examples
+
+- The storage in your phone, a microSD card in a camera, and a USB thumb drive are all NAND flash.
+- An [SSD](/t/ssd) is essentially a pile of NAND flash chips plus a controller managing wear and errors.
+- A microcontroller storing its firmware in NOR flash, which it can execute code directly from.
+
+## Common misconceptions
+
+- **"Flash memory is the same as RAM."** Both are "memory," but RAM is fast and **volatile** (loses data without power); flash is slower and **non-volatile** (keeps data). They serve opposite roles.
+- **"Flash never fails."** It has no moving parts, but its cells wear out with writes and can lose charge over very long unpowered periods — which is why it isn't ideal for decades-long cold archival.
+
+## Learn next
+
+Flash is the non-volatile cousin of [memory](/t/memory) (RAM), and the storage medium inside every [SSD](/t/ssd).

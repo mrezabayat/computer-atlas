@@ -1,0 +1,59 @@
+---
+title: Feature Flag
+aliases: ["feature toggle", "feature flagging"]
+category: software-engineering
+kind: concept
+summary: A switch in code that turns a feature on or off at runtime without a redeploy — used to roll out gradually, test in production, and decouple deploying code from releasing it to users.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["release", "deployment", "devops"]
+prerequisites: ["ci-cd"]
+related: ["deployment"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+A **feature flag** (or feature toggle) is an `if` statement wired to a switch you can flip without changing code. Instead of "deploy the new checkout flow and everyone gets it instantly," you deploy it *behind a flag* that's off, then turn it on — for yourself, for 1% of users, for everyone — whenever you choose. The big idea: **deploying code and releasing a feature become two separate actions.** The code can ship to production dark, then get switched on later, gradually, and switched off instantly if something goes wrong.
+
+## More detail
+
+At its simplest a flag is a boolean checked at runtime:
+
+```
+if (flags.isEnabled("new-checkout", user)) {
+  renderNewCheckout();
+} else {
+  renderOldCheckout();
+}
+```
+
+The power comes from *where the flag value comes from* — a configuration service that can target by user, percentage, region, or plan, changeable in real time. That enables several patterns:
+
+- **Gradual rollout** — enable for 1% → 10% → 100%, watching metrics at each step (closely related to [canary releases](/t/deployment)).
+- **Kill switch** — instantly disable a misbehaving feature without a rollback deploy.
+- **Trunk-based development** — merge unfinished work to the main branch behind an off flag, avoiding long-lived branches.
+- **A/B testing** — show variants to different cohorts and compare.
+- **Entitlements** — gate premium features by subscription tier.
+
+Flags come in flavors with very different lifespans: short-lived **release** flags (delete them after rollout) vs. long-lived **ops** and **permission** flags. The main hazard is **flag debt** — old flags that linger create a combinatorial explosion of untested code paths, so disciplined teams track and remove them.
+
+## Why it matters
+
+Feature flags are foundational to modern continuous delivery. By decoupling deploy from release, they let teams ship small changes constantly and safely — derisking launches, enabling instant rollback without redeploying, and making "test in production" a controlled practice rather than a gamble. They turn a risky big-bang launch into a dial you can turn.
+
+## Real-world examples
+
+- A team dark-launches a rewritten search backend behind a flag, ramps it from 1% to 100% over a week while watching latency and error rates, and flips it off the moment a problem appears.
+- **LaunchDarkly**, **Unleash**, and **Flagsmith** are dedicated feature-flag platforms; many companies also build a simple in-house version.
+- A premium feature shown only to paid users via a permission flag tied to their subscription.
+
+## Common misconceptions
+
+- **"Feature flags are just config booleans."** The targeting, real-time updates, and lifecycle management are what make them a practice rather than a one-off `if`.
+- **"Flags are free."** Every flag adds a branch in your code; left uncleaned, they accumulate into untested combinations and real maintenance cost.
+
+## Learn next
+
+Feature flags pair naturally with a [CI/CD](/t/ci-cd) pipeline and with gradual [deployment](/t/deployment) strategies like canary releases.

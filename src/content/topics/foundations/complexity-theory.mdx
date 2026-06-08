@@ -1,0 +1,50 @@
+---
+title: Complexity Theory
+aliases: ["computational complexity", "p vs np"]
+category: foundations
+kind: field
+summary: The study of how the resources a problem requires — time and memory — grow with input size, and how problems are classified by how hard they are to solve.
+level: advanced
+status: reviewed
+importance: important
+tags: ["theory", "complexity", "algorithms"]
+prerequisites: ["big-o"]
+related: ["computability", "algorithms"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Computational complexity theory** asks: *how hard is a problem, fundamentally?* Not "how do we solve it," but "how much time and memory must *any* solution use, and does that grow manageably or explosively as the input gets bigger?" Some problems scale gently — sorting a list of a million items is routine. Others appear to blow up so fast that even the world's fastest computers can't handle moderately large inputs. Complexity theory is the science of telling these apart and proving which is which.
+
+## More detail
+
+Where [Big O](/t/big-o) describes the cost of a *specific algorithm*, complexity theory classifies *problems themselves* by the best possible algorithm. It groups problems into **complexity classes**:
+
+- **P** — problems solvable in **polynomial time** (e.g. n², n³). Considered "tractable."
+- **NP** — problems whose *solutions can be verified* in polynomial time, even if finding them seems hard. (Sudoku: checking a filled grid is easy; solving a big one may not be.)
+- **NP-complete** — the hardest problems in NP; if any one of them had a fast solution, *all* of NP would. Examples: the traveling salesman decision problem, boolean satisfiability (SAT), graph coloring.
+- **PSPACE, EXPTIME**, and many more, layered by time and memory bounds.
+
+The field's most famous open question is **P vs NP**: are the problems we can *verify* quickly also ones we can *solve* quickly? Almost everyone believes **P ≠ NP** (hard problems really are hard), but no one has proven it — it's one of the Millennium Prize problems, with a million-dollar bounty.
+
+A key tool is **reduction**: showing problem A is "at least as hard as" B by transforming B into A. Reductions are how thousands of problems were all proven NP-complete — they're really the *same* difficulty in disguise.
+
+## Why it matters
+
+Complexity theory tells you when to *stop looking* for a fast, exact algorithm and instead use approximations, heuristics, or accept limits. It's why we don't expect a perfect, efficient solver for every scheduling or routing problem — and, more surprisingly, it's what makes modern **cryptography** possible: encryption is secure precisely because breaking it is believed to be computationally intractable. The boundary between "easy" and "hard" shapes what software can and can't realistically do.
+
+## Real-world examples
+
+- **Cryptography** rests on the assumed hardness of problems like factoring large numbers — if P = NP, much of it would collapse.
+- **Route planning, scheduling, and chip layout** are NP-hard, so real tools use heuristics and approximations rather than guaranteed-optimal answers.
+- A developer recognizing a task is "basically traveling salesman" knows to reach for an approximation instead of chasing a perfect algorithm.
+
+## Common misconceptions
+
+- **"NP means 'non-polynomial' / 'impossible.'"** NP means *nondeterministic polynomial* — verifiable quickly. Many NP problems are solved routinely at practical sizes.
+- **"NP-hard problems can't be solved at all."** They can — just not always quickly and exactly for large inputs. Approximation and heuristics handle them in practice every day.
+
+## Learn next
+
+Complexity theory builds on [Big O](/t/big-o) for measuring cost, and sits beside [computability](/t/computability), which asks not how *hard* a problem is but whether it can be solved at all.

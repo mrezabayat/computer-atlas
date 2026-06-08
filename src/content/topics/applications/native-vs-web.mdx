@@ -1,0 +1,49 @@
+---
+title: Native vs Web
+aliases: ["native vs web apps", "native versus web", "hybrid app"]
+category: applications
+kind: concept
+summary: The core decision in app development — build a native app installed per platform, a web app that runs in the browser, or a hybrid that blends the two — each trading reach against capability and performance.
+level: beginner
+status: reviewed
+importance: important
+tags: ["mobile", "web", "apps"]
+prerequisites: ["mobile-app"]
+related: ["web-browser"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+When you build an app, one of the first big choices is **native vs. web**. A **native app** is written for a specific platform (iOS, Android, Windows), installed from an app store, and runs directly on the device — fast and able to use every hardware feature, but you build and maintain a separate version per platform. A **web app** runs inside a [web browser](/t/web-browser), so one codebase reaches everyone with a URL — instantly updatable and cross-platform, but with less access to device hardware and (sometimes) less polish. Most of mobile and desktop software development is navigating this trade-off.
+
+## More detail
+
+The two approaches sit at opposite ends, with hybrids in between:
+
+- **Native** — written in the platform's language/SDK (Swift for iOS, Kotlin for Android). Best performance, full access to camera, sensors, notifications, and the smoothest feel — but separate codebases, app-store review, and per-platform expertise. (See [mobile app](/t/mobile-app).)
+- **Web** — built with HTML/CSS/JavaScript, runs in any browser. One codebase, no install, instant updates, universal reach — but constrained by what browsers expose, historically weaker at heavy graphics and deep hardware integration, and dependent on connectivity.
+- **Hybrid / cross-platform** — frameworks that try to get both: **React Native** and **Flutter** render near-native UIs from one codebase; **Electron** packages a web app as a desktop app (VS Code, Slack, Discord); **Progressive Web Apps (PWAs)** make web apps installable and offline-capable.
+
+The deciding factors are usually: **reach** (web wins — a link works everywhere), **performance and hardware access** (native wins), **development cost** (one web/hybrid codebase vs. several native ones), **update control** (web ships instantly; native goes through stores), and **discoverability/monetization** (app stores vs. the open web).
+
+The line keeps blurring — browsers gain capabilities (WebGPU, camera, push), and cross-platform frameworks get closer to native — so "it depends" is increasingly the honest answer.
+
+## Why it matters
+
+This decision shapes a product's cost, reach, performance, and team structure from day one, and it's expensive to reverse. Choosing native means committing to per-platform development for the best experience; choosing web means trading some capability for universal reach and rapid iteration; choosing hybrid means betting a framework can deliver enough of both. Nearly every app-building team faces this choice, and the right answer depends entirely on the product's priorities.
+
+## Real-world examples
+
+- **Instagram** and banking apps are native for performance and deep device integration.
+- **Figma** is a powerful web app proving the browser can host serious, complex software.
+- **Slack, VS Code, and Discord** are Electron apps — web technology packaged as desktop software — illustrating the hybrid middle ground.
+
+## Common misconceptions
+
+- **"Native is always faster and better."** For graphics- and hardware-heavy apps, yes — but for many apps a good web or hybrid app is indistinguishable to users and far cheaper to ship everywhere.
+- **"Web apps can't work offline or access hardware."** Progressive Web Apps and modern browser APIs increasingly support offline use, push notifications, cameras, and more, narrowing the old gap.
+
+## Learn next
+
+The native end of the spectrum is covered in [mobile app](/t/mobile-app); the web end runs on the [web browser](/t/web-browser).

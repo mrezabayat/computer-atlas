@@ -1,0 +1,49 @@
+---
+title: Unix History
+aliases: ["history of unix", "unix"]
+category: history-and-society
+kind: historical-event
+summary: The story of Unix — from a 1969 Bell Labs side project to the common ancestor of Linux, macOS, the BSDs, Android, and iOS — and the design philosophy that shaped modern computing.
+level: beginner
+status: reviewed
+importance: important
+tags: ["history", "unix", "os"]
+prerequisites: ["operating-system"]
+related: ["dennis-ritchie", "history-of-computing"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**Unix** is the operating system whose ideas quietly took over the world. It began in 1969 as a small project by a few researchers at Bell Labs and grew into the common ancestor — directly or in spirit — of almost every modern [operating system](/t/operating-system): Linux, macOS, the BSDs, and the systems inside Android and iOS. When people say modern computing "runs on Unix," they mean that the design principles worked out over fifty years ago still shape how today's systems are built.
+
+## More detail
+
+The timeline in broad strokes:
+
+- **1969–1973, Bell Labs.** Ken Thompson and [Dennis Ritchie](/t/dennis-ritchie) build Unix. Crucially, they rewrite it in the new **[C](/t/c)** language (1973), making it *portable* — able to move to new hardware instead of being tied to one machine. This is what let it spread.
+- **1970s–80s, the university era.** Bell Labs (under antitrust constraints) licensed Unix cheaply to universities. **Berkeley** added enormously to it, producing **BSD** — including the TCP/IP networking that helped build the internet.
+- **The "Unix wars" and fragmentation.** Commercial variants proliferated and competed, prompting standardization efforts like **POSIX**.
+- **1991, Linux.** Linus Torvalds writes a free Unix-like kernel; combined with the GNU project's tools (from the [free software movement](/t/free-software-movement)), **GNU/Linux** becomes the dominant server OS.
+- **2000s, macOS.** Apple builds macOS on a BSD-derived, certified-Unix foundation.
+
+Running through all of it is the **Unix philosophy**: write small programs that do one thing well, make everything a file, and connect tools together with pipes. That minimalist, composable aesthetic is one of the most durable design ideas in software.
+
+## Why it matters
+
+Unix is arguably the most influential operating system ever created. Its descendants run the overwhelming majority of servers, smartphones, and embedded devices on Earth. Its conventions — the file abstraction, the shell, pipes, system calls, the directory hierarchy — are so widespread they feel universal. Understanding Unix's history explains why Linux and macOS feel related, why the command line works the way it does, and where the deep conventions of modern computing came from.
+
+## Real-world examples
+
+- **Linux** (servers, Android, supercomputers) and **macOS/iOS** are both Unix-lineage systems, which is why they share so many concepts and commands.
+- The **Unix philosophy** of small composable tools is exactly what you use when you pipe commands together in a [shell](/t/shell).
+- **POSIX** standards mean a program written for one Unix-like system often runs on others with little change.
+
+## Common misconceptions
+
+- **"Linux is Unix."** Linux is *Unix-like* — it reimplements Unix's design and interfaces from scratch rather than descending from the original Bell Labs code. (Some systems, like macOS, are certified Unix; Linux is not.)
+- **"Unix is obsolete history."** Its direct descendants and reimplementations run most of the modern computing world; few "old" technologies are this alive.
+
+## Learn next
+
+Unix was co-created by [Dennis Ritchie](/t/dennis-ritchie) in [C](/t/c); the free reimplementation movement that produced GNU/Linux is the [free software movement](/t/free-software-movement).

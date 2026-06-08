@@ -1,0 +1,53 @@
+---
+title: NAT
+aliases: ["network address translation", "port forwarding"]
+category: networks-and-internet
+kind: concept
+summary: Network Address Translation — how a router lets many devices on a private network share one public IP address by rewriting addresses and ports on traffic passing through it.
+level: intermediate
+status: reviewed
+importance: important
+tags: ["networking", "ip", "nat"]
+prerequisites: ["ip-address", "router"]
+related: ["gateway", "firewall"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+**NAT** (Network Address Translation) is the trick that lets every device in your home — laptop, phone, TV, smart bulb — share a single public internet address. Your devices each have a *private* address that only works inside your network. When they reach out to the internet, the [router](/t/router) rewrites the traffic so it all appears to come from one *public* address, and remembers who asked for what so the replies get back to the right device. It's why you can have twenty gadgets online with only one address from your ISP.
+
+## More detail
+
+The world ran low on IPv4 addresses (there are only ~4.3 billion, far fewer than there are devices). NAT was the pragmatic fix. The common form, **PAT** (Port Address Translation, also called "NAT overload" or masquerading), works like this:
+
+1. A device at `192.168.1.20` opens a connection to a web server. Its packet says *from 192.168.1.20:51000*.
+2. The router rewrites the source to its own public address and a chosen port: *from 203.0.113.5:40000*, and records the mapping `192.168.1.20:51000 ↔ 203.0.113.5:40000`.
+3. The server replies to `203.0.113.5:40000`. The router looks up the mapping and rewrites the destination back to `192.168.1.20:51000`.
+
+Consequences that fall out of this design:
+
+- **Inbound connections don't work by default** — an outside machine can't initiate a connection to a device behind NAT, because there's no mapping yet. This is why you set up **port forwarding** to host a game server or reach a home device remotely.
+- **Private address ranges** (`10.x`, `172.16–31.x`, `192.168.x`) are reserved for use behind NAT and never routed on the public internet.
+- NAT incidentally acts as a crude firewall, since unsolicited inbound traffic is dropped.
+
+**IPv6**, with its astronomically larger address space, was designed to make NAT unnecessary by giving every device a real public address — though NAT persists for IPv4 compatibility and habit.
+
+## Why it matters
+
+NAT is one of the most widely deployed pieces of internet plumbing — almost every home and office network uses it. It's also the source of a whole category of networking headaches: peer-to-peer connections, VoIP, online gaming, and hosting services from home all have to work *around* NAT (via techniques like STUN, TURN, and UPnP). Understanding NAT explains why "it works on my network but I can't connect from outside."
+
+## Real-world examples
+
+- Your home router doing PAT so all your devices share the one public IP your ISP assigned.
+- **Port forwarding** a router so an outside friend can connect to a game server running on your desktop.
+- Video calls using **STUN/TURN** servers to punch through both participants' NATs and establish a direct connection.
+
+## Common misconceptions
+
+- **"NAT is a security feature."** It blocks unsolicited inbound traffic as a side effect, but it's an addressing hack, not a security control — don't rely on it instead of a real [firewall](/t/firewall).
+- **"Every device needs its own public IP."** NAT exists precisely because they don't — thousands of devices can share one public address.
+
+## Learn next
+
+NAT runs on the [router](/t/router) acting as your network's [gateway](/t/gateway), and pairs with a [firewall](/t/firewall) at the network edge.

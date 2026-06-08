@@ -1,0 +1,49 @@
+---
+title: Out-of-Order Execution
+aliases: ["ooo execution", "dynamic scheduling"]
+category: computer-architecture
+kind: concept
+summary: A CPU technique that executes instructions as soon as their inputs are ready rather than in strict program order, keeping execution units busy while slow operations like memory loads complete.
+level: advanced
+status: reviewed
+importance: important
+tags: ["cpu", "architecture", "performance"]
+prerequisites: ["cpu-pipeline"]
+related: ["branch-prediction", "register"]
+updated: 2026-06-08
+---
+
+## In simple terms
+
+Code is written as an ordered list of instructions, but they don't all take the same time — a memory load might take hundreds of cycles while an add takes one. If the CPU ran instructions strictly in order, one slow load would block everything behind it, even instructions that don't depend on it. **Out-of-order execution** lets the CPU run instructions *as soon as their inputs are available*, in whatever order that happens to be, then quietly puts the results back into the original program order. The program behaves exactly as written — it just runs much faster.
+
+## More detail
+
+The CPU maintains a pool of pending instructions and tracks the **data dependencies** between them. An instruction becomes eligible to execute the moment its operands are ready, regardless of where it sits in the program. The classic mechanism (Tomasulo's algorithm) uses:
+
+- **Register renaming** — maps the handful of architectural [registers](/t/register) onto a much larger pool of physical registers, eliminating *false* dependencies where two unrelated instructions just happen to reuse the same register name.
+- **Reservation stations** — hold instructions waiting for their inputs.
+- **A reorder buffer (ROB)** — lets instructions *execute* out of order but **retire** (commit their results) strictly in order, so the visible state and exceptions stay correct.
+
+This is what makes a modern core **superscalar** in practice: it can have hundreds of instructions in flight and dispatch several per cycle to multiple execution units. It pairs tightly with [branch prediction](/t/branch-prediction) — the CPU speculates past branches and executes far ahead, rolling back if a prediction was wrong.
+
+The big payoff is hiding **memory latency**: while one instruction waits on a cache miss, dozens of independent instructions behind it can execute, so the stall is largely absorbed.
+
+## Why it matters
+
+Out-of-order execution is one of the central reasons a modern CPU core is so much faster than a simple in-order one at the same clock speed. It extracts **instruction-level parallelism** automatically, with no help from the programmer — the same binary just runs faster on a wider, deeper out-of-order core. It also explains why memory access patterns matter so much: the CPU can hide a *little* latency by running ahead, but a stream of cache misses eventually exhausts the instructions it can find to do.
+
+## Real-world examples
+
+- High-performance cores (Apple's M-series, Intel and AMD desktop CPUs) are aggressively out-of-order with very large reorder buffers (hundreds of entries).
+- Small, power-efficient cores (the "efficiency" cores in big.LITTLE designs, many microcontrollers) are often **in-order** — simpler and lower-power, but slower per clock.
+- The same speculative, out-of-order machinery is what made side-channel attacks like Spectre and Meltdown possible.
+
+## Common misconceptions
+
+- **"Out-of-order means my program runs in a different order."** The *observable* result is identical to in-order execution; instructions retire in program order. Only the internal execution overlaps.
+- **"It's the compiler reordering instructions."** Compilers do reorder too, but this is the *hardware* dynamically scheduling at runtime, based on which operands are actually ready.
+
+## Learn next
+
+Out-of-order execution builds on the [CPU pipeline](/t/cpu-pipeline), relies on [register](/t/register) renaming, and depends on accurate [branch prediction](/t/branch-prediction) to run ahead.
