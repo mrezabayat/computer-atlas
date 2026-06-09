@@ -30,26 +30,27 @@ function pickContext(
   return ctx;
 }
 
-export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
-  const session = authClient.useSession();
-  const [ctx, setCtx] = useState<PathContext | null>(null);
+// Single-path mark-complete row (used in both modes)
+function PathRow({
+  topicId,
+  ctx,
+  userId,
+  isPending,
+}: {
+  topicId: string;
+  ctx: PathContext;
+  userId: string | undefined;
+  isPending: boolean;
+}) {
   const [state, setState] = useState<LoadState>("loading");
   const [completed, setCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    setCtx(pickContext(pathContexts, readPathParam(), topicId));
-  }, [pathContexts, topicId]);
-
-  const userId = session.data?.user?.id;
-  const ready =
-    ctx !== null && !session.isPending && Boolean(userId);
+  const ready = !isPending && Boolean(userId);
 
   useEffect(() => {
-    if (!ctx) return;
-    if (session.isPending) return;
-
+    if (isPending) return;
     if (!userId) {
       setState("signed-out");
       setCompleted(false);
@@ -75,9 +76,7 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
           setError("Could not load progress.");
           return;
         }
-        const data = (await response.json()) as {
-          completedTopicIds?: unknown;
-        };
+        const data = (await response.json()) as { completedTopicIds?: unknown };
         const ids = Array.isArray(data.completedTopicIds)
           ? data.completedTopicIds.filter(
               (id): id is string => typeof id === "string",
@@ -96,40 +95,15 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ctx, session.isPending, topicId, userId]);
+  }, [ctx.pathId, isPending, topicId, userId]);
 
-  const label = useMemo(() => {
-    if (!ctx) return "";
-    return completed
-      ? `Completed in ${ctx.pathTitle}`
-      : `Mark this complete in ${ctx.pathTitle}`;
-  }, [completed, ctx]);
-
-  if (!ctx) return null;
-
-  if (session.isPending) {
-    return (
-      <div
-        className="mt-8 h-12 animate-pulse rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)]"
-        aria-hidden="true"
-      />
-    );
-  }
-
-  if (!userId) {
-    return (
-      <p className="mt-8 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3 text-sm text-[var(--color-atlas-muted)]">
-        Sign in to track your progress through{" "}
-        <a
-          href={`/p/${ctx.pathId}`}
-          className="text-[var(--color-atlas-accent)] no-underline hover:underline"
-        >
-          {ctx.pathTitle}
-        </a>
-        .
-      </p>
-    );
-  }
+  const label = useMemo(
+    () =>
+      completed
+        ? `Completed in ${ctx.pathTitle}`
+        : `Mark complete in ${ctx.pathTitle}`,
+    [completed, ctx.pathTitle],
+  );
 
   const onToggle = async (next: boolean) => {
     if (!ready || saving) return;
@@ -145,11 +119,7 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
           accept: "application/json",
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          pathId: ctx.pathId,
-          topicId,
-          completed: next,
-        }),
+        body: JSON.stringify({ pathId: ctx.pathId, topicId, completed: next }),
       });
 
       if (response.status === 401) {
@@ -157,7 +127,6 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
         setState("signed-out");
         return;
       }
-
       if (!response.ok) {
         setCompleted(previous);
         setError("Could not save progress.");
@@ -172,7 +141,7 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
   };
 
   return (
-    <div className="mt-8 flex items-center justify-between gap-3 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+    <div className="flex items-center justify-between gap-3">
       <label className="flex flex-1 items-center gap-3 text-sm">
         <input
           type="checkbox"
@@ -184,16 +153,78 @@ export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
         <span className="text-[var(--color-atlas-ink)]">{label}</span>
       </label>
       {error && (
-        <span
-          className="text-xs text-red-600 dark:text-red-400"
-          role="alert"
-        >
+        <span className="text-xs text-red-600 dark:text-red-400" role="alert">
           {error}
         </span>
       )}
       {state === "loading" && !error && (
-        <span className="text-xs text-[var(--color-atlas-muted)]">Loading…</span>
+        <span className="text-xs text-[var(--color-atlas-muted)]">
+          Loading…
+        </span>
       )}
+    </div>
+  );
+}
+
+export default function InlineMarkComplete({ topicId, pathContexts }: Props) {
+  const session = authClient.useSession();
+  const [activeCtx, setActiveCtx] = useState<PathContext | null>(null);
+  const [pathParamResolved, setPathParamResolved] = useState(false);
+
+  useEffect(() => {
+    setActiveCtx(pickContext(pathContexts, readPathParam(), topicId));
+    setPathParamResolved(true);
+  }, [pathContexts, topicId]);
+
+  if (!pathParamResolved) return null;
+
+  // Decide which contexts to show:
+  // - If ?path= matched a valid context → show only that one (path-context mode)
+  // - Otherwise → show all paths the topic belongs to (standalone mode)
+  const contextsToShow = activeCtx ? [activeCtx] : pathContexts;
+
+  if (contextsToShow.length === 0) return null;
+
+  const userId = session.data?.user?.id;
+
+  if (session.isPending) {
+    return (
+      <div
+        className="mt-8 h-12 animate-pulse rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)]"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (!userId) {
+    const firstCtx = contextsToShow[0];
+    return (
+      <p className="mt-8 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3 text-sm text-[var(--color-atlas-muted)]">
+        Sign in to track your progress through{" "}
+        <a
+          href={`/p/${firstCtx.pathId}`}
+          className="text-[var(--color-atlas-accent)] no-underline hover:underline"
+        >
+          {firstCtx.pathTitle}
+        </a>
+        {contextsToShow.length > 1 && " and other learning paths"}.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-8 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] p-3">
+      <div className={contextsToShow.length > 1 ? "flex flex-col gap-3" : ""}>
+        {contextsToShow.map((ctx) => (
+          <PathRow
+            key={ctx.pathId}
+            topicId={topicId}
+            ctx={ctx}
+            userId={userId}
+            isPending={session.isPending}
+          />
+        ))}
+      </div>
     </div>
   );
 }
