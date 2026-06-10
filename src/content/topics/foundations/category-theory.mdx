@@ -4,6 +4,7 @@ aliases: ["functor", "monad", "morphism", "composition", "natural transformation
 category: foundations
 domain: theory-of-computing
 subcategory: logic-semantics
+structure: 2
 kind: concept
 summary: An abstract mathematical framework studying structures and the structure-preserving maps between them — the algebraic language behind Haskell's monads, functional programming abstractions, and the compositional design of software.
 level: advanced
@@ -13,12 +14,30 @@ tags: ["foundations", "mathematics", "functional-programming", "theory"]
 prerequisites: ["set-theory", "haskell", "type-theory"]
 related: ["lambda-calculus"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 Category theory asks: "what do all these different mathematical structures have in common?" Sets, groups, vector spaces, and types all have objects and maps between them. Category theory abstracts over all of these, studying only the composition laws — how maps chain together. The payoff for programmers: the concepts of functor, monad, and natural transformation — ubiquitous in functional programming — are directly category-theoretic concepts. Understanding the math explains *why* monads compose the way they do, not just the pattern.
+
+## The Visual Map
+
+A functor `F` (think `Maybe`) maps one category into another, preserving composition — the square commutes:
+
+```mermaid
+flowchart LR
+  subgraph C["category of plain types"]
+    A["Int"] -->|"f: show"| B["String"]
+  end
+  subgraph FC["image under functor F = Maybe"]
+    FA["Maybe Int"] -->|"fmap f"| FB["Maybe String"]
+  end
+  A -.->|"F"| FA
+  B -.->|"F"| FB
+```
+
+Map then lift, or lift then map — you land in the same place. That's the functor law, drawn.
 
 ## More detail
 
@@ -55,9 +74,42 @@ Monad laws (left/right identity, associativity) come from the category-theoretic
 - **Free monads** — programs as data structures (used in Haskell, PureScript for effects).
 - **Yoneda lemma** — explains why polymorphic functions are data; used in library design.
 
-## Why it matters
+Category theory provides the unifying language behind Haskell's type class hierarchy (Functor → Applicative → Monad), Scala's Cats library, Arrow in Kotlin, and the design of compositional APIs. It demystifies why monads satisfy their laws, why certain abstractions compose cleanly and others don't, and how to design APIs that are provably correct by construction.
 
-Category theory provides the unifying language behind Haskell's type class hierarchy (Functor → Applicative → Monad), Scala's Cats library, Arrow in Kotlin, and the design of compositional APIs. Understanding it demystifies why monads satisfy their laws, why certain abstractions compose cleanly and others don't, and how to design APIs that are provably correct by construction. For programming language researchers and advanced functional programmers, category theory is the common language.
+## Under the Hood
+
+A `Maybe` monad in Python, with its laws checked by running them:
+
+```python
+# Maybe: either ("just", value) or NOTHING
+NOTHING = ("nothing",)
+just    = lambda v: ("just", v)
+
+def bind(m, f):                       # >>= : sequence, short-circuit on NOTHING
+    return f(m[1]) if m[0] == "just" else NOTHING
+
+# two effectful functions to chain
+half    = lambda x: just(x // 2) if x % 2 == 0 else NOTHING
+dec     = lambda x: just(x - 1)  if x > 0      else NOTHING
+
+print(bind(bind(just(8), half), dec))    # ('just', 3)
+print(bind(bind(just(7), half), dec))    # ('nothing',) — failure propagates
+
+# the monad laws, as executable assertions
+m, f, g, a = just(10), half, dec, 6
+assert bind(just(a), f) == f(a)                                   # left identity
+assert bind(m, just) == m                                         # right identity
+assert bind(bind(m, f), g) == bind(m, lambda x: bind(f(x), g))    # associativity
+print("all three monad laws hold")
+```
+
+The laws are why you may freely refactor a chain of binds — flatten it, split it, inline it — without changing behaviour. Optimisers and library authors rely on exactly this.
+
+## Engineering Trade-offs
+
+- **Abstraction power vs learnability.** An API written against `Functor`/`Monad` works for dozens of types at once and inherits proven laws — but it reads as hieroglyphics to newcomers. Teams pay a real onboarding tax for categorical abstraction; Haskell embraces it, Go's designers explicitly refused it.
+- **Laws vs convenience.** Law-abiding instances enable safe refactoring and optimisation (e.g. fusing two `map`s into one). "Almost-monads" that bend the laws — like JavaScript's `Promise`, whose `then` auto-flattens and so can't nest — work fine day-to-day but break the equational reasoning the abstraction promises.
+- **Generality vs performance and errors.** Code polymorphic over any monad can't exploit the concrete type's fast paths, and type errors surface in the abstraction's vocabulary rather than the user's problem domain. Libraries often ship both: a lawful generic core plus specialised, friendlier wrappers.
 
 ## Real-world examples
 
@@ -71,6 +123,29 @@ Category theory provides the unifying language behind Haskell's type class hiera
 - **"Category theory is too abstract to be useful."** Functors, monads, and applicatives are used in everyday Haskell, Scala, and Rust code. The abstraction earns its cost: code written against these interfaces is automatically correct for all instances.
 - **"You need category theory to use monads."** Monads in Haskell can be understood and used without category theory. But category theory explains *why* the laws must hold and why the abstraction is the right one.
 
+## Try it yourself
+
+Verify the functor composition law on a structure you use daily — Python lists:
+
+```bash
+python3 -c "
+fmap = lambda f, xs: [f(x) for x in xs]
+compose = lambda g, f: lambda x: g(f(x))
+
+f = lambda x: x + 1
+g = lambda x: x * 2
+xs = [1, 2, 3]
+
+mapped_twice   = fmap(g, fmap(f, xs))          # map f, then map g
+mapped_once    = fmap(compose(g, f), xs)       # map the composition
+print(mapped_twice, mapped_once, mapped_twice == mapped_once)
+"
+```
+
+`fmap g . fmap f == fmap (g . f)` — two passes over the list equal one pass with the composed function. Optimising compilers (GHC's fusion rules) rewrite your code using exactly this law.
+
 ## Learn next
 
-Category theory provides the foundations for [type theory](/t/type-theory) and [lambda calculus](/t/lambda-calculus). It directly motivates the design of [Haskell](/t/haskell)'s type class hierarchy. Understanding category theory helps with [formal verification](/t/formal-verification) (categorical semantics of type theory).
+- [Type theory](/t/type-theory) — the type systems category theory gives semantics to.
+- [Haskell](/t/haskell) — the language whose standard library is organised categorically.
+- [Lambda calculus](/t/lambda-calculus) — the computational core all of this is modeling.

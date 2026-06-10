@@ -4,6 +4,7 @@ aliases: ["regex", "regexp", "finite automaton", "pattern matching"]
 category: foundations
 domain: theory-of-computing
 subcategory: formal-languages-automata
+structure: 2
 kind: concept
 summary: A formal notation for describing patterns in text — based on the theory of finite automata and regular languages, implemented in every programming language for string matching, validation, and parsing.
 level: intermediate
@@ -13,12 +14,26 @@ tags: ["foundations", "text-processing", "theory", "programming"]
 prerequisites: ["set-theory", "boolean-logic"]
 related: ["type-theory", "lambda-calculus"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 A regular expression is a concise pattern that describes a set of strings. `/^\d{3}-\d{4}$/` describes phone numbers like "555-1234." Every programming language has regex built in for searching, validating, and extracting text. Behind the notation lies a beautiful theory: every regex corresponds to a finite automaton (a state machine), and the two are provably equivalent — you can convert one to the other mechanically. This theory determines what regexes *can* and *cannot* do.
+
+## The Visual Map
+
+The regex `ab*c` compiled to its finite automaton — every regex is secretly one of these:
+
+```mermaid
+stateDiagram-v2
+  [*] --> S0
+  S0 --> S1: a
+  S1 --> S1: b (loop — the * star)
+  S1 --> S2: c
+  S2 --> [*]
+  note right of S2: accepting state — "abc", "abbbc", "ac" all land here
+```
 
 ## More detail
 
@@ -55,9 +70,40 @@ A regular expression is a concise pattern that describes a set of strings. `/^\d
 
 **POSIX vs. Perl-compatible regex (PCRE):** POSIX regexes are a standardised subset; PCRE adds lookahead/behind, backreferences, named groups, and more. Most modern languages implement PCRE-like semantics.
 
-## Why it matters
+Understanding the theory clarifies why certain patterns are possible and others are not, why ReDoS is a real security risk, when to use a parser instead of a regex, and why some regex engines are safer than others — and it makes regex a concrete entry point into formal language theory.
 
-Regular expressions are one of the most universally used programming tools — text search, input validation, log parsing, code generation, and protocol parsing all rely on them. Understanding the theory clarifies: why certain patterns are possible and others are not, why ReDoS is a real security risk, when to use a parser instead of a regex, and why some regex engines are safer than others. They also serve as a concrete entry point to formal language theory.
+## Under the Hood
+
+The DFA for `ab*c`, hand-compiled to a transition table — this is what "O(n) matching" means:
+
+```python
+# states: 0 = start, 1 = saw 'a' (+ any 'b's), 2 = accept; -1 = dead
+DFA = {
+    (0, "a"): 1,
+    (1, "b"): 1,        # the * loop
+    (1, "c"): 2,
+}
+
+def matches(s):
+    state = 0
+    for ch in s:                                # one table lookup per char,
+        state = DFA.get((state, ch), -1)        # no backtracking, ever
+        if state == -1:
+            return False
+    return state == 2
+
+for s in ["ac", "abc", "abbbbc", "abx", "abcc"]:
+    print(f"{s:7} -> {matches(s)}")
+```
+
+One lookup per input character, constant memory, immune to pathological inputs. Engines like RE2 and `grep` build (lazily) exactly this and guarantee linear time; backtracking engines trade that guarantee away for features like backreferences.
+
+## Engineering Trade-offs
+
+- **Backtracking features vs linear-time safety.** Backreferences and lookarounds (PCRE, Python, JavaScript) are genuinely useful — and provably beyond regular languages, so they force a backtracking engine with exponential worst cases. RE2/Rust-regex refuse those features and in exchange can promise O(n) on any input. For patterns applied to *untrusted* text, that promise is a security control.
+- **Regex vs parser.** A regex is one dense line; a parser is a page of code. The regex wins for flat, token-shaped patterns — and loses catastrophically when the format has nesting, escaping, or comments (HTML, JSON, CSV-with-quotes). The crossover comes sooner than most people expect.
+- **Terseness vs maintainability.** A 200-character email regex is write-only code. Verbose mode (`re.VERBOSE`, `(?x)`) with comments, or splitting one regex into several named steps, trades golf-score elegance for the next reader's sanity.
+- **Compile once vs per call.** Compiling a regex builds an automaton — cheap, but not free. Hot loops should compile patterns once (`re.compile`, static `Regex`), not per iteration; most languages cache recent patterns, but relying on the cache is a bet.
 
 ## Real-world examples
 
@@ -71,6 +117,26 @@ Regular expressions are one of the most universally used programming tools — t
 - **"Regex can parse anything."** Regular expressions can only describe regular languages. HTML, XML, JSON, and most programming languages are context-free and require a proper parser.
 - **"Regex is always fast."** Backtracking engines have exponential worst-case complexity. DFA-based engines (RE2, Rust's regex crate) guarantee O(n) but don't support all PCRE features.
 
+## Try it yourself
+
+Trigger a (small, safe) ReDoS — watch backtracking go exponential as the input grows by one character at a time:
+
+```bash
+python3 -c "
+import re, time
+evil = re.compile(r'^(a+)+\$')          # the classic pathological pattern
+for n in (20, 22, 24, 26):
+    s = 'a' * n + 'b'                   # almost matches — forces full backtrack
+    t = time.perf_counter()
+    evil.match(s)
+    print(f'n={n}: {time.perf_counter() - t:.2f}s')
+"
+```
+
+Each +2 characters roughly quadruples the time — that's O(2^n) arriving. `grep -E '^(a+)+$'` on the same input returns instantly, because grep builds the DFA from Under the Hood instead of backtracking.
+
 ## Learn next
 
-Regular expressions are the simplest level of the formal language hierarchy, above which lie context-free grammars and parsing. They connect to [set theory](/t/set-theory) (regular languages are closed under union, intersection, and complement) and [boolean logic](/t/boolean-logic) (automata transitions are boolean predicates). [Type theory](/t/type-theory) uses regular and context-free grammars in the design of type systems.
+- [Formal language](/t/formal-language) — the hierarchy that defines regex's exact limits.
+- [Automata](/t/automata) — the machines every regex compiles down to.
+- [Parsing](/t/parsing) — what to reach for when the pattern needs a stack.

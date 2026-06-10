@@ -4,6 +4,7 @@ aliases: ["type system", "dependent types", "Martin-Löf type theory", "Curry-Ho
 category: foundations
 domain: theory-of-computing
 subcategory: logic-semantics
+structure: 2
 kind: concept
 summary: A formal framework for classifying values by their kind — preventing invalid operations, enabling type inference, and at its most powerful, encoding mathematical proofs as programs through the Curry-Howard correspondence.
 level: advanced
@@ -13,12 +14,25 @@ tags: ["foundations", "theory", "programming-languages", "types"]
 prerequisites: ["type-system", "lambda-calculus", "programming-language"]
 related: ["formal-verification", "category-theory"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 A type system classifies values — `42` is an `Int`, `"hello"` is a `String` — and rejects programs that apply operations to the wrong kind of value (can't add a string to an integer). Type theory is the mathematical study of type systems: what types are, what type systems can express, and what properties they guarantee. At its core, it asks: what can we know about a program just from its types, before running it?
+
+## The Visual Map
+
+The ladder of type-system power, with the Curry-Howard bridge to logic alongside:
+
+```mermaid
+flowchart TD
+  U["untyped lambda calculus — anything goes"] --> S["simply typed (STLC) — A -> B, no polymorphism"]
+  S --> H["Hindley-Milner — full inference, generics (ML, Haskell 98)"]
+  H --> F["System F — higher-rank polymorphism (GHC core)"]
+  F --> D["dependent types — types mention values (Coq, Lean, Idris)"]
+  D -.->|"Curry-Howard"| L["logic: types = propositions, programs = proofs"]
+```
 
 ## More detail
 
@@ -51,9 +65,44 @@ A well-typed term *is* a proof. Type-checking *is* proof-checking. This unificat
 - **Linear types / uniqueness types (Rust's ownership):** each value is used exactly once. Prevents use-after-free and data races, checked at compile time.
 - **Effect types (Koka, Unison, OCaml 5):** types track computational effects — `IO`, `Exception`, `State`. Functions are pure unless the type says otherwise.
 
-## Why it matters
+Type theory is the foundation of programming language design, formal verification, and the science of program correctness. Understanding it explains why TypeScript's types are structural (not nominal), why Rust's borrow checker works, why Haskell's monads are typed, and how proof assistants can verify both code and mathematics.
 
-Type theory is the foundation of programming language design, formal verification, and the science of program correctness. Hindley-Milner enabled ML and Haskell's powerful type inference. Dependent types enable Coq and Lean to verify mathematics and software. Rust's ownership system is a restricted linear type system. Understanding type theory explains: why TypeScript's types are structural (not nominal), why Rust's borrow checker works, why Haskell's monads are typed, and how proof assistants can verify both code and mathematics.
+## Under the Hood
+
+A complete type checker for the simply typed lambda calculus — the judgment `Γ ⊢ e : T` as twenty lines of Python:
+
+```python
+# terms: ("var", x) | ("lam", x, type, body) | ("app", f, arg) | ("int", n)
+def typeof(term, env={}):
+    match term:
+        case ("int", _):
+            return "Int"
+        case ("var", x):
+            return env[x]                          # look up in context Γ
+        case ("lam", x, t, body):
+            body_t = typeof(body, {**env, x: t})   # extend Γ with x : t
+            return ("fun", t, body_t)              # type is t -> body_t
+        case ("app", f, arg):
+            ft, at = typeof(f, env), typeof(arg, env)
+            match ft:
+                case ("fun", param_t, ret_t) if param_t == at:
+                    return ret_t
+                case _:
+                    raise TypeError(f"cannot apply {ft} to {at}")
+
+inc = ("lam", "x", "Int", ("var", "x"))            # λx:Int. x
+print(typeof(("app", inc, ("int", 5))))            # Int — well typed
+print(typeof(("app", ("int", 3), ("int", 5))))     # TypeError: not a function
+```
+
+Each `case` is one inference rule from the textbook; the recursion *is* the derivation tree. Real compilers add inference, polymorphism, and better errors — but this skeleton is genuinely what runs inside them.
+
+## Engineering Trade-offs
+
+- **Expressiveness vs inference.** Hindley-Milner hits a sweet spot: full type inference with no annotations, decidably. Climb higher (higher-rank polymorphism, dependent types) and inference becomes undecidable — the programmer pays with annotations and proof obligations for every guarantee gained.
+- **Static guarantees vs flexibility.** Stronger typing rejects more bad programs *and* more good ones; every sound type system forbids some correct code. Gradual typing (TypeScript, Python type hints) trades airtight guarantees for incremental adoption — with escape hatches (`any`, casts) that quietly punch holes in the proofs.
+- **Proof power vs effort.** Dependent types can verify a sorting function returns a sorted permutation — at roughly 10× the development effort. Worth it for seL4 or CompCert; not for a CRUD app. The engineering question is which 1% of the system deserves machine-checked proof.
+- **Compile-time cost.** Sophisticated type-level computation (Haskell type families, Rust trait resolution, TypeScript conditional types) can push compile times from seconds toward minutes — type checking is itself a program you're running.
 
 ## Real-world examples
 
@@ -67,6 +116,36 @@ Type theory is the foundation of programming language design, formal verificatio
 - **"Strong typing means no type coercions."** Strong vs. weak typing is not a well-defined term. Python is "dynamically typed but strongly typed" (no implicit coercions); JavaScript is "dynamically and weakly typed" (many implicit coercions); Haskell is "statically and strongly typed."
 - **"Type inference means dynamic typing."** Type inference (Hindley-Milner) infers types *at compile time* — Haskell, OCaml, and Rust use it. The distinction is static (compile-time) vs. dynamic (runtime) typing, not whether annotations are required.
 
+## Try it yourself
+
+Run the type checker from Under the Hood and watch it accept and reject programs without executing them:
+
+```bash
+python3 -c "
+def typeof(term, env={}):
+    match term:
+        case ('int', _): return 'Int'
+        case ('var', x): return env[x]
+        case ('lam', x, t, body):
+            return ('fun', t, typeof(body, {**env, x: t}))
+        case ('app', f, arg):
+            ft, at = typeof(f, env), typeof(arg, env)
+            if ft[0] == 'fun' and ft[1] == at: return ft[2]
+            raise TypeError(f'cannot apply {ft} to {at}')
+
+inc = ('lam', 'x', 'Int', ('var', 'x'))
+print(typeof(('app', inc, ('int', 5))))      # Int
+try:
+    typeof(('app', ('int', 3), ('int', 5)))  # 3(5) — nonsense
+except TypeError as e:
+    print('rejected:', e)
+"
+```
+
+The second program never runs — it's rejected by pure symbol-pushing over types. That's the entire promise of static typing, in miniature.
+
 ## Learn next
 
-Type theory builds on [lambda calculus](/t/lambda-calculus). Dependent types are used in [formal verification](/t/formal-verification). [Category theory](/t/category-theory) provides the algebraic foundation for type theory (monads, functors, and natural transformations all come from category theory).
+- [Lambda calculus](/t/lambda-calculus) — the untyped core every type system is layered onto.
+- [Type system](/t/type-system) — the practical, language-design view of these ideas.
+- [Formal verification](/t/formal-verification) — dependent types deployed to prove real software correct.
