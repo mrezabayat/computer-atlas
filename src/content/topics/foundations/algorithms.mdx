@@ -4,6 +4,7 @@ aliases: ["algorithm"]
 category: foundations
 domain: algorithms-mathematics
 subcategory: algorithm-design-analysis
+structure: 2
 kind: concept
 summary: A precise, finite recipe for solving a problem — the central idea of computer science.
 level: intermediate
@@ -12,12 +13,28 @@ importance: core
 tags: ["algorithms", "complexity"]
 related: ["boolean-logic", "recursion", "discrete-mathematics"]
 nextSteps: ["data-structure", "big-o"]
-updated: 2026-06-04
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 An algorithm is a recipe. Given some input, it lists the exact steps a computer (or a person) should take to produce a correct output. "Sort this list", "find the shortest route", "search this text" — each is a problem with many possible algorithms.
+
+## The Visual Map
+
+```mermaid
+flowchart TD
+  P["problem + input"] --> D{"design strategy"}
+  D --> DC["divide & conquer — merge sort, binary search"]
+  D --> G["greedy — Dijkstra, Huffman"]
+  D --> DP["dynamic programming — edit distance, knapsack"]
+  D --> BT["backtracking — sudoku, n-queens"]
+  DC --> AN["analysis — correctness + Big-O cost"]
+  G --> AN
+  DP --> AN
+  BT --> AN
+  AN --> I["implementation on a data structure"]
+```
 
 ## More detail
 
@@ -41,9 +58,36 @@ Big-O tells you how the cost grows with the input size `n`:
 
 Classical algorithm families include sorting, searching, graph algorithms (shortest path, spanning tree), dynamic programming, and divide-and-conquer.
 
-## Why it matters
+The stakes are real: the right algorithm can turn a problem that would take a year into one that finishes in a second. Choosing or designing one is the central engineering skill in computer science — far more leverage than any amount of low-level tuning applied to the wrong approach.
 
-The right algorithm can turn a problem that would take a year into one that finishes in a second. Choosing or designing one is the central engineering skill in computer science.
+## Under the Hood
+
+Binary search — the canonical divide-and-conquer algorithm. Each comparison halves the remaining range, so a million sorted items need at most 20 steps:
+
+```python
+def binary_search(items, target):
+    lo, hi = 0, len(items) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if items[mid] == target:
+            return mid
+        if items[mid] < target:
+            lo = mid + 1          # discard the lower half
+        else:
+            hi = mid - 1          # discard the upper half
+    return -1                     # not present
+
+print(binary_search([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 23))  # 5
+```
+
+The precondition — the input must already be sorted — is typical: algorithms buy speed by exploiting structure in the data.
+
+## Engineering Trade-offs
+
+- **Time vs memory.** Many speedups spend memory to save time: memoization caches results, hash indexes duplicate keys, precomputed tables trade RAM for CPU. The reverse trade exists too (streaming algorithms use tiny memory but only see data once).
+- **Worst case vs typical case.** Quicksort is O(n²) in the worst case but beats merge sort in practice thanks to cache-friendly behaviour; production sorts (Timsort, introsort) are hybrids engineered to get both.
+- **Simplicity vs optimality.** The asymptotically best known algorithm is often complex, constant-heavy, and bug-prone. A simple O(n log n) solution usually beats a clever O(n) one that nobody on the team can maintain — pick the clever one only when profiling proves you need it.
+- **Exact vs approximate.** For NP-hard problems (routing, scheduling, packing), exact answers are exponential; heuristics and approximation algorithms give good-enough answers in polynomial time.
 
 ## Real-world examples
 
@@ -56,6 +100,25 @@ The right algorithm can turn a problem that would take a year into one that fini
 - **"There is only one algorithm for each problem."** Most useful problems have many; the trade-offs are time, memory, and simplicity.
 - **"Faster always means better."** Sometimes a slightly slower algorithm is easier to maintain, easier to parallelise, or uses less memory.
 
+## Try it yourself
+
+Race linear search against binary search on a million sorted numbers:
+
+```bash
+python3 -c "
+import timeit
+setup = 'import bisect; data = list(range(1_000_000)); target = 999_999'
+linear = timeit.timeit('target in data', setup=setup, number=100)
+binary = timeit.timeit('bisect.bisect_left(data, target)', setup=setup, number=100)
+print(f'linear search: {linear:.3f}s   binary search: {binary:.6f}s')
+print(f'speedup: {linear / binary:,.0f}x')
+"
+```
+
+Same machine, same data, same answer — four to five orders of magnitude apart. That gap is the algorithm.
+
 ## Learn next
 
-Algorithms are made of decisions; revisit [boolean logic](/t/boolean-logic) if those decisions are unfamiliar, or explore data structures and complexity theory.
+- [Data structures](/t/data-structure) — the shapes algorithms operate on; the two are designed together.
+- [Big O](/t/big-o) — the language for comparing algorithmic cost.
+- [Recursion](/t/recursion) — the technique behind divide-and-conquer designs.
