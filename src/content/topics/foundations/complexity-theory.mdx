@@ -4,6 +4,7 @@ aliases: ["computational complexity", "p vs np"]
 category: foundations
 domain: theory-of-computing
 subcategory: computability-complexity
+structure: 2
 kind: field
 summary: The study of how the resources a problem requires — time and memory — grow with input size, and how problems are classified by how hard they are to solve.
 level: advanced
@@ -12,12 +13,31 @@ importance: important
 tags: ["theory", "complexity", "algorithms"]
 prerequisites: ["big-o"]
 related: ["computability", "algorithms"]
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 **Computational complexity theory** asks: *how hard is a problem, fundamentally?* Not "how do we solve it," but "how much time and memory must *any* solution use, and does that grow manageably or explosively as the input gets bigger?" Some problems scale gently — sorting a list of a million items is routine. Others appear to blow up so fast that even the world's fastest computers can't handle moderately large inputs. Complexity theory is the science of telling these apart and proving which is which.
+
+## The Visual Map
+
+The major complexity classes nest inside one another (as far as anyone can prove):
+
+```mermaid
+flowchart TD
+  subgraph EXP["EXPTIME — exponential time"]
+    subgraph PS["PSPACE — polynomial memory"]
+      subgraph NPC["NP — verifiable quickly"]
+        P["P — solvable quickly: sorting, shortest path, primality"]
+        NPH["NP-complete: SAT, traveling salesman, graph coloring"]
+      end
+    end
+  end
+  Q["P = NP ?"] -.-> NPC
+```
+
+If anyone finds a fast algorithm for a single NP-complete problem, the NP ring collapses into P.
 
 ## More detail
 
@@ -32,9 +52,13 @@ The field's most famous open question is **P vs NP**: are the problems we can *v
 
 A key tool is **reduction**: showing problem A is "at least as hard as" B by transforming B into A. Reductions are how thousands of problems were all proven NP-complete — they're really the *same* difficulty in disguise.
 
-## Why it matters
+The practical payoff: complexity theory tells you when to *stop looking* for a fast, exact algorithm and instead use approximations, heuristics, or accept limits. It's why we don't expect a perfect, efficient solver for every scheduling or routing problem — and, more surprisingly, it's what makes modern **cryptography** possible: encryption is secure precisely because breaking it is believed to be computationally intractable. The boundary between "easy" and "hard" shapes what software can and can't realistically do.
 
-Complexity theory tells you when to *stop looking* for a fast, exact algorithm and instead use approximations, heuristics, or accept limits. It's why we don't expect a perfect, efficient solver for every scheduling or routing problem — and, more surprisingly, it's what makes modern **cryptography** possible: encryption is secure precisely because breaking it is believed to be computationally intractable. The boundary between "easy" and "hard" shapes what software can and can't realistically do.
+## Engineering Trade-offs
+
+- **Exact vs approximate.** For NP-hard problems, exact optimality costs exponential time. Approximation algorithms and heuristics (simulated annealing, local search) give provably-decent or usually-good answers in polynomial time — almost always the right engineering trade.
+- **Worst case vs real instances.** Complexity classes speak about the *worst* input. Modern SAT solvers routinely crush industrial instances with millions of variables despite SAT being NP-complete — theory bounds the cliff, practice often walks the safe paths. Don't refuse to try a "hard" problem; don't promise it will always work either.
+- **Hardness as a feature.** Cryptography deliberately builds on problems believed intractable (factoring, discrete log). Here the trade-off inverts: a complexity-theoretic *breakthrough* would be a security *catastrophe* — which is why post-quantum cryptography hedges against one.
 
 ## Real-world examples
 
@@ -47,6 +71,32 @@ Complexity theory tells you when to *stop looking* for a fast, exact algorithm a
 - **"NP means 'non-polynomial' / 'impossible.'"** NP means *nondeterministic polynomial* — verifiable quickly. Many NP problems are solved routinely at practical sizes.
 - **"NP-hard problems can't be solved at all."** They can — just not always quickly and exactly for large inputs. Approximation and heuristics handle them in practice every day.
 
+## Try it yourself
+
+Feel exponential growth directly — brute-force subset-sum doubles in cost with every element added:
+
+```bash
+python3 -c "
+import time
+from itertools import combinations
+
+def subset_sum(nums, target):
+    return any(sum(c) == target
+               for r in range(len(nums) + 1)
+               for c in combinations(nums, r))
+
+for n in (16, 20, 24):
+    nums = list(range(1, n + 1))
+    t = time.perf_counter()
+    subset_sum(nums, -1)          # no solution: forces a full search
+    print(f'n={n}: {time.perf_counter() - t:.2f}s  ({2**n:,} subsets)')
+"
+```
+
+Each +4 elements multiplies the work by 16. Extrapolate to n=60 and you're past the age of the universe — that wall is what "intractable" means.
+
 ## Learn next
 
-Complexity theory builds on [Big O](/t/big-o) for measuring cost, and sits beside [computability](/t/computability), which asks not how *hard* a problem is but whether it can be solved at all.
+- [Big O](/t/big-o) — the measuring stick complexity theory is built on.
+- [Computability](/t/computability) — the sibling question: not how hard, but possible at all?
+- [Cryptography](/t/cryptography) — the engineering discipline built on top of assumed hardness.

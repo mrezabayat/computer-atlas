@@ -4,6 +4,7 @@ aliases: ["automaton", "finite state machine", "state machine"]
 category: foundations
 domain: theory-of-computing
 subcategory: formal-languages-automata
+structure: 2
 kind: concept
 summary: Abstract machines that read input and move between states according to fixed rules — the mathematical models of computation, from simple finite-state machines up to the Turing machine.
 level: advanced
@@ -12,12 +13,25 @@ importance: important
 tags: ["theory", "computation", "state-machine"]
 prerequisites: []
 related: ["formal-language", "computability"]
-updated: 2026-06-08
+updated: 2026-06-10
 ---
 
 ## In simple terms
 
 An **automaton** is an idealized machine that reads input one symbol at a time and reacts by changing its internal **state**. Picture a turnstile: it has two states (locked, unlocked), and inputs (insert coin, push) move it between them. That's a tiny automaton. Automata theory studies these abstract machines in increasing power — from ones with just a handful of states up to the all-powerful Turing machine — to understand precisely what each kind of machine can and cannot compute.
+
+## The Visual Map
+
+The turnstile, drawn as the state machine it is:
+
+```mermaid
+stateDiagram-v2
+  [*] --> Locked
+  Locked --> Unlocked: coin
+  Locked --> Locked: push (no entry)
+  Unlocked --> Locked: push (enter)
+  Unlocked --> Unlocked: coin (kept)
+```
 
 ## More detail
 
@@ -31,9 +45,36 @@ Two flavors of finite automata are worth knowing: **deterministic (DFA)**, where
 
 The pattern across the ladder is that **more memory means more power**: no memory (FSM), a stack (pushdown), or an unlimited tape (Turing). This directly connects to [computability](/t/computability) — the Turing machine sits at the top precisely because it captures everything that can be computed.
 
-## Why it matters
+Beyond grounding the theory, automata are intensely practical: finite-state machines are everywhere in real software — regular-expression engines, lexical analyzers in compilers, network protocol handlers, vending machines, game AI, and UI workflows are all naturally expressed as state machines. A state machine gives engineers a clean, bug-resistant way to model any system that moves through a fixed set of states, because illegal transitions simply don't exist in the table.
 
-Automata are the formal models that let us *prove* what computation can do. They're also intensely practical: finite-state machines are everywhere in real software — regular-expression engines, lexical analyzers in compilers, network protocol handlers, vending machines, game AI, and UI workflows are all naturally expressed as state machines. The theory both grounds computer science and gives engineers a clean, bug-resistant way to model any system that moves through a fixed set of states.
+## Under the Hood
+
+A finite-state machine is just a transition table — the turnstile in six lines:
+
+```python
+TRANSITIONS = {
+    ("locked",   "coin"): "unlocked",
+    ("locked",   "push"): "locked",     # push while locked: nothing
+    ("unlocked", "push"): "locked",     # person passes through
+    ("unlocked", "coin"): "unlocked",   # extra coin: kept, no change
+}
+
+def run(events, state="locked"):
+    for event in events:
+        state = TRANSITIONS[(state, event)]
+        print(f"{event:5} -> {state}")
+    return state
+
+run(["push", "coin", "coin", "push", "push"])
+```
+
+No flags, no nested ifs — every legal behaviour is one row, and anything not in the table is impossible by construction. Lexers and protocol handlers are this exact pattern with more rows.
+
+## Engineering Trade-offs
+
+- **Explicit FSM vs ad-hoc flags.** Modeling states explicitly prevents impossible combinations (`is_open && is_closed`) and makes every transition reviewable — at the cost of upfront ceremony. Past roughly three booleans interacting, the table is almost always the better deal.
+- **DFA vs NFA in regex engines.** Compiling an NFA to a DFA gives guaranteed linear-time matching but can explode the state count exponentially; backtracking engines (PCRE, Python `re`) stay small but risk exponential *time* on hostile input (ReDoS). RE2 chooses the DFA/simulation side; most language runtimes chose backtracking — a real security-relevant trade.
+- **State explosion.** A machine per feature is clean; the *product* of several machines multiplies states. Hierarchical/statechart notations (Harel statecharts, XState) trade notation complexity for keeping the combinatorics manageable.
 
 ## Real-world examples
 
@@ -46,6 +87,25 @@ Automata are the formal models that let us *prove* what computation can do. They
 - **"Automata are purely theoretical."** The Turing machine is a thought tool, but finite-state machines are deployed constantly in real code — regex, parsers, protocols, and embedded controllers.
 - **"A finite-state machine can compute anything with enough states."** No — without unbounded memory it provably can't recognize, for instance, arbitrarily nested parentheses; that needs at least a stack.
 
+## Try it yourself
+
+Run the turnstile and try to break it:
+
+```bash
+python3 -c "
+T = {('locked','coin'): 'unlocked', ('locked','push'): 'locked',
+     ('unlocked','push'): 'locked', ('unlocked','coin'): 'unlocked'}
+state = 'locked'
+for event in ['push', 'push', 'coin', 'push', 'coin', 'coin', 'push']:
+    state = T[(state, event)]
+    print(f'{event:5} -> {state}')
+"
+```
+
+However you reorder the events, the machine never reaches an undefined situation — the table *is* the specification. Add a third state (say, `alarm` after three pushes while locked) and watch how cheap the change is.
+
 ## Learn next
 
-Each class of automaton recognizes a matching class of [formal language](/t/formal-language), and the Turing machine at the top defines the limits studied in [computability](/t/computability).
+- [Formal language](/t/formal-language) — each automaton class recognizes a matching language class.
+- [Turing machine](/t/turing-machine) — the top of the ladder, where computability begins.
+- [Regular expression](/t/regular-expression) — finite automata in their most-used disguise.
