@@ -11,7 +11,20 @@ export default defineConfig({
   adapter: cloudflare({
     imageService: "compile",
   }),
-  integrations: [mdx(), sitemap(), react()],
+  integrations: [
+    mdx(),
+    // /dev/* pages are scratch/verification pages — keep them out of the sitemap.
+    sitemap({ filter: (page) => !page.includes("/dev/") }),
+    react(),
+  ],
+  markdown: {
+    syntaxHighlight: {
+      type: "shiki",
+      // Leave ```mermaid fences as plain <pre><code class="language-mermaid">
+      // blocks so MermaidRenderer can pick them up client-side.
+      excludeLangs: ["mermaid"],
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -1,0 +1,77 @@
+---
+/**
+ * Client-side Mermaid rendering for ```mermaid fences ("The Visual Map").
+ *
+ * astro.config.mjs excludes "mermaid" from Shiki highlighting, so fences reach
+ * the browser as <pre><code class="language-mermaid">. This script swaps each
+ * one for a rendered SVG. The mermaid library (~large) is dynamically imported
+ * only when a page actually contains a diagram, so topics without a Visual Map
+ * pay nothing. Diagrams follow the site theme and re-render on toggle.
+ */
+---
+
+<script>
+  const codeNodes = document.querySelectorAll<HTMLElement>(
+    "pre > code.language-mermaid",
+  );
+
+  if (codeNodes.length > 0) {
+    const blocks: { holder: HTMLElement; source: string }[] = [];
+    for (const code of codeNodes) {
+      const pre = code.parentElement;
+      if (!pre) continue;
+      const holder = document.createElement("figure");
+      holder.className = "mermaid-figure not-prose";
+      holder.setAttribute("aria-busy", "true");
+      const source = code.textContent ?? "";
+      pre.replaceWith(holder);
+      blocks.push({ holder, source });
+    }
+
+    const { default: mermaid } = await import("mermaid");
+    let seq = 0;
+
+    const renderAll = async () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "strict",
+        theme: dark ? "dark" : "neutral",
+        fontFamily: "inherit",
+      });
+      for (const { holder, source } of blocks) {
+        try {
+          const { svg } = await mermaid.render(`mermaid-d${seq++}`, source);
+          holder.innerHTML = svg;
+        } catch (err) {
+          // Bad diagram source: fall back to showing the raw text.
+          const pre = document.createElement("pre");
+          pre.textContent = source;
+          holder.replaceChildren(pre);
+          console.error("Mermaid render failed:", err);
+        }
+        holder.removeAttribute("aria-busy");
+      }
+    };
+
+    await renderAll();
+
+    new MutationObserver((mutations) => {
+      if (mutations.some((m) => m.attributeName === "data-theme")) {
+        void renderAll();
+      }
+    }).observe(document.documentElement, { attributes: true });
+  }
+</script>
+
+<style is:global>
+  .mermaid-figure {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .mermaid-figure svg {
+    margin-inline: auto;
+    max-width: 100%;
+    height: auto;
+  }
+</style>

@@ -107,6 +107,8 @@ The "Metadata" block (Primary Domain / Sub-category) is **rendered by the topic 
 
 ### 4.3 Section quality bars (what the linter can check mechanically)
 
+> Heading structure is enforced for every non-stub `structure: 2` topic; the per-section quality bars below kick in at `status: reviewed`, so in-progress drafts stay committable.
+
 - **The Visual Map** contains a ` ```mermaid ` fence.
 - **Under the Hood** contains a code fence with a language tag.
 - **Try it yourself** contains a fenced `bash`/`sh`/`python` block; convention: must run on stock WSL/Ubuntu with no installs beyond coreutils/python3 (spot-checked in review, not CI-executed).

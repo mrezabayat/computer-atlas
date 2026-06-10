@@ -2,11 +2,26 @@
 /**
  * Content linter — checks topics & paths for things the Zod schema can't catch.
  *
- * Topics:
+ * Topics (all structures):
  *   - status: stub  -> no body checks (stubs are honest placeholders).
- *   - otherwise     -> must contain the six standardized H2 headings.
  *   - status: reviewed -> no TODO / FIXME / "(not yet written)" markers in body.
  *   - summary length <= 280 chars (also enforced by schema; nicer error).
+ *   - no slug duplicated across relation fields.
+ *   - taxonomy: `domain` must exist in src/lib/taxonomy.json; `subcategory`
+ *     requires `domain` and must belong to it.
+ *
+ * Topics with structure: 1 (default — legacy six-heading body):
+ *   - must contain the six standardized H2 headings.
+ *
+ * Topics with structure: 2 (enriched body, docs/enrichment-plan.md §4):
+ *   - domain + subcategory required.
+ *   - required H2 headings depend on `kind` (applicability matrix), in
+ *     canonical order; "## Why it matters" is retired.
+ *   - quality bars, enforced once status: reviewed (drafts may be incomplete):
+ *     The Visual Map needs a ```mermaid fence; Under the Hood a language-tagged
+ *     fence; Try it yourself a bash/sh/python fence; Learn next >= 3 /t/ links.
+ *   - starred sections may opt out with an MDX comment marker
+ *     "no-<section>: reason" (see OPT_OUT_MARKERS below).
  *
  * Paths:
  *   - must have at least 2 topics.
@@ -15,9 +30,17 @@
  */
 
 import { readFile } from "node:fs/promises";
-import { globSync } from "node:fs";
+import { readFileSync, globSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const REQUIRED_HEADINGS = [
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+const TAXONOMY = JSON.parse(
+  readFileSync(join(REPO_ROOT, "src", "lib", "taxonomy.json"), "utf8"),
+);
+
+const V1_REQUIRED_HEADINGS = [
   "## In simple terms",
   "## More detail",
   "## Why it matters",
@@ -25,6 +48,69 @@ const REQUIRED_HEADINGS = [
   "## Common misconceptions",
   "## Learn next",
 ];
+
+// Canonical v2 section order (docs/enrichment-plan.md §4.1).
+const V2_ORDER = [
+  "## In simple terms",
+  "## The Visual Map",
+  "## More detail",
+  "## Under the Hood",
+  "## Engineering Trade-offs",
+  "## Real-world examples",
+  "## Common misconceptions",
+  "## Try it yourself",
+  "## Learn next",
+];
+
+const BIO_KINDS = new Set(["person", "organization", "historical-event"]);
+
+// Sections a topic may explicitly opt out of, and the marker that does it.
+// Marker form: {/* no-visual-map: <reason> */} — the reason is mandatory.
+const OPT_OUT_MARKERS = {
+  "## The Visual Map": {
+    name: "no-visual-map",
+    re: /\{\/\*\s*no-visual-map:\s*[^*]*\S[^*]*\*\/\}/,
+  },
+  "## Under the Hood": {
+    name: "no-under-the-hood",
+    re: /\{\/\*\s*no-under-the-hood:\s*[^*]*\S[^*]*\*\/\}/,
+  },
+  "## Try it yourself": {
+    name: "no-try-it-yourself",
+    re: /\{\/\*\s*no-try-it-yourself:\s*[^*]*\S[^*]*\*\/\}/,
+  },
+};
+
+/** Required v2 headings by kind (docs/enrichment-plan.md §4.2). */
+function v2RequiredHeadings(kind) {
+  if (BIO_KINDS.has(kind)) {
+    return [
+      "## In simple terms",
+      "## More detail",
+      "## Real-world examples",
+      "## Common misconceptions",
+      "## Learn next",
+    ];
+  }
+  if (kind === "field") {
+    return [
+      "## In simple terms",
+      "## The Visual Map",
+      "## More detail",
+      "## Engineering Trade-offs",
+      "## Real-world examples",
+      "## Common misconceptions",
+      "## Learn next",
+    ];
+  }
+  return V2_ORDER;
+}
+
+/** Headings that may be satisfied by an opt-out marker instead (starred in the matrix). */
+function v2OptOutable(kind) {
+  if (BIO_KINDS.has(kind) || kind === "field") return new Set();
+  return new Set(Object.keys(OPT_OUT_MARKERS));
+}
 
 const FORBIDDEN_IN_REVIEWED = [
   /\bTODO\b/,
@@ -74,6 +160,105 @@ function readList(text, name) {
 
 const RELATION_FIELDS = ["prerequisites", "related", "partOf", "nextSteps"];
 
+/** Extract the text of one H2 section (from its heading to the next H2 or EOF). */
+function sectionText(body, heading) {
+  const start = body.indexOf(`${heading}\n`);
+  if (start === -1) {
+    // Heading may be the very last line without a trailing newline.
+    if (!body.trimEnd().endsWith(heading)) return null;
+    return "";
+  }
+  const rest = body.slice(start + heading.length);
+  const next = rest.search(/^## /m);
+  return next === -1 ? rest : rest.slice(0, next);
+}
+
+function lintTaxonomy(file, fm, structure) {
+  const domain = readField(fm, "domain")?.replace(/['"]/g, "") ?? null;
+  const subcategory =
+    readField(fm, "subcategory")?.replace(/['"]/g, "") ?? null;
+
+  if (domain && !Object.hasOwn(TAXONOMY, domain)) {
+    err(file, `unknown domain "${domain}" (see src/lib/taxonomy.json)`);
+    return;
+  }
+  if (subcategory && !domain) {
+    err(file, `subcategory "${subcategory}" set without a domain`);
+    return;
+  }
+  if (domain && subcategory && !Object.hasOwn(TAXONOMY[domain].subcategories, subcategory)) {
+    const valid = Object.keys(TAXONOMY[domain].subcategories).join(", ");
+    err(
+      file,
+      `subcategory "${subcategory}" is not in domain "${domain}" (valid: ${valid})`,
+    );
+    return;
+  }
+  if (structure === 2 && (!domain || !subcategory)) {
+    err(file, "structure: 2 requires both `domain` and `subcategory`");
+  }
+}
+
+function lintV2Body(file, body, kind, status) {
+  const required = v2RequiredHeadings(kind);
+  const optOutable = v2OptOutable(kind);
+
+  for (const h of required) {
+    if (body.includes(h)) continue;
+    if (optOutable.has(h) && OPT_OUT_MARKERS[h].re.test(body)) continue;
+    const hint = optOutable.has(h)
+      ? ` (or opt out with {/* ${OPT_OUT_MARKERS[h].name}: reason */})`
+      : "";
+    err(file, `missing required v2 heading "${h}"${hint}`);
+  }
+
+  if (body.includes("## Why it matters")) {
+    err(
+      file,
+      `v2 body still has "## Why it matters" — merge it into More detail / Engineering Trade-offs / Real-world examples`,
+    );
+  }
+
+  // Canonical order: every canonical heading that is present must appear in
+  // V2_ORDER sequence.
+  let last = -1;
+  for (const h of V2_ORDER) {
+    const idx = body.indexOf(`\n${h}\n`) !== -1 ? body.indexOf(`\n${h}\n`) : body.startsWith(`${h}\n`) ? 0 : -1;
+    if (idx === -1) continue;
+    if (idx < last) {
+      err(file, `heading "${h}" is out of canonical order (see docs/enrichment-plan.md §4.1)`);
+    }
+    last = idx;
+  }
+
+  // Per-section quality bars — only once the topic claims to be reviewed;
+  // drafts may have empty sections while being written.
+  if (status !== "reviewed") return;
+
+  const visualMap = sectionText(body, "## The Visual Map");
+  if (visualMap !== null && !/```mermaid\b/.test(visualMap)) {
+    err(file, "The Visual Map has no ```mermaid fence");
+  }
+
+  const underHood = sectionText(body, "## Under the Hood");
+  if (underHood !== null && !/```[a-zA-Z][\w+-]*/.test(underHood)) {
+    err(file, "Under the Hood has no language-tagged code fence");
+  }
+
+  const tryIt = sectionText(body, "## Try it yourself");
+  if (tryIt !== null && !/```(bash|sh|shell|python|py)\b/.test(tryIt)) {
+    err(file, "Try it yourself has no bash/sh/python code fence");
+  }
+
+  const learnNext = sectionText(body, "## Learn next");
+  if (learnNext !== null) {
+    const links = learnNext.match(/\]\(\/t\/[a-z0-9-]+/g) ?? [];
+    if (links.length < 3) {
+      err(file, `Learn next has ${links.length} internal /t/ link(s); v2 needs >= 3`);
+    }
+  }
+}
+
 async function lintTopic(file) {
   const src = await readFile(file, "utf8");
   const split = splitFrontmatter(src);
@@ -84,12 +269,21 @@ async function lintTopic(file) {
   const { fm, body } = split;
 
   const status = (readField(fm, "status") ?? "draft").replace(/['"]/g, "");
+  const kind = (readField(fm, "kind") ?? "concept").replace(/['"]/g, "");
+  const structure = Number(readField(fm, "structure") ?? "1");
   const summary = readField(fm, "summary") ?? "";
   const summaryText = summary.replace(/^['"]|['"]$/g, "").replace(/^\|\s*/, "");
 
   if (summaryText.length > 280) {
     err(file, `summary is ${summaryText.length} chars (max 280)`);
   }
+
+  if (![1, 2].includes(structure)) {
+    err(file, `invalid structure "${structure}" (must be 1 or 2)`);
+    return;
+  }
+
+  lintTaxonomy(file, fm, structure);
 
   // Detect the same slug appearing in more than one relation field. Causes
   // duplicate arrows in the neighborhood graph and confuses readers.
@@ -109,9 +303,13 @@ async function lintTopic(file) {
 
   if (status === "stub") return;
 
-  for (const h of REQUIRED_HEADINGS) {
-    if (!body.includes(h)) {
-      err(file, `missing required heading "${h}"`);
+  if (structure === 2) {
+    lintV2Body(file, body, kind, status);
+  } else {
+    for (const h of V1_REQUIRED_HEADINGS) {
+      if (!body.includes(h)) {
+        err(file, `missing required heading "${h}"`);
+      }
     }
   }
 

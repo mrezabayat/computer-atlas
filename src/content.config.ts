@@ -1,6 +1,7 @@
 import { defineCollection, reference, z } from "astro:content";
 import { glob } from "astro/loaders";
 import { CATEGORIES } from "~/lib/categories";
+import { DOMAIN_SLUGS } from "~/lib/taxonomy";
 
 const TOPIC_KINDS = [
   "concept",
@@ -32,6 +33,15 @@ const topics = defineCollection({
     aliases: z.array(z.string()).default([]),
 
     category: z.enum(CATEGORIES),
+
+    // Master Computing Taxonomy classification (docs/enrichment-plan.md §3).
+    // Optional during the Phase 1–2 migration; becomes required in Phase 3.
+    // lint-content.mjs validates that `subcategory` belongs to `domain`.
+    domain: z.enum(DOMAIN_SLUGS).optional(),
+    subcategory: z.string().optional(),
+    // Body structure version: 1 = original six headings, 2 = enriched
+    // structure (docs/enrichment-plan.md §4). Drives which lint rules apply.
+    structure: z.union([z.literal(1), z.literal(2)]).default(1),
 
     kind: z.enum(TOPIC_KINDS).default("concept"),
 

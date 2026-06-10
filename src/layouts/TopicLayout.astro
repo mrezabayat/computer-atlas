@@ -10,10 +10,12 @@ import AppearsInCard from "~/components/AppearsInCard.astro";
 import NeighborhoodGraph from "~/components/NeighborhoodGraph.tsx";
 import PathContextStrip from "~/components/PathContextStrip.tsx";
 import InlineMarkComplete from "~/components/InlineMarkComplete.tsx";
+import MermaidRenderer from "~/components/MermaidRenderer.astro";
 import { getTopicRelations, getNeighborGraph, categoryUrl } from "~/lib/graph";
 import { buildPathContexts } from "~/lib/path-contexts";
 import { topicReadingTimeMinutes } from "~/lib/reading-time";
 import { categoryLabel, type CategorySlug } from "~/lib/categories";
+import { domainLabel, subcategoryLabel } from "~/lib/taxonomy";
 import { editUrl, reportFixUrl } from "~/site.config";
 
 interface Props {
@@ -23,6 +25,10 @@ interface Props {
 const { topic } = Astro.props;
 const { title, summary, kind, level, status, importance, category, updated, aliases } =
   topic.data;
+const { domain, subcategory } = topic.data;
+const domainDisplay = domain ? domainLabel(domain) : undefined;
+const subcategoryDisplay =
+  domain && subcategory ? subcategoryLabel(domain, subcategory) : undefined;
 const relations = (await getTopicRelations(topic.id)) ?? {
   prerequisites: [],
   related: [],
@@ -77,6 +83,13 @@ const readingMinutes = topicReadingTimeMinutes(topic);
       aria-hidden="true"
       data-pagefind-filter={`importance:${importance}`}
     ></span>
+    {domainDisplay && (
+      <span
+        class="hidden"
+        aria-hidden="true"
+        data-pagefind-filter={`domain:${domainDisplay}`}
+      />
+    )}
     {
       tags.map((tag) => (
         <span
@@ -147,6 +160,28 @@ const readingMinutes = topicReadingTimeMinutes(topic);
       <p class="mt-4 text-lg text-[var(--color-atlas-ink)]">
         {summary}
       </p>
+      {domainDisplay && (
+        <dl
+          class="mt-4 flex flex-wrap gap-x-6 gap-y-1 rounded-md border border-[var(--color-atlas-line)] bg-[var(--color-atlas-surface)] px-3 py-2 text-xs"
+        >
+          <div class="flex gap-1.5">
+            <dt class="font-medium text-[var(--color-atlas-muted)]">
+              Primary domain
+            </dt>
+            <dd class="text-[var(--color-atlas-ink)]">{domainDisplay}</dd>
+          </div>
+          {subcategoryDisplay && (
+            <div class="flex gap-1.5">
+              <dt class="font-medium text-[var(--color-atlas-muted)]">
+                Sub-category
+              </dt>
+              <dd class="text-[var(--color-atlas-ink)]">
+                {subcategoryDisplay}
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
     </header>
 
     <div
@@ -154,6 +189,7 @@ const readingMinutes = topicReadingTimeMinutes(topic);
     >
       <slot />
     </div>
+    <MermaidRenderer />
 
     {relations.appearsInRoadmaps.length > 0 && (
       <div class="mt-10">

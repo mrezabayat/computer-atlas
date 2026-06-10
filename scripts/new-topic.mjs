@@ -4,18 +4,26 @@
  *
  * Usage:
  *   node scripts/new-topic.mjs <slug> \
- *     --category <c> --kind <k> --level <l> [--importance <i>] [--status <s>] \
+ *     --category <c> --domain <d> --subcategory <s> \
+ *     --kind <k> --level <l> [--importance <i>] [--status <s>] \
  *     [--title "..."] [--summary "..."] [--force]
  *
  * Defaults: --kind concept --level beginner --importance important --status draft.
+ *
+ * Emits the v2 enriched structure (docs/enrichment-plan.md §4); the scaffolded
+ * headings depend on --kind per the applicability matrix.
  */
 
 import { mkdir, writeFile, access } from "node:fs/promises";
-import { constants } from "node:fs";
+import { constants, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+const TAXONOMY = JSON.parse(
+  readFileSync(join(REPO_ROOT, "src", "lib", "taxonomy.json"), "utf8"),
+);
 
 const CATEGORIES = [
   "foundations",
@@ -88,16 +96,100 @@ function titleFromSlug(slug) {
 const HELP = `Scaffold a new topic.
 
 Usage:
-  node scripts/new-topic.mjs <slug> --category <c> --kind <k> --level <l>
+  node scripts/new-topic.mjs <slug> --category <c> --domain <d> --subcategory <s>
+                              --kind <k> --level <l>
                               [--importance <i>] [--status <s>]
                               [--title "..."] [--summary "..."] [--force]
 
 Categories:   ${CATEGORIES.join(", ")}
+Domains:      ${Object.keys(TAXONOMY).join(", ")}
+Subcategories: run with --domain <d> and an invalid --subcategory to list them.
 Kinds:        ${KINDS.join(", ")}
 Levels:       ${LEVELS.join(", ")}
 Importances:  ${IMPORTANCES.join(", ")}
 Statuses:     ${STATUSES.join(", ")}
 `;
+
+const BIO_KINDS = new Set(["person", "organization", "historical-event"]);
+
+/** v2 body skeleton per kind (docs/enrichment-plan.md §4.2). */
+function v2Body(kind, status) {
+  const todo =
+    status === "stub"
+      ? "(Stub — not yet written. [Contribute](/contribute) to help fill this in.)"
+      : "TODO.";
+
+  if (BIO_KINDS.has(kind)) {
+    return `## In simple terms
+
+${todo}
+
+## More detail
+
+## Real-world examples
+
+## Common misconceptions
+
+## Learn next
+`;
+  }
+  if (kind === "field") {
+    return `## In simple terms
+
+${todo}
+
+## The Visual Map
+
+\`\`\`mermaid
+flowchart LR
+  A[TODO] --> B[TODO]
+\`\`\`
+
+## More detail
+
+## Engineering Trade-offs
+
+## Real-world examples
+
+## Common misconceptions
+
+## Learn next
+`;
+  }
+  return `## In simple terms
+
+${todo}
+
+## The Visual Map
+
+\`\`\`mermaid
+flowchart LR
+  A[TODO] --> B[TODO]
+\`\`\`
+
+## More detail
+
+## Under the Hood
+
+\`\`\`c
+/* TODO */
+\`\`\`
+
+## Engineering Trade-offs
+
+## Real-world examples
+
+## Common misconceptions
+
+## Try it yourself
+
+\`\`\`bash
+# TODO — must run on stock WSL/Ubuntu (coreutils/python3 only)
+\`\`\`
+
+## Learn next
+`;
+}
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -114,6 +206,20 @@ async function main() {
   const category = args.flags.category;
   if (!category) die("missing --category");
   if (!CATEGORIES.includes(category)) die(`unknown category "${category}"`);
+
+  const domain = args.flags.domain;
+  if (!domain) die("missing --domain (Master Computing Taxonomy; see src/lib/taxonomy.json)");
+  if (!Object.hasOwn(TAXONOMY, domain)) {
+    die(`unknown domain "${domain}". Valid: ${Object.keys(TAXONOMY).join(", ")}`);
+  }
+
+  const subcategory = args.flags.subcategory;
+  if (!subcategory) die(`missing --subcategory. Valid for "${domain}": ${Object.keys(TAXONOMY[domain].subcategories).join(", ")}`);
+  if (!Object.hasOwn(TAXONOMY[domain].subcategories, subcategory)) {
+    die(
+      `subcategory "${subcategory}" is not in domain "${domain}". Valid: ${Object.keys(TAXONOMY[domain].subcategories).join(", ")}`,
+    );
+  }
 
   const kind = args.flags.kind ?? "concept";
   if (!KINDS.includes(kind)) die(`unknown kind "${kind}"`);
@@ -147,6 +253,9 @@ async function main() {
   const body = `---
 title: ${title}
 category: ${category}
+domain: ${domain}
+subcategory: ${subcategory}
+structure: 2
 kind: ${kind}
 summary: ${JSON.stringify(summary)}
 level: ${level}
@@ -160,20 +269,7 @@ nextSteps: []
 updated: ${today}
 ---
 
-## In simple terms
-
-${status === "stub" ? "(Stub — not yet written. [Contribute](/contribute) to help fill this in.)" : "TODO."}
-
-## More detail
-
-## Why it matters
-
-## Real-world examples
-
-## Common misconceptions
-
-## Learn next
-`;
+${v2Body(kind, status)}`;
 
   await mkdir(outDir, { recursive: true });
   await writeFile(outPath, body);

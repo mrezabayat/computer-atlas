@@ -47,6 +47,11 @@ jobs:
       - name: Audit importance / Ring N completeness (informational)
         run: npm run audit:importance || true
 
+      # Informational until Phase 3 of docs/enrichment-plan.md; then switch
+      # to `npm run audit:taxonomy -- --strict` (no `|| true`).
+      - name: Audit taxonomy / enrichment progress (informational)
+        run: npm run audit:taxonomy || true
+
       - name: Upload built site as artifact
         uses: actions/upload-artifact@v4
         with:

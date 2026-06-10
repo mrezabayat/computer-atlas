@@ -1,0 +1,147 @@
+{
+  "hardware-architecture": {
+    "title": "Hardware & Architecture",
+    "subcategories": {
+      "pcb-peripherals-ic": "Printed Circuit Boards, Peripherals & Integrated Circuits",
+      "vlsi-soc": "VLSI & System on a Chip",
+      "green-computing": "Energy Consumption & Green Computing",
+      "eda": "Electronic Design Automation",
+      "acceleration-processors-form-factors": "Hardware Acceleration, Processors & Form Factors"
+    }
+  },
+  "systems-software": {
+    "title": "Systems Software",
+    "subcategories": {
+      "architecture-embedded-real-time": "Computer Architecture, Embedded Systems & Real-Time Computing",
+      "cyber-physical-sensor-networks": "Cyber-Physical Systems & Wireless Sensor Networks",
+      "dependability-fault-tolerance": "Dependability, Fault Tolerance & Reliability",
+      "kernels-os-drivers": "Kernels, Operating Systems & Device Drivers",
+      "interpreters-middleware-vm": "Interpreters, Middleware & Virtual Machines"
+    }
+  },
+  "networks-communications": {
+    "title": "Networks & Communications",
+    "subcategories": {
+      "architecture-topologies": "Network Architecture & Topologies",
+      "protocols-components": "Network Protocols & Components",
+      "scheduling-performance": "Network Scheduling & Performance Evaluation",
+      "services-distributed-systems": "Network Services & Distributed Systems"
+    }
+  },
+  "software-engineering-notation": {
+    "title": "Software Engineering & Notation",
+    "subcategories": {
+      "paradigms-languages": "Programming Paradigms & Languages",
+      "compilers-dsls": "Compilers & Domain-Specific Languages",
+      "modeling-languages-frameworks": "Modeling Languages & Frameworks",
+      "ides-configuration-management": "IDEs & Software Configuration Management",
+      "libraries-repositories": "Software Libraries & Repositories"
+    }
+  },
+  "software-development-process": {
+    "title": "Software Development Process",
+    "subcategories": {
+      "control-flow-algorithm-design": "Control Flow & Algorithms Design",
+      "processes-requirements": "Development Processes & Requirements Analysis",
+      "design-construction-deployment": "Software Design, Construction & Deployment",
+      "maintenance-open-source": "Software Maintenance & Open-Source Models",
+      "team-dynamics": "Programming Team Dynamics"
+    }
+  },
+  "theory-of-computing": {
+    "title": "Theory of Computing",
+    "subcategories": {
+      "models-of-computation": "Models of Computation & Stochastic Models",
+      "formal-languages-automata": "Formal Languages & Automata Theory",
+      "computability-complexity": "Computability & Computational Complexity Theory",
+      "logic-semantics": "Logic & Semantics"
+    }
+  },
+  "algorithms-mathematics": {
+    "title": "Algorithms & Mathematics",
+    "subcategories": {
+      "algorithm-design-analysis": "Algorithm Design & Analysis",
+      "efficiency-randomized": "Algorithmic Efficiency & Randomized Algorithms",
+      "computational-geometry": "Computational Geometry",
+      "discrete-math-probability-statistics": "Discrete Mathematics, Probability & Statistics",
+      "information-theory-analysis-numerical": "Information Theory, Mathematical & Numerical Analysis",
+      "mathematical-software": "Mathematical Software"
+    }
+  },
+  "information-systems": {
+    "title": "Information Systems",
+    "subcategories": {
+      "database-information-storage": "Database Management & Information Storage",
+      "enterprise-process-control": "Enterprise Systems & Process Control",
+      "social-geographic-multimedia": "Social, Geographic & Multimedia Information Systems",
+      "data-mining-information-retrieval": "Data Mining, Information Retrieval & Digital Libraries",
+      "platforms-web-marketing": "Computing Platforms, World Wide Web & Digital Marketing"
+    }
+  },
+  "security-privacy": {
+    "title": "Security & Privacy",
+    "subcategories": {
+      "cryptography-formal-methods": "Cryptography & Formal Methods",
+      "penetration-testing-hacking": "Penetration Testing & Security Hacking",
+      "intrusion-detection": "Intrusion Detection Systems",
+      "hardware-network-application-security": "Hardware, Network, Application & Information Security"
+    }
+  },
+  "human-centered-computing": {
+    "title": "Human-Centered Computing",
+    "subcategories": {
+      "accessibility-hci": "Accessibility & Human-Computer Interaction",
+      "interaction-design-ubiquitous": "Interaction Design, Mobile & Ubiquitous Computing",
+      "extended-reality": "Extended Reality (XR/AR/VR)",
+      "visualization-graphics": "Visualization & Graphics"
+    }
+  },
+  "concurrency-parallelism": {
+    "title": "Concurrency & Parallelism",
+    "subcategories": {
+      "concurrent-parallel-computing": "Concurrent & Parallel Computing",
+      "distributed-computing": "Distributed Computing",
+      "multithreading-multiprocessing": "Multithreading & Multiprocessing"
+    }
+  },
+  "artificial-intelligence": {
+    "title": "Artificial Intelligence",
+    "subcategories": {
+      "computational-intelligence-philosophy": "Computational Intelligence & Philosophy of AI",
+      "natural-language-processing": "Natural Language Processing",
+      "knowledge-representation-reasoning": "Knowledge Representation & Reasoning",
+      "computer-vision": "Computer Vision",
+      "planning-scheduling-search": "Automated Planning, Scheduling & Search Methodologies",
+      "control-methods-distributed-ai": "Control Methods & Distributed AI"
+    }
+  },
+  "machine-learning": {
+    "title": "Machine Learning",
+    "subcategories": {
+      "supervised-unsupervised": "Supervised & Unsupervised Learning",
+      "reinforcement-multi-task": "Reinforcement & Multi-Task Learning",
+      "evaluation-cross-validation": "Evaluation Methodologies & Cross-Validation"
+    }
+  },
+  "graphics-media": {
+    "title": "Graphics & Media",
+    "subcategories": {
+      "animation-rendering": "Animation & Rendering",
+      "image-manipulation-compression": "Photograph Manipulation & Image Compression",
+      "gpus": "Graphics Processing Units",
+      "solid-modeling": "Solid Modeling"
+    }
+  },
+  "applied-computing": {
+    "title": "Applied Computing",
+    "subcategories": {
+      "quantum-computing": "Quantum Computing",
+      "e-commerce-enterprise": "E-Commerce & Enterprise Software",
+      "computational-sciences": "Computational Sciences (Physics, Chemistry, Biology, Social Science, Engineering)",
+      "differentiable-computing": "Differentiable Computing",
+      "computational-healthcare": "Computational Healthcare",
+      "digital-art-publishing-games": "Digital Art, Electronic Publishing & Video Games",
+      "operations-research-edtech-documents": "Operations Research, Educational Technology & Document Management"
+    }
+  }
+}

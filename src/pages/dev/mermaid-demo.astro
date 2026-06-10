@@ -1,0 +1,55 @@
+---
+/**
+ * Scratch page to verify Mermaid rendering (enrichment-plan.md Phase 0 §3).
+ * Excluded from the sitemap via the /dev/ filter in astro.config.mjs.
+ * Check: both diagrams render, follow the theme toggle, and the bad-source
+ * block falls back to raw text. Delete this page once Phase 2 has shipped
+ * real Visual Maps.
+ */
+import BaseLayout from "~/layouts/BaseLayout.astro";
+import MermaidRenderer from "~/components/MermaidRenderer.astro";
+
+const flowchart = `flowchart LR
+  A[Browser] -->|HTTP request| B(Load balancer)
+  B --> C[Web server 1]
+  B --> D[Web server 2]
+  C --> E[(Database)]
+  D --> E`;
+
+const sequence = `sequenceDiagram
+  participant C as Client
+  participant S as Server
+  C->>S: SYN
+  S->>C: SYN-ACK
+  C->>S: ACK
+  Note over C,S: TCP connection established`;
+
+const broken = `flowchart LR
+  this is --> not[valid mermaid ---`;
+---
+
+<BaseLayout title="Mermaid demo (dev)">
+  <article class="mx-auto max-w-3xl px-4 py-8">
+    <h1 class="text-3xl font-bold text-[var(--color-atlas-ink)]">
+      Mermaid demo
+    </h1>
+    <p class="mt-2 text-[var(--color-atlas-muted)]">
+      Verification page for "The Visual Map" rendering. Toggle the theme — the
+      diagrams should re-render. The third block is intentionally broken and
+      must fall back to raw source text.
+    </p>
+
+    <div class="prose prose-slate dark:prose-invert mt-8 max-w-none">
+      <h2>Flowchart</h2>
+      <pre><code class="language-mermaid">{flowchart}</code></pre>
+
+      <h2>Sequence diagram</h2>
+      <pre><code class="language-mermaid">{sequence}</code></pre>
+
+      <h2>Broken source (fallback check)</h2>
+      <pre><code class="language-mermaid">{broken}</code></pre>
+    </div>
+
+    <MermaidRenderer />
+  </article>
+</BaseLayout>

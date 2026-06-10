@@ -15,6 +15,7 @@
     "lint:content": "node scripts/lint-content.mjs",
     "audit:orphans": "node scripts/find-orphans.mjs",
     "audit:importance": "node scripts/audit-importance.mjs",
+    "audit:taxonomy": "node scripts/audit-taxonomy.mjs",
     "new:topic": "node scripts/new-topic.mjs"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "astro": "^5.18.2",
     "better-auth": "^1.6.14",
     "drizzle-orm": "^0.45.2",
+    "mermaid": "^11.15.0",
     "pagefind": "^1.5.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
