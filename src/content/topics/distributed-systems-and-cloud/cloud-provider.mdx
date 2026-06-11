@@ -4,6 +4,7 @@ aliases: ["cloud computing", "aws", "public cloud"]
 category: distributed-systems-and-cloud
 domain: information-systems
 subcategory: platforms-web-marketing
+structure: 2
 kind: concept
 summary: A company that rents computing — servers, storage, networking, and managed services — on demand over the internet, so you don't have to build and run your own data center.
 level: beginner
@@ -12,12 +13,28 @@ importance: important
 tags: ["cloud", "infrastructure"]
 prerequisites: ["distributed-system"]
 related: ["serverless", "container", "kubernetes"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 A **cloud provider** rents you computing instead of selling you hardware. Rather than buying servers, wiring up a data center, and maintaining it, you ask the provider for a server (or a database, or storage) over the internet, use it for as long as you need, and pay for what you use. The big three are **Amazon Web Services (AWS)**, **Microsoft Azure**, and **Google Cloud (GCP)**. The pitch: turn a giant up-front capital expense into a usage-based bill, and turn months of procurement into an API call.
+
+## The Visual Map
+
+```mermaid
+flowchart TB
+  subgraph stack["who manages what (you ▲ / provider ▼)"]
+    direction LR
+    I["IaaS (EC2)<br/>▲ app, runtime, OS<br/>▼ VM, network, hardware"]
+    P["PaaS (App Engine)<br/>▲ app code<br/>▼ runtime, OS, scaling"]
+    F["FaaS (Lambda)<br/>▲ functions<br/>▼ everything else"]
+    S["SaaS (Gmail)<br/>▲ your data<br/>▼ the whole product"]
+    I --- P --- F --- S
+  end
+  G["region (eu-west-1)"] --> Z1["availability zone a"] & Z2["AZ b"] & Z3["AZ c"]
+  Z1 & Z2 & Z3 -.->|"isolated power, cooling, network —<br/>survive one data-center failure"| stack
+```
 
 ## More detail
 
@@ -32,9 +49,39 @@ Providers organize capacity into **regions** (geographic areas) and **availabili
 
 Two recurring themes: **elasticity** (scale up for a traffic spike, scale down after, pay accordingly) and the risk of **vendor lock-in** (the deeper you use a provider's proprietary services, the harder it is to leave).
 
-## Why it matters
-
 The cloud changed who can build at scale: a two-person startup can now rent the same caliber of infrastructure as a bank, paying pennies until it grows. Cloud providers run a large fraction of all internet services today, and "where and how do we run this" is now a default architectural question for nearly every software project.
+
+## Under the Hood
+
+"Infrastructure as an API call" concretely means infrastructure as *code* — a Terraform definition the provider's API turns into running hardware:
+
+```text
+# main.tf — a tiny but real slice of cloud infrastructure
+resource "aws_instance" "web" {
+  ami           = "ami-0c02fb55956c7d316"   # OS image
+  instance_type = "t3.small"                # 2 vCPU, 2 GB — resized by editing this line
+  subnet_id     = aws_subnet.public_a.id    # placed in one availability zone
+
+  tags = { Name = "web-1", Team = "storefront" }
+}
+
+resource "aws_db_instance" "orders" {
+  engine            = "postgres"
+  instance_class    = "db.t3.medium"
+  allocated_storage = 50
+  multi_az          = true     # provider keeps a standby in another AZ —
+                               # replication & failover are THEIR problem
+}
+```
+
+`terraform apply` diffs this against reality and creates, resizes, or destroys to match — the same declarative-reconciliation idea Kubernetes uses, applied to data centers. The `multi_az = true` line is the cloud's core value proposition in miniature: an entire replication-and-failover architecture, rented as a boolean.
+
+## Engineering Trade-offs
+
+- **Elasticity vs steady-state cost.** Pay-per-use is unbeatable for spiky or unknown load; at large, predictable scale, owning hardware wins — the math behind well-known "cloud repatriation" moves (Dropbox, 37signals). Reserved instances and savings plans are the providers' counter-offer.
+- **Managed services vs lock-in.** DynamoDB or Spanner gives you world-class engineering for an API call, but proprietary APIs make leaving expensive. Open interfaces (Postgres-compatible, S3-compatible, Kubernetes) are the standard hedge, at some loss of provider-specific polish.
+- **Someone else's ops vs someone else's outage.** Providers run better data centers than almost any company could — and when a region fails, thousands of businesses go down together, with nothing to do but wait. Multi-region architecture is the mitigation, at significant complexity and cost.
+- **Shared responsibility is easy to misread.** The provider secures the infrastructure; *you* secure your configuration. The recurring cloud breach is not a hacked hypervisor — it's a public S3 bucket or over-broad IAM role.
 
 ## Real-world examples
 
@@ -47,6 +94,30 @@ The cloud changed who can build at scale: a two-person startup can now rent the 
 - **"The cloud is just someone else's computer."** True at the base, but the value is the *managed services and elasticity* layered on top, not just rented hardware.
 - **"The cloud is always cheaper."** It's cheaper to *start* and to handle variable load; at steady, predictable, very large scale, owning hardware can win — which is why some companies repatriate workloads.
 
+## Try it yourself
+
+The rent-vs-buy math every infrastructure team eventually does — on-demand vs reserved vs owning:
+
+```bash
+python3 -c "
+hours_per_month = 730
+on_demand  = 0.0832          # \$/hr, a typical 2-vCPU instance
+reserved   = 0.0524          # same instance, 1-year commitment
+server_buy = 1200            # comparable hardware + 3yr amortised power/space
+
+for util in (0.10, 0.50, 1.00):
+    od  = on_demand * hours_per_month * util * 36
+    res = reserved * hours_per_month * 36          # committed: paid regardless
+    own = server_buy
+    best = min(('on-demand', od), ('reserved', res), ('own', own), key=lambda x: x[1])
+    print(f'utilisation {util:>4.0%}: on-demand \${od:7.0f} | reserved \${res:7.0f} | own \${own} -> {best[0]}')
+"
+```
+
+Low utilisation favours on-demand, steady full load favours owning — elasticity is what you're paying for, so the answer hinges on how bursty your real workload is.
+
 ## Learn next
 
-Two popular ways to run code on a cloud provider are [serverless](/t/serverless) functions and [container](/t/container)-based deployments orchestrated by [Kubernetes](/t/kubernetes).
+- [Serverless](/t/serverless) — the far end of "the provider manages everything".
+- [Container](/t/container) — the portable unit that eases moving between providers.
+- [Kubernetes](/t/kubernetes) — the orchestration layer offered managed by every cloud.

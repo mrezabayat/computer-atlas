@@ -4,6 +4,7 @@ aliases: ["serverless functions", "faas"]
 category: distributed-systems-and-cloud
 domain: information-systems
 subcategory: platforms-web-marketing
+structure: 2
 kind: concept
 summary: A deployment model where you write functions or small services and the platform handles provisioning, scaling, and idling them — you pay per-request, not per-server.
 level: intermediate
@@ -12,12 +13,25 @@ importance: important
 tags: ["serverless", "cloud", "faas"]
 prerequisites: ["distributed-system"]
 related: ["container", "microservices", "cloud-provider"]
-updated: 2026-06-07
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 **Serverless** is the deployment model where you don't manage any servers — you give the platform your code, and it spins up resources to run it on demand, scales to zero when idle, and only bills you for the work it actually did. The name is a slight misnomer (there are still servers, you just don't see them), but the experience is real: no capacity planning, no patching, no idle costs.
+
+## The Visual Map
+
+```mermaid
+flowchart LR
+  E["event: HTTP request,<br/>S3 upload, queue message"] --> P{"platform: warm<br/>instance available?"}
+  P -->|yes| W["warm invoke<br/>(~1 ms overhead)"]
+  P -->|no| C["cold start: provision microVM,<br/>load runtime + your code<br/>(100 ms – 1 s)"]
+  C --> W
+  W --> F["your function runs<br/>(billed per ms)"]
+  F --> Z["idle — instance kept warm<br/>a while, then scaled to ZERO"]
+  E2["1000 simultaneous events"] -.->|"platform fans out<br/>1000 parallel instances"| P
+```
 
 ## More detail
 
@@ -34,15 +48,6 @@ What makes something "serverless":
 - **Automatic horizontal scaling** — platform spins up parallel instances as needed.
 - **Managed runtime** — you don't patch the OS.
 
-The trade-offs:
-
-- **Cold starts** — first request after idle pays a startup tax. Sub-millisecond on Cloudflare Workers (V8 isolates); 100 ms-1 s on AWS Lambda (especially with VPC).
-- **Vendor lock-in** — APIs differ across platforms; serverless code is harder to move.
-- **Debugging** — distributed, ephemeral, and harder to attach a debugger to.
-- **Long-running work** — most platforms cap function duration (15 min on Lambda). Serverless is built for short, request-shaped work.
-- **Statefulness** — functions are stateless by design; persistent state goes in an external database or object store.
-- **Cost at scale** — serverless usually wins at low and medium scale and on bursty traffic, but a steady-state high-throughput service is often cheaper on reserved containers.
-
 The 2026 spectrum:
 
 | Model | When it shines |
@@ -54,9 +59,46 @@ The 2026 spectrum:
 | Self-managed k8s | Full control, multi-service complex systems |
 | Bare VMs / bare metal | Maximum control, predictable steady-state cost |
 
-## Why it matters
-
 Serverless dramatically lowers the operational floor for new services: a few hundred lines of code, deployed in minutes, scaling automatically, costing pennies. The model is especially compelling for bursty workloads, side projects, internal tools, and event-driven processing.
+
+## Under the Hood
+
+A complete serverless deployment is a handler plus a declaration — there is genuinely nothing else to operate:
+
+```python
+# handler.py — the entire "server"
+import json
+
+def handler(event, context):
+    # state must live OUTSIDE the function: the instance may vanish after this call
+    name = json.loads(event.get("body") or "{}").get("name", "world")
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"message": f"hello, {name}"}),
+    }
+```
+
+```text
+# serverless.yml / SAM-style declaration — the rest of the architecture
+functions:
+  hello:
+    handler: handler.handler
+    memorySize: 256        # the ONLY capacity knob (CPU scales with it)
+    timeout: 10            # hard cap — long work goes to queues/steps
+    events:
+      - httpApi: POST /hello
+      - sqs: arn:...:order-events     # same function, event-driven too
+```
+
+The signature `handler(event, context)` encodes the whole contract: the platform owns the process lifecycle, hands you one event at a time, and may run a thousand copies concurrently or none at all. Everything stateful — sessions, files, counters — must live in external services, which is what makes the instant fan-out safe.
+
+## Engineering Trade-offs
+
+- **Zero ops vs cold starts.** Scale-to-zero is why idle costs nothing — and why the first request after idle pays 100 ms–1 s of provisioning (V8-isolate platforms like Workers cut this to sub-millisecond by sacrificing the full-OS runtime). Latency-critical paths use provisioned concurrency, paying idle costs back.
+- **Per-request billing flips at steady load.** Bursty traffic is dramatically cheaper per-request; a continuously busy service costs more than the reserved containers it would otherwise run on. The crossover is a calculation every growing serverless app eventually does.
+- **Statelessness is forced, not optional.** No in-process caches, no sticky sessions, no local files between invocations — architectural discipline that scales beautifully and makes some workloads (WebSockets, long jobs, big in-memory models) awkward fits for hard duration caps.
+- **Deepest lock-in in the cloud.** The function model is portable in theory; the event sources, IAM glue, and step orchestration around it are profoundly provider-specific. Moving a serverless app is a rewrite of everything except the handlers.
 
 ## Real-world examples
 
@@ -71,6 +113,36 @@ Serverless dramatically lowers the operational floor for new services: a few hun
 - **"Serverless is always cheaper."** True for low / spiky traffic. A continuously-busy service is often cheaper on reserved capacity.
 - **"Serverless is slow because of cold starts."** Modern edge platforms have sub-millisecond cold starts. Even AWS Lambda's cold starts are usually a non-issue for human-facing APIs.
 
+## Try it yourself
+
+Measure the cold-vs-warm gap on your own machine — a fresh interpreter per request vs a resident one:
+
+```bash
+python3 -c "
+import subprocess, time
+
+# 'cold start': spawn a new Python process per invocation (runtime init each time)
+t = time.perf_counter()
+for _ in range(5):
+    subprocess.run(['python3', '-c', 'pass'])
+cold = (time.perf_counter() - t) / 5
+
+# 'warm': the runtime already loaded, just call the function
+def handler(event): return {'ok': True}
+t = time.perf_counter()
+for _ in range(100_000):
+    handler({})
+warm = (time.perf_counter() - t) / 100_000
+
+print(f'cold (new process) : {cold*1000:8.2f} ms per invoke')
+print(f'warm (resident)    : {warm*1000:8.5f} ms per invoke  ({cold/warm:,.0f}x faster)')
+"
+```
+
+Real platforms add VM provisioning and code download on top of that interpreter cost — which is why they work so hard to keep instances warm and why edge platforms switched to isolates.
+
 ## Learn next
 
-The packaging unit serverless containers use: [container](/t/container). The architecture style serverless often serves: [microservices](/t/microservices).
+- [Container](/t/container) — the packaging serverless containers use underneath.
+- [Cloud provider](/t/cloud-provider) — the IaaS-to-FaaS spectrum this model sits at the end of.
+- [Microservices](/t/microservices) — the architecture style serverless functions often implement.

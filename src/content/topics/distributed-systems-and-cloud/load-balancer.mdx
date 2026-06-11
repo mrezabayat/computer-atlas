@@ -4,6 +4,7 @@ aliases: ["load balancing", "reverse proxy", "LB"]
 category: distributed-systems-and-cloud
 domain: networks-communications
 subcategory: services-distributed-systems
+structure: 2
 kind: technology
 summary: A component that distributes incoming traffic across a pool of servers — hiding individual server failures, spreading work evenly, and making the fleet appear as a single endpoint to clients.
 level: intermediate
@@ -11,14 +12,25 @@ status: reviewed
 importance: important
 tags: ["distributed-systems", "networking", "scalability", "availability"]
 prerequisites: ["distributed-system", "tcp"]
-related: ["cdn", "container"]
+related: ["cdn", "container", "service-mesh"]
 nextSteps: ["microservices", "kubernetes"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 When you have ten servers behind a web address, something must decide which one handles each new request. That's the **load balancer**: a single point at the front that accepts connections and forwards them, one at a time, to whichever backend is least busy (or next in rotation). Clients see one address; the load balancer sees ten servers — it hides the fleet and manages it.
+
+## The Visual Map
+
+```mermaid
+flowchart LR
+  C1["client"] & C2["client"] & C3["client"] --> LB["load balancer<br/>one address, TLS termination"]
+  LB -->|"/api/* (L7 routing)"| A1["api-1"] & A2["api-2"]
+  LB -->|"/static/*"| S1["static-1"]
+  LB -.->|"health check FAILED<br/>— removed from pool"| A3["api-3 ✗"]
+  HC["GET /health every 5s"] -.-> A1 & A2 & A3
+```
 
 ## More detail
 
@@ -38,11 +50,43 @@ Load balancers operate at different layers of the network stack:
 
 **High availability of the load balancer itself** — since it's a single point of entry, it must be redundant too. Common patterns: active-passive with a floating VIP (virtual IP) failing over on heartbeat loss; or active-active with DNS round-robin or anycast.
 
-In [Kubernetes](/t/kubernetes) and service meshes, load balancing is moved inside the cluster (every pod has a sidecar proxy that balances outgoing calls) — the traditional external load balancer remains for ingress traffic only.
+In [Kubernetes](/t/kubernetes) and [service meshes](/t/service-mesh), load balancing moves inside the cluster (every pod has a sidecar proxy that balances outgoing calls) — the traditional external load balancer remains for ingress traffic only.
 
-## Why it matters
+A load balancer is the boundary between "one server" and "a fleet". Without it, scaling a service means changing DNS and accepting downtime; with it, you add or remove backends transparently, roll out canary deployments, and survive server failures silently. It is also where TLS termination, rate limiting, and authentication can be applied uniformly without every backend implementing them.
 
-A load balancer is the boundary between "one server" and "a fleet". Without it, scaling a service means changing DNS and accepting downtime; with it, you add or remove backends transparently, roll out [canary deployments](https://en.wikipedia.org/wiki/Feature_flag), and survive server failures silently. It is also where TLS termination, rate limiting, and authentication can be applied uniformly without every backend implementing them. Almost every public web service has at least two layers of load balancing.
+## Under the Hood
+
+A production-shaped nginx configuration — algorithm, weights, health behavior, and TLS in twenty lines:
+
+```text
+upstream api_pool {
+    least_conn;                          # algorithm: fewest active connections
+    server 10.0.1.10:8080 weight=3;      # beefier machine takes 3x share
+    server 10.0.1.11:8080;
+    server 10.0.1.12:8080 max_fails=2 fail_timeout=10s;   # passive health check:
+                                         # 2 failures -> benched for 10s
+    server 10.0.1.13:8080 backup;        # only used if the others are down
+    keepalive 32;                        # pooled connections to backends
+}
+
+server {
+    listen 443 ssl;
+    ssl_certificate     /etc/ssl/site.pem;     # TLS terminates HERE —
+    ssl_certificate_key /etc/ssl/site.key;     # backends speak plain HTTP
+
+    location /api/   { proxy_pass http://api_pool; }        # L7 routing
+    location /static/ { root /var/www; }                    # served directly
+}
+```
+
+Every concept in this topic is a line in this file: the pool, the algorithm, weighting for canaries, health-check benching, and the TLS boundary. Swap `least_conn` for `ip_hash` and you have sticky sessions instead.
+
+## Engineering Trade-offs
+
+- **L4 speed vs L7 intelligence.** Layer 4 forwards packets at millions per second without parsing them; Layer 7 buys path routing, header injection, and per-request decisions at the cost of terminating and re-establishing every connection. Big deployments stack both: L4 at the edge, L7 behind it.
+- **Algorithm choice shows up in tail latency.** Round-robin is fine for uniform short requests; one slow backend poisons it. Least-connections (or "random of two choices") adapts to variable cost — the difference is invisible at p50 and dramatic at p99.
+- **Sticky sessions vs even spread.** Pinning clients to servers lets backends keep session state, but hot clients create hot servers and a backend's death loses its sessions. The cleaner fix — stateless backends with shared session storage — is an application change, not a config change.
+- **The balancer is itself a single point of failure.** Everything funnels through it: it needs redundancy (VIP failover, anycast), and its capacity, TLS throughput, and config become shared fate for every service behind it. A bad rule deployed to the LB is an outage for everyone at once.
 
 ## Real-world examples
 
@@ -56,6 +100,38 @@ A load balancer is the boundary between "one server" and "a fleet". Without it, 
 - **"A load balancer is a single machine."** Modern load balancers run in clusters or as distributed software (Envoy sidecar, eBPF-based kube-proxy) — there's no single physical bottleneck.
 - **"Round-robin is good enough."** It is for uniform short requests. For variable-cost or long-lived connections (streaming, WebSocket, database queries), least-connections or random-with-two-choices gives substantially better tail latency.
 
+## Try it yourself
+
+Race round-robin against least-connections on a workload with occasional slow requests, and compare the queues that build up:
+
+```bash
+python3 -c "
+import random
+random.seed(11)
+reqs = [random.choice([1,1,1,1,10]) for _ in range(2000)]   # 20% are 10x slower
+
+def simulate(pick):
+    load = [0, 0, 0, 0]                  # outstanding work per backend
+    worst = 0
+    for i, cost in enumerate(reqs):
+        b = pick(i, load)
+        load[b] += cost
+        worst = max(worst, load[b])
+        load[:] = [max(0, l - 1) for l in load]   # each tick drains 1 unit
+    return worst
+
+rr = simulate(lambda i, load: i % 4)
+lc = simulate(lambda i, load: load.index(min(load)))
+print(f'worst backlog — round-robin     : {rr}')
+print(f'worst backlog — least-connections: {lc}  ({rr/lc:.1f}x better tail)')
+"
+```
+
+Round-robin keeps assigning work to a backend already stuck on slow requests; least-connections routes around it. That gap *is* the p99 difference users feel.
+
 ## Learn next
 
-Load balancers are the front door to [microservices](/t/microservices) architectures and [Kubernetes](/t/kubernetes) clusters. In a distributed system, they work alongside [service meshes](https://en.wikipedia.org/wiki/Service_mesh) which provide load balancing *between* services, not just at the edge.
+- [Microservices](/t/microservices) — the fleets load balancers front.
+- [Kubernetes](/t/kubernetes) — where Services and kube-proxy do this job internally.
+- [Service mesh](/t/service-mesh) — per-call balancing between services, not just at the edge.
+- [CDN](/t/cdn) — global load distribution one layer further out.
