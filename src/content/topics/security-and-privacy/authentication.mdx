@@ -4,6 +4,7 @@ aliases: ["authn", "login", "sign-in"]
 category: security-and-privacy
 domain: security-privacy
 subcategory: hardware-network-application-security
+structure: 2
 kind: concept
 summary: Proving *who* a user is — by something they know (password), have (token, phone), or are (biometric).
 level: intermediate
@@ -11,60 +12,114 @@ status: reviewed
 importance: core
 tags: ["security", "auth"]
 prerequisites: ["cryptography"]
-related: ["oauth", "multi-factor-authentication"]
-nextSteps: ["authorization", "password-hashing"]
-updated: 2026-06-07
+related: ["multi-factor-authentication"]
+nextSteps: ["authorization", "password-hashing", "oauth"]
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
-**Authentication** is the part of an app that figures out who you are. It's the login page, the magic link, the "Sign in with Google", the fingerprint. Once authenticated, you can be **authorised** to do things — but those two are different jobs.
+**Authentication** is the part of an app that figures out who you are — the login page, the magic link, the fingerprint. Once authenticated, you can be **authorised** to do things, but those are two different jobs.
+
+## The Visual Map
+
+```mermaid
+flowchart TD
+  U["User"] --> F{"Factor check"}
+  F -->|"something you know"| PW["Password / PIN"]
+  F -->|"something you have"| TK["OTP token / phone"]
+  F -->|"something you are"| BIO["Fingerprint / face"]
+  PW & TK & BIO --> V{"Verify"}
+  V -->|"fail"| ERR["reject / retry"]
+  V -->|"pass"| S["Issue session / token"]
+  S --> AZ["Authorization layer"]
+```
 
 ## More detail
 
 Factors of authentication:
 
 - **Something you know** — password, PIN, passphrase.
-- **Something you have** — phone, hardware token, smart card, app on your device.
+- **Something you have** — phone, hardware token, smart card.
 - **Something you are** — fingerprint, face, voice.
 
 **Multi-factor authentication (MFA)** combines two or more from different categories. Two passwords aren't MFA.
 
-Modern application authentication is typically built on:
+Modern application authentication is built on:
 
-- **Passwords** — hashed with a slow KDF (Argon2, bcrypt, scrypt), checked on login. Avoid building from scratch; use a library.
-- **OAuth 2.0 / OpenID Connect** — federated sign-in via Google, GitHub, Apple, etc.
+- **Passwords** — hashed with a slow KDF (Argon2, bcrypt, scrypt), checked on login.
+- **OAuth 2.0 / OpenID Connect** — federated sign-in via Google, GitHub, Apple.
 - **WebAuthn / Passkeys** — public-key cryptography from the device, replacing passwords.
 - **Magic links** — short-lived signed URL emailed to the user.
-- **TOTP** (RFC 6238) — the 6-digit codes from Google Authenticator / Authy / 1Password.
+- **TOTP** (RFC 6238) — 6-digit codes from an authenticator app, derived via HMAC over a time counter.
 - **Hardware keys** (YubiKey, Titan) — strongest in practice.
 
-Once authenticated, the server issues a **session**: a cookie or token that the client sends with each request to prove "this is still that user".
+Once authenticated, the server issues a **session**: a cookie or token the client sends with each request.
 
-Pitfalls to avoid:
+Pitfalls: storing passwords in plaintext, MFA account-recovery that bypasses MFA, not rate-limiting login endpoints (credential stuffing).
 
-- Storing passwords in plaintext or with weak hashes.
-- Building MFA without account-recovery flows that aren't themselves bypasses.
-- Letting the password reset link reset MFA too.
-- Not rate-limiting login or 2FA endpoints (credential stuffing).
+## Under the Hood
 
-## Why it matters
+TOTP (the code from your authenticator app) is HMAC-SHA1 over a counter derived from the current time:
 
-Authentication is the single highest-stakes piece of code in most applications. A bug here means anyone can be anyone. It is also one of the most attacked surfaces — every public app gets login traffic from bots within minutes of going live.
+```python
+import hmac, hashlib, struct, time, base64
+
+def totp(secret_b32: str, digits: int = 6, interval: int = 30) -> str:
+    key = base64.b32decode(secret_b32)
+    counter = int(time.time()) // interval
+    msg = struct.pack(">Q", counter)
+    mac = hmac.new(key, msg, hashlib.sha1).digest()
+    offset = mac[-1] & 0x0f
+    code = struct.unpack(">I", mac[offset:offset+4])[0] & 0x7fffffff
+    return f"{code % 10**digits:0{digits}d}"
+
+# Standard demo key (RFC 6238 test vectors)
+print("TOTP (changes every 30s):", totp("JBSWY3DPEHPK3PXP"))
+```
+
+The server recomputes the same value and compares — no secret is sent over the wire, only shared knowledge of the key.
+
+## Engineering Trade-offs
+
+- **Passwords vs passkeys.** Passwords are universal but vulnerable to phishing, stuffing, and weak hashing. Passkeys are phishing-proof with no server-side secret — but require device support and a recovery path.
+- **Stateful sessions vs stateless JWTs.** Server-side sessions enable instant revocation; JWTs are self-contained and scale easily but can't be reliably revoked until they expire.
+- **MFA benefit vs UX cost.** Each factor added dramatically reduces account-takeover risk at the cost of friction. Hardware keys are the highest security/friction ratio; SMS OTP adds some security but is vulnerable to SIM-swap.
+- **Federated identity vs local accounts.** SSO via OIDC shifts responsibility to a specialist provider and reduces per-app password databases, but creates a single point of failure — a compromised IdP can compromise everything.
 
 ## Real-world examples
 
 - "Sign in with GitHub" is OAuth 2.0 / OIDC.
 - A passkey replaces a password with a private key locked in your phone's secure enclave.
-- A leaked password database is a disaster only if the passwords were hashed weakly.
-
-- Passkeys are now supported by Google, Apple, Microsoft, Amazon, and increasingly every major service — by 2026 it's realistic to never type a password into the big sites again.
+- A leaked password database is only useful to an attacker if passwords were hashed weakly.
+- Passkeys are now supported by Google, Apple, Microsoft, and Amazon — by 2026 it is realistic never to type a password into major services again.
 
 ## Common misconceptions
 
-- **"Authentication = authorization."** No: authn proves who; authz decides what. They are separate stages, often handled by different code.
-- **"Passwords are dead because of passkeys."** Passkeys are gaining ground fast, but passwords + MFA will be around for years.
+- **"Authentication = authorization."** Authn proves who; authz decides what. They are separate stages, often handled by different code.
+- **"Passwords are dead because of passkeys."** Passkeys are gaining ground fast, but passwords + MFA will coexist for many years.
+
+## Try it yourself
+
+Generate a live TOTP code the same way an authenticator app does — pure stdlib:
+
+```bash
+python3 -c "
+import hmac, hashlib, struct, time, base64
+key = base64.b32decode('JBSWY3DPEHPK3PXP')
+counter = int(time.time()) // 30
+mac = hmac.new(key, struct.pack('>Q', counter), hashlib.sha1).digest()
+offset = mac[-1] & 0xf
+code = struct.unpack('>I', mac[offset:offset+4])[0] & 0x7fffffff
+print(f'TOTP code: {code % 1000000:06d}  (valid for {30 - int(time.time()) % 30}s)')
+"
+```
+
+Run it twice within 30 seconds — same code. Run it after the window — different code. That is the entire RFC 6238 algorithm.
 
 ## Learn next
 
-What the system does once it knows who you are: [authorization](/t/authorization). How to store passwords safely: [password hashing](/t/password-hashing).
+- [Authorization](/t/authorization) — what the system does once it knows who you are.
+- [Password hashing](/t/password-hashing) — how to store credentials safely.
+- [OAuth](/t/oauth) — delegated identity using access tokens.
+- [Multi-factor authentication](/t/multi-factor-authentication) — layering factors to reduce account takeover risk.
