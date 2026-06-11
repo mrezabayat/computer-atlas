@@ -4,6 +4,7 @@ aliases: ["network socket", "BSD socket", "TCP socket", "Unix socket"]
 category: networks-and-internet
 domain: networks-communications
 subcategory: protocols-components
+structure: 2
 kind: concept
 summary: The OS abstraction that lets a program send and receive data over a network — the fundamental API sitting between application code and the TCP/IP stack.
 level: beginner
@@ -13,12 +14,30 @@ tags: ["networking", "api", "tcp", "programming"]
 prerequisites: ["tcp", "ip-address"]
 related: ["udp", "tls"]
 nextSteps: ["http", "rest-api"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 When your program wants to talk to another program over the network, it calls into the operating system via the **socket API** — the same four calls (create, bind, connect/listen, send/receive) whether you're writing a web server, a game client, or a database driver. A socket is the OS's file-like handle for a network endpoint: open it, write bytes in, get bytes out, close it when done.
+
+## The Visual Map
+
+```mermaid
+flowchart TB
+  subgraph server
+    S1["socket()"] --> S2["bind(addr, port)"]
+    S2 --> S3["listen(backlog)"]
+    S3 --> S4["accept() — blocks,<br/>returns a NEW socket<br/>per client"]
+    S4 --> S5["recv / send"]
+  end
+  subgraph client
+    C1["socket()"] --> C2["connect(server) —<br/>three-way handshake"]
+    C2 --> C3["send / recv"]
+  end
+  C2 -.->|"SYN / SYN-ACK / ACK"| S4
+  C3 <-.->|byte stream| S5
+```
 
 ## More detail
 
@@ -40,9 +59,44 @@ Non-blocking sockets and **I/O multiplexing** (`select`, `poll`, `epoll`, `kqueu
 
 **TLS** is layered on top of a TCP socket: the application opens a normal socket, hands it to a TLS library (OpenSSL, BoringSSL), which handles the handshake and then wraps `send`/`recv` to encrypt/decrypt transparently.
 
-## Why it matters
+Every network library, every HTTP client, every database driver, and every web server ultimately calls this API. Understanding it explains why HTTP keep-alive matters (amortising the cost of connect), why a server needs `SO_REUSEADDR` after a crash, why `TCP_NODELAY` helps latency-sensitive protocols, and why "connection refused" vs "connection timed out" point to different failure modes.
 
-Every network library, every HTTP client, every database driver, and every web server ultimately calls the socket API. Understanding it explains why HTTP keep-alive matters (amortising the cost of connect), why a server needs `SO_REUSEADDR` after a crash, why `TCP_NODELAY` helps latency-sensitive protocols, and why "connection refused" vs "connection timed out" point to different failure modes. You don't write raw sockets daily, but they're the floor everything else is built on.
+## Under the Hood
+
+The canonical server and client, with every BSD call visible:
+
+```python
+import socket
+
+# --- server ---
+srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # 1. socket()
+srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # rebindable after crash
+srv.bind(("127.0.0.1", 0))                                # 2. bind()
+srv.listen(8)                                             # 3. listen()
+
+# --- client ---
+cli = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+cli.connect(srv.getsockname())                            # 5. connect() = handshake
+
+conn, peer = srv.accept()                                 # 4. accept() -> NEW socket
+print("server sees client at", peer)                      #    (the 5-tuple's far end)
+
+cli.sendall(b"ping")                                      # 6. send / recv
+print("server got:", conn.recv(64))
+conn.sendall(b"pong")
+print("client got:", cli.recv(64))
+
+cli.close(); conn.close(); srv.close()                    # 7. close() -> FIN
+```
+
+Note `accept()` returning a *second* socket: the listening socket is a factory; each connection gets its own file descriptor with its own buffers.
+
+## Engineering Trade-offs
+
+- **Blocking simplicity vs concurrency.** One blocking socket per thread is easy to reason about but caps out at thousands of threads; event-driven non-blocking I/O (`epoll`, `kqueue`, `io_uring`) handles hundreds of thousands of connections in one thread at the cost of inverted, callback-shaped code — the tension async/await syntax exists to soften.
+- **Stream abstraction vs message framing.** The byte-stream model is universal and simple, but every application must invent framing on top. The recurring "it worked locally, breaks in production" socket bug is assuming one `send` equals one `recv`.
+- **Buffer sizes: memory vs throughput.** Each socket holds kernel send/receive buffers. Bigger buffers keep fast links full (bandwidth-delay product), but a server with 100k connections pays that memory 100k times.
+- **Portability vs the fast path.** BSD sockets run everywhere; the high-performance interfaces (`io_uring`, `kqueue`, IOCP) are per-OS. Networking runtimes ship one backend per platform because the portable API leaves performance on the table.
 
 ## Real-world examples
 
@@ -56,6 +110,33 @@ Every network library, every HTTP client, every database driver, and every web s
 - **"Sockets are a network concept."** Unix domain sockets work entirely within the kernel — same API, zero network. Many local services (Docker daemon, systemd, database) use them.
 - **"If I send 1000 bytes, the other side receives 1000 bytes in one call."** TCP is a stream, not a message protocol. The receiver can get any fragmentation; higher-level protocols define where messages end.
 
+## Try it yourself
+
+The same API with zero network: a Unix domain socket, the IPC channel Docker and PostgreSQL use locally:
+
+```bash
+python3 -c "
+import socket, os, tempfile
+path = os.path.join(tempfile.mkdtemp(), 'demo.sock')
+
+srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)   # same API...
+srv.bind(path)                                            # ...but bound to a FILE
+srv.listen(1)
+
+cli = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+cli.connect(path)
+conn, _ = srv.accept()
+
+cli.sendall(b'hello through the kernel, no network stack involved')
+print(conn.recv(128).decode())
+print('socket lives at:', path)
+"
+```
+
+`ss -x | head` lists the Unix sockets active on your system right now — you'll likely spot systemd, D-Bus, and Docker.
+
 ## Learn next
 
-[TCP](/t/tcp) is the protocol the socket abstracts. Above sockets sits [HTTP](/t/http) and other application protocols that define message structure, and [TLS](/t/tls) provides encryption on top of a plain socket.
+- [TCP](/t/tcp) — the protocol the stream socket abstracts.
+- [HTTP](/t/http) — an application protocol that defines message boundaries over it.
+- [TLS](/t/tls) — encryption wrapped around a plain socket.

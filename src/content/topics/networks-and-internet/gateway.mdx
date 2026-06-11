@@ -4,6 +4,7 @@ aliases: ["default gateway", "network gateway"]
 category: networks-and-internet
 domain: networks-communications
 subcategory: protocols-components
+structure: 2
 kind: concept
 summary: A network node that bridges two different networks — most commonly the "default gateway," the router that forwards traffic from your local network out to the rest of the internet.
 level: intermediate
@@ -12,12 +13,23 @@ importance: important
 tags: ["networking", "router"]
 prerequisites: ["router", "ip-address"]
 related: ["nat", "firewall"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 A **gateway** is the doorway between two networks. When a device on your home or office network wants to reach anything *outside* that network — a website, an app's servers — it sends the traffic to its **default gateway**, the router that knows how to forward it onward. Your laptop doesn't know how to reach the whole internet; it just knows "send anything that isn't local to the gateway, and let it figure out the next hop."
+
+## The Visual Map
+
+```mermaid
+flowchart TB
+  L["laptop 192.168.1.10<br/>wants to send a packet"] --> Q{"is the destination in<br/>my subnet 192.168.1.0/24?"}
+  Q -->|"yes (192.168.1.42)"| D["deliver directly<br/>over the local link"]
+  Q -->|"no (93.184.216.34)"| G["send to default gateway<br/>192.168.1.1"]
+  G --> N["gateway does NAT + firewall,<br/>forwards toward the ISP"]
+  N --> I((internet))
+```
 
 ## More detail
 
@@ -31,9 +43,36 @@ The word "gateway" is used at different levels:
 
 A home router typically bundles several roles into one box: it's the default gateway, it does [NAT](/t/nat) so all your devices share one public IP, it runs a [firewall](/t/firewall), and it hands out addresses via DHCP.
 
-## Why it matters
-
 The gateway is the concept that makes "the local network" and "the internet" connect. Almost every networking problem — "I can reach local devices but not the internet," or vice versa — comes down to gateway and routing configuration. Understanding it is the difference between networking feeling like magic and feeling like plumbing you can reason about.
+
+## Under the Hood
+
+The local-or-gateway decision is one subnet test, made for every single packet your machine sends:
+
+```python
+import ipaddress
+
+my_subnet = ipaddress.ip_network("192.168.1.0/24")
+default_gateway = "192.168.1.1"
+
+def next_stop(dst):
+    if ipaddress.ip_address(dst) in my_subnet:
+        return f"{dst} directly (ARP for its MAC, send on the local link)"
+    return f"{default_gateway} (the gateway worries about the rest)"
+
+print(next_stop("192.168.1.42"))    # a local printer — direct
+print(next_stop("93.184.216.34"))   # a web server — via gateway
+print(next_stop("8.8.8.8"))         # DNS — via gateway
+```
+
+This is exactly the kernel's routing decision: one specific route for the local subnet, and `default via 192.168.1.1` for everything else.
+
+## Engineering Trade-offs
+
+- **Single exit point: control vs bottleneck.** Routing everything through one gateway gives you one place to apply NAT, firewalling, logging, and monitoring — and one device whose failure or saturation takes the whole network offline. Serious networks run redundant gateways (VRRP/HSRP) for exactly this reason.
+- **Inspection at the gateway vs end-to-end trust.** A corporate security gateway can filter and log all outbound traffic, but with TLS everywhere it sees mostly encrypted bytes — deeper visibility requires intercepting encryption, with all its costs.
+- **One hop of indirection.** Devices stay simple ("everything non-local goes one way") at the price of an extra hop even for traffic to a neighbouring network — hence multi-subnet sites place routers, not hosts, at the topology joints.
+- **Protocol gateways trade fidelity for reach.** Translating between protocols (email gateways, VoIP-PSTN) connects worlds that couldn't otherwise talk, but translation always loses or approximates features that don't map cleanly.
 
 ## Real-world examples
 
@@ -46,6 +85,20 @@ The gateway is the concept that makes "the local network" and "the internet" con
 - **"Gateway and router mean the same thing."** A router is a device; "gateway" is a *role* — the router your traffic exits through. A router can be a gateway, but the gateway concept is about the boundary it sits on.
 - **"The gateway assigns my IP address."** That's usually DHCP (often running on the same box), not the gateway function itself.
 
+## Try it yourself
+
+Find your gateway and confirm it's the first hop for everything non-local:
+
+```bash
+ip route show default          # "default via 192.168.1.1 dev wlan0" — your doorway
+ip route get 1.1.1.1           # non-local: routed via that gateway
+ip neigh show                  # the gateway's MAC, learned via ARP
+```
+
+Every destination outside your subnet resolves to the same `via` — one doorway, regardless of where the packet is ultimately headed.
+
 ## Learn next
 
-The device that usually plays the gateway role is a [router](/t/router); on the way out it typically performs [NAT](/t/nat) and runs a [firewall](/t/firewall).
+- [Router](/t/router) — the device that usually plays the gateway role.
+- [NAT](/t/nat) — the address rewriting done on the way out.
+- [Firewall](/t/firewall) — the filtering that guards the same boundary.

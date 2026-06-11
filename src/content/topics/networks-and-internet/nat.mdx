@@ -4,6 +4,7 @@ aliases: ["network address translation", "port forwarding"]
 category: networks-and-internet
 domain: networks-communications
 subcategory: protocols-components
+structure: 2
 kind: concept
 summary: Network Address Translation — how a router lets many devices on a private network share one public IP address by rewriting addresses and ports on traffic passing through it.
 level: intermediate
@@ -12,12 +13,27 @@ importance: important
 tags: ["networking", "ip", "nat"]
 prerequisites: ["ip-address", "router"]
 related: ["gateway", "firewall"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 **NAT** (Network Address Translation) is the trick that lets every device in your home — laptop, phone, TV, smart bulb — share a single public internet address. Your devices each have a *private* address that only works inside your network. When they reach out to the internet, the [router](/t/router) rewrites the traffic so it all appears to come from one *public* address, and remembers who asked for what so the replies get back to the right device. It's why you can have twenty gadgets online with only one address from your ISP.
+
+## The Visual Map
+
+```mermaid
+sequenceDiagram
+  participant L as laptop<br/>192.168.1.20
+  participant R as router (NAT)<br/>public 203.0.113.5
+  participant S as web server
+  L->>R: from 192.168.1.20:51000<br/>to server:443
+  Note over R: record mapping<br/>192.168.1.20:51000 ↔ 203.0.113.5:40000
+  R->>S: from 203.0.113.5:40000<br/>to server:443
+  S->>R: reply to 203.0.113.5:40000
+  Note over R: look up mapping,<br/>rewrite destination
+  R->>L: reply to 192.168.1.20:51000
+```
 
 ## More detail
 
@@ -35,9 +51,43 @@ Consequences that fall out of this design:
 
 **IPv6**, with its astronomically larger address space, was designed to make NAT unnecessary by giving every device a real public address — though NAT persists for IPv4 compatibility and habit.
 
-## Why it matters
+NAT is one of the most widely deployed pieces of internet plumbing — and the source of a whole category of networking headaches: peer-to-peer connections, VoIP, online gaming, and hosting services from home all have to work *around* it (via techniques like STUN, TURN, and UPnP). Understanding NAT explains why "it works on my network but I can't connect from outside."
 
-NAT is one of the most widely deployed pieces of internet plumbing — almost every home and office network uses it. It's also the source of a whole category of networking headaches: peer-to-peer connections, VoIP, online gaming, and hosting services from home all have to work *around* NAT (via techniques like STUN, TURN, and UPnP). Understanding NAT explains why "it works on my network but I can't connect from outside."
+## Under the Hood
+
+The entire mechanism is a lookup table plus packet rewriting. In miniature:
+
+```python
+nat_table = {}            # (private ip, private port) <-> public port
+next_port = 40000
+PUBLIC_IP = "203.0.113.5"
+
+def outbound(src_ip, src_port, dst):
+    global next_port
+    key = (src_ip, src_port)
+    if key not in nat_table:
+        nat_table[key] = next_port; next_port += 1
+    return f"rewritten: from {PUBLIC_IP}:{nat_table[key]} to {dst}"
+
+def inbound(public_port):
+    for (ip, port), pub in nat_table.items():
+        if pub == public_port:
+            return f"rewritten: deliver to {ip}:{port}"
+    return "no mapping -> DROP (this is why inbound fails by default)"
+
+print(outbound("192.168.1.20", 51000, "server:443"))
+print(inbound(40000))      # reply finds its way back
+print(inbound(40999))      # unsolicited inbound: dropped
+```
+
+A real router keeps this table in the kernel's connection tracker, expires idle entries after minutes, and handles thousands of concurrent mappings.
+
+## Engineering Trade-offs
+
+- **Address conservation vs end-to-end reachability.** NAT stretched IPv4 by decades, but broke the internet's original "any host can reach any host" model — an entire industry of workarounds (STUN, TURN, UPnP, relay servers) exists to reconstruct what NAT removed.
+- **Statefulness is fragility.** Every connection through NAT lives in a finite table with idle timeouts. Long-quiet connections die silently (hence TCP keep-alives), and the table itself is a resource an attacker or a busy network can exhaust.
+- **Carrier-grade NAT compounds everything.** ISPs short on IPv4 put whole neighbourhoods behind one address: port forwarding becomes impossible, abuse-blocking one address punishes hundreds of households, and logging requirements explode.
+- **The "free firewall" illusion.** Dropping unsolicited inbound traffic is a side effect, not a policy: UPnP can silently open ports, and outbound traffic is entirely unfiltered. Treat NAT as addressing, and run a real [firewall](/t/firewall) for security.
 
 ## Real-world examples
 
@@ -50,6 +100,24 @@ NAT is one of the most widely deployed pieces of internet plumbing — almost ev
 - **"NAT is a security feature."** It blocks unsolicited inbound traffic as a side effect, but it's an addressing hack, not a security control — don't rely on it instead of a real [firewall](/t/firewall).
 - **"Every device needs its own public IP."** NAT exists precisely because they don't — thousands of devices can share one public address.
 
+## Try it yourself
+
+See both sides of your own NAT — the private address your machine holds vs the public address the world sees:
+
+```bash
+hostname -I                      # your private address(es): 192.168.x.x / 10.x.x.x
+
+# requires: network
+python3 -c "
+import urllib.request
+print('public:', urllib.request.urlopen('https://api.ipify.org', timeout=5).read().decode())
+"
+```
+
+Every device in your home prints a different private address but the *same* public one — that shared address is NAT at work.
+
 ## Learn next
 
-NAT runs on the [router](/t/router) acting as your network's [gateway](/t/gateway), and pairs with a [firewall](/t/firewall) at the network edge.
+- [Router](/t/router) — the box that performs the translation.
+- [Gateway](/t/gateway) — the role that router plays for your network.
+- [Firewall](/t/firewall) — the real security control NAT is mistaken for.

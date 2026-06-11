@@ -4,6 +4,7 @@ aliases: ["http over tls", "secure http"]
 category: networks-and-internet
 domain: networks-communications
 subcategory: protocols-components
+structure: 2
 kind: protocol
 summary: HTTP wrapped in TLS — the encrypted, authenticated version of the web's core protocol, now the default for every public site.
 level: beginner
@@ -12,12 +13,26 @@ importance: important
 tags: ["http", "tls", "security", "web"]
 prerequisites: ["http", "tls"]
 related: ["public-key-cryptography"]
-updated: 2026-06-07
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 **HTTPS** is just HTTP carried over TLS. It uses the same request / response model, the same status codes, the same headers — but everything between the client and server is encrypted, and the server has proven its identity via a certificate. In 2026 it's the default for the entire public web; modern browsers warn or refuse to load anything on plain HTTP.
+
+## The Visual Map
+
+```mermaid
+flowchart TB
+  subgraph stack["what travels on the wire"]
+    direction TB
+    H["HTTP — GET /account, cookies, JSON"] --> T["TLS — encrypts and authenticates<br/>everything above this line"]
+    T --> TCP["TCP — reliable byte stream"]
+    TCP --> IP["IP — routing"]
+  end
+  O["on-path observer sees:<br/>server IP, hostname (SNI),<br/>sizes and timing"] -.-> T
+  O2["cannot see:<br/>paths, headers, cookies, bodies"] -.-> H
+```
 
 ## More detail
 
@@ -42,11 +57,42 @@ Things HTTPS does **not** hide:
 - The hostname (visible in the TLS SNI extension, unless **Encrypted Client Hello** is in use — increasingly common in 2026).
 - The approximate sizes and timings of requests (traffic analysis).
 
-Performance: HTTPS used to add a noticeable latency tax (extra round-trips for the handshake). TLS 1.3 (one round-trip, 0-RTT for resumption) and HTTP/3 over QUIC (combined transport + crypto handshake) have closed most of that gap.
+Without HTTPS, every Wi-Fi network is an eavesdropper, every ISP is a man-in-the-middle, and every login over coffee-shop Wi-Fi is a credential leak. The push by browsers, Let's Encrypt, and the broader web community to move the whole internet to HTTPS over the 2010s is one of the most consequential security wins in computing history.
 
-## Why it matters
+## Under the Hood
 
-Without HTTPS, every Wi-Fi network is an eavesdropper, every ISP is a man-in-the-middle, and every login over coffee-shop Wi-Fi is a credential leak. The combined effort of browsers, Let's Encrypt, and the broader web community to move the whole internet to HTTPS over the 2010s is one of the most consequential security wins in computing history.
+Serving HTTPS is configuration, not application code. A minimal nginx site with the standard hardening:
+
+```text
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$host$request_uri;     # plain HTTP exists only to redirect
+}
+
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;      # nothing older negotiable
+
+    # HSTS: browsers must use HTTPS for this domain for the next year
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    location / { proxy_pass http://127.0.0.1:3000; }
+}
+```
+
+The application behind `proxy_pass` speaks plain HTTP on localhost — TLS termination at the front means the app never touches a certificate.
+
+## Engineering Trade-offs
+
+- **Performance: a solved tax.** The handshake once cost extra round-trips and real CPU; TLS 1.3 (one RTT, 0-RTT resumption) and AES hardware acceleration cut the overhead to single-digit percent. The era of "we can't afford HTTPS" is over — but connection reuse still matters at scale.
+- **HSTS: downgrade protection vs lock-in.** Telling browsers "HTTPS only, for a year" defeats SSL-stripping attacks, but a botched TLS setup now locks users out until it's fixed — there is deliberately no "click through anyway".
+- **Certificates: free issuance, real operations.** Let's Encrypt removed the cost barrier; what remains is renewal automation. Expired certificates are still among the most common self-inflicted outages.
+- **Where to terminate.** Ending TLS at a CDN or load balancer enables caching and inspection but means the infrastructure between terminator and app carries plaintext — many compliance regimes require re-encrypting that internal leg.
 
 ## Real-world examples
 
@@ -60,6 +106,25 @@ Without HTTPS, every Wi-Fi network is an eavesdropper, every ISP is a man-in-the
 - **"HTTPS means the site is safe."** It means the *connection* to the site is encrypted and authenticated. The site itself can still be a phishing page or a fraud — HTTPS only proves "you're talking to who you think you're talking to".
 - **"HTTPS adds significant overhead."** With TLS 1.3 and modern ciphers it's essentially free; Cloudflare reported single-digit-percent CPU overhead at scale years ago.
 
+## Try it yourself
+
+Check a real site's HTTPS posture — protocol version and HSTS policy — in one request:
+
+```bash
+# requires: network
+python3 -c "
+import urllib.request
+req = urllib.request.Request('https://github.com', method='HEAD')
+with urllib.request.urlopen(req, timeout=5) as r:
+    print('status:', r.status)
+    print('HSTS  :', r.headers.get('strict-transport-security', '(none)'))
+"
+```
+
+A `max-age=31536000` HSTS header means your browser will refuse plain HTTP to this domain for a year — try the same check on sites you use daily.
+
 ## Learn next
 
-The encryption layer underneath: [TLS](/t/tls). The application protocol on top: [HTTP](/t/http). The math at the heart of the handshake: [public-key cryptography](/t/public-key-cryptography).
+- [TLS](/t/tls) — the encryption layer underneath.
+- [HTTP](/t/http) — the application protocol on top.
+- [Public-key cryptography](/t/public-key-cryptography) — the math at the heart of the handshake.

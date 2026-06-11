@@ -4,6 +4,7 @@ aliases: ["packet filter", "network firewall"]
 category: networks-and-internet
 domain: security-privacy
 subcategory: hardware-network-application-security
+structure: 2
 kind: concept
 summary: A barrier that filters network traffic against a set of rules, allowing or blocking packets by address, port, or protocol to protect a network or host.
 level: intermediate
@@ -12,12 +13,24 @@ importance: important
 tags: ["networking", "security", "firewall"]
 prerequisites: ["packet"]
 related: ["nat", "router"]
-updated: 2026-06-08
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 A **firewall** is a filter that decides which network traffic is allowed through and which gets dropped. It sits at a boundary — between your computer and the network, or between a private network and the internet — and checks every [packet](/t/packet) against a list of rules. "Allow web traffic on port 443, block everything else inbound" is a firewall rule. It's the most basic and universal network defense.
+
+## The Visual Map
+
+```mermaid
+flowchart LR
+  P["inbound packet<br/>dst port 443"] --> F{firewall rules,<br/>top to bottom}
+  F -->|"1: allow established<br/>connections"| A["pass — reply to a<br/>connection we opened"]
+  F -->|"2: allow tcp/443<br/>from anywhere"| A2["pass — intended service"]
+  F -->|"3: allow tcp/22 from<br/>office range only"| A3["pass or fall through"]
+  F -->|"default: deny"| D["drop — and<br/>usually log"]
+  style D fill:#0000,stroke-dasharray: 5 5
+```
 
 ## More detail
 
@@ -30,9 +43,37 @@ Firewalls have grown in sophistication over the decades:
 
 A typical default policy is **default-deny**: block everything, then explicitly allow what's needed. Firewalls run in many places — on your laptop (host firewall), in your home [router](/t/router), as a dedicated appliance at a company's edge, and as software rules in the cloud (AWS Security Groups). They commonly sit right alongside [NAT](/t/nat) on the same device.
 
-## Why it matters
-
 A firewall is the first and most universal line of network defense: it shrinks a system's **attack surface** by ensuring only intended services are reachable. A database that should never be exposed to the internet, an admin port that should only accept connections from inside the office — the firewall is what enforces those boundaries. Misconfigured firewall rules (or an accidentally-open port) are behind a large share of breaches.
+
+## Under the Hood
+
+A real default-deny ruleset in nftables (Linux's current firewall), readable top to bottom:
+
+```text
+table inet filter {
+  chain input {
+    type filter hook input priority 0; policy drop;   # default-deny
+
+    ct state established,related accept   # replies to connections we opened
+    ct state invalid drop                 # nonsense packets
+
+    iif "lo" accept                       # localhost talks to itself freely
+    tcp dport 443 accept                  # the web service we mean to expose
+    tcp dport 22 ip saddr 203.0.113.0/24 accept   # SSH from the office only
+
+    log prefix "fw-drop: " counter        # everything else: log it, drop it
+  }
+}
+```
+
+The `ct state established` line is what makes it *stateful*: the kernel's connection tracker remembers outbound connections, so replies are allowed without opening any inbound port.
+
+## Engineering Trade-offs
+
+- **Default-deny vs operational friction.** Blocking everything by default is the secure posture, but every new legitimate service now requires a rule change — and overly painful processes push teams toward dangerously broad "allow all from internal" rules.
+- **Inspection depth vs throughput.** Checking IP+port is nearly free at line rate; parsing HTTP bodies for SQL injection costs orders of magnitude more CPU per packet. NGFW/WAF features are why firewall appliances are sized by inspected bandwidth.
+- **Stateful tracking has limits.** Connection tables are finite memory — SYN floods aim to fill them. Defenses (SYN cookies, aggressive timeouts) trade strict correctness for survivability under attack.
+- **Encrypted traffic: inspect or trust.** TLS hides payloads from application-layer filtering. Decrypting at the firewall (TLS interception) restores visibility but breaks end-to-end encryption and adds a high-value point of failure.
 
 ## Real-world examples
 
@@ -45,6 +86,18 @@ A firewall is the first and most universal line of network defense: it shrinks a
 - **"A firewall makes me safe."** It controls *network reachability* — it does nothing about a vulnerability in a service you *do* expose, a phishing email, or malware already inside.
 - **"Firewalls only block incoming traffic."** They can filter outbound traffic too — useful for stopping malware from "phoning home" or exfiltrating data.
 
+## Try it yourself
+
+See your machine's actual attack surface — the listening sockets a firewall would need rules for:
+
+```bash
+ss -tlnp 2>/dev/null | head -15    # listening TCP sockets: address, port, process
+```
+
+Every line is a doorway: `127.0.0.1:...` entries are reachable only locally, but anything on `0.0.0.0` or `[::]` accepts connections from any network the host is on — exactly the list you'd write allow rules for. (`sudo ufw status` or `sudo nft list ruleset` shows the rules currently guarding them.)
+
 ## Learn next
 
-Firewalls operate on [packets](/t/packet) and usually live on the same device as [NAT](/t/nat) and the [router](/t/router) at a network's edge.
+- [Packet](/t/packet) — the unit every firewall rule judges.
+- [NAT](/t/nat) — the address translation that shares the firewall's box.
+- [Router](/t/router) — the device at the boundary where both usually live.
