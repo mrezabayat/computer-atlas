@@ -4,6 +4,7 @@ aliases: ["distributed systems"]
 category: distributed-systems-and-cloud
 domain: concurrency-parallelism
 subcategory: distributed-computing
+structure: 2
 kind: concept
 summary: A system whose components run on multiple networked computers and coordinate by passing messages.
 level: intermediate
@@ -13,12 +14,26 @@ tags: ["distributed", "systems"]
 prerequisites: ["ip-address"]
 related: ["operating-system", "sharding"]
 nextSteps: ["consensus", "replication", "microservices"]
-updated: 2026-06-07
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 A **distributed system** is a system whose parts run on more than one computer and have to cooperate without any of them being in charge of the others. The components talk over a network — which means messages can be lost, delayed, duplicated, or reordered, and any individual machine can die at any moment. The whole discipline of distributed systems is about getting useful, correct work done despite that uncertainty.
+
+## The Visual Map
+
+```mermaid
+flowchart TB
+  C["client request"] --> G["API service"]
+  G -->|"network: can be lost,<br/>delayed, duplicated"| S1["orders service"]
+  G -->|"can time out —<br/>did it happen or not?"| S2["payment service"]
+  S1 --> D1[("DB shard 1<br/>+ replicas")]
+  S1 --> D2[("DB shard 2<br/>+ replicas")]
+  S2 --> Q["message queue"]
+  Q --> W["worker (may crash<br/>mid-job and retry)"]
+  N["no global clock, no shared memory,<br/>no component sees the whole truth"] -.-> G & S1 & S2 & W
+```
 
 ## More detail
 
@@ -47,9 +62,42 @@ The core tools the field developed to cope:
 
 The **CAP theorem** (Brewer, 2000) summarises a fundamental trade-off: in the presence of a network partition, you must choose between consistency and availability.
 
-## Why it matters
+Almost every system that's "in the cloud" is distributed — and even a single web app talking to a managed database, a cache, and a payment gateway is participating in one, with all the failure modes that implies. Understanding the patterns is the difference between "works in the demo" and "stays up at 3 a.m. during an AWS regional incident".
 
-Almost every system that's "in the cloud" is distributed — databases, queues, search engines, CDNs, microservices, the cloud platform itself. Even a single web app that talks to a managed database, a managed cache, and a payment gateway is participating in a distributed system, with all the failure modes that implies. Understanding the patterns is the difference between "works in the demo" and "stays up at 3 a.m. during an AWS regional incident".
+## Under the Hood
+
+No global clock — so order events with a **Lamport clock**: a counter that ticks on every event and fast-forwards on every message received:
+
+```python
+class Node:
+    def __init__(self, name):
+        self.name, self.clock = name, 0
+    def event(self, what):
+        self.clock += 1
+        print(f"  {self.name}: {what}  (t={self.clock})")
+    def send(self):
+        self.clock += 1
+        return self.clock
+    def recv(self, msg_time, what):
+        self.clock = max(self.clock, msg_time) + 1   # the key rule
+        print(f"  {self.name}: {what}  (t={self.clock})")
+
+a, b = Node("A"), Node("B")
+a.event("write x=1")
+t = a.send()                      # A's clock travels with the message
+b.event("local work")             # B was busy, clock low
+b.recv(t, "got A's message")      # B jumps PAST A's send time
+b.event("write y=2")              # ...so this is provably 'after' x=1
+```
+
+`max(local, received) + 1` guarantees that if event X *could have caused* event Y, X's timestamp is smaller. That "happened-before" relation — not wall-clock time — is what distributed protocols actually order by.
+
+## Engineering Trade-offs
+
+- **One machine vs many: a step change in failure modes.** A monolithic process fails whole; a distributed system fails *partially* — a request can succeed on one side of a timeout and be unknown on the other. Every pattern in this field (retries, idempotency, sagas) exists to handle "I don't know what happened".
+- **Consistency vs availability vs latency.** CAP forces a choice during partitions, and PACELC extends it: even with no partition, coordination costs latency. Strongly consistent systems pay quorum round-trips on every write; eventually consistent ones push the reconciliation burden onto application code.
+- **Scale-out capacity vs coordination overhead.** Adding machines adds throughput only for work that doesn't need agreement; anything requiring coordination (transactions, uniqueness, ordering) gets *harder* with each node. Good designs minimise the coordinated core.
+- **Operational surface.** Three replicas means three machines to patch, monitor, and debug, plus the network between them. The system's reliability now depends on observability tooling (tracing, structured logs) that a single process never needed.
 
 ## Real-world examples
 
@@ -65,6 +113,34 @@ Almost every system that's "in the cloud" is distributed — databases, queues, 
 - **"More replicas = more reliable."** Up to a point. Past that, the coordination overhead and the chance of a network partition dominate. Most production systems run 3 or 5 replicas, not 100.
 - **"Distributed transactions just work."** They are a research-grade problem. Most systems sidestep them with sagas, outboxes, eventual consistency, or by simply ensuring transactional state stays inside one shard.
 
+## Try it yourself
+
+Fallacy #1, demonstrated: send requests over a "network" that silently drops some — and notice the sender cannot tell a slow reply from a lost one:
+
+```bash
+python3 -c "
+import random, socket
+random.seed(2)
+
+rx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+rx.bind(('127.0.0.1', 0)); rx.settimeout(0.2)
+tx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+for i in range(6):
+    if random.random() > 0.4:                 # the network 'decides'
+        tx.sendto(f'req {i}'.encode(), rx.getsockname())
+    try:
+        data, _ = rx.recvfrom(64)
+        print(f'req {i}: delivered ->', data.decode())
+    except socket.timeout:
+        print(f'req {i}: TIMEOUT — lost? slow? did the server act on it? unknowable')
+"
+```
+
+Every timeout line is the fundamental dilemma: retry (and risk doing it twice) or don't (and risk doing it zero times). [Idempotency](/t/idempotency) is the standard escape.
+
 ## Learn next
 
-The agreement primitive: [consensus](/t/consensus). The two main scaling axes: [replication](/t/replication) and [sharding](/t/sharding). The architectural style that brought distributed systems concerns to every team: [microservices](/t/microservices).
+- [Consensus](/t/consensus) — the agreement primitive everything else leans on.
+- [Replication](/t/replication) and [sharding](/t/sharding) — the two main scaling axes.
+- [Microservices](/t/microservices) — the architecture that brought these concerns to every team.
