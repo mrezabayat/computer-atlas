@@ -4,6 +4,7 @@ aliases: ["CA", "PKI", "certificate chain", "root CA", "intermediate CA"]
 category: security-and-privacy
 domain: security-privacy
 subcategory: cryptography-formal-methods
+structure: 2
 kind: concept
 summary: A trusted organisation that issues digital certificates binding a public key to an identity — the root of trust that makes HTTPS and code signing trustworthy without pre-distributing keys.
 level: intermediate
@@ -12,54 +13,118 @@ importance: supplemental
 tags: ["security", "pki", "tls", "certificates"]
 prerequisites: ["public-key-cryptography", "tls"]
 related: ["authentication", "jwt"]
-nextSteps: []
-updated: 2026-06-08
+nextSteps: ["elliptic-curve-cryptography", "post-quantum-cryptography"]
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
-Public-key cryptography solves eavesdropping — but how do you know the public key you received actually belongs to `bank.com` and not an attacker? A **Certificate Authority (CA)** answers this: it is an organisation that verifies the identity of a website or company and then signs a **certificate** binding their public key to their name. Your browser trusts a list of CAs; if a certificate is signed by one of them, you can trust the key.
+Public-key cryptography solves eavesdropping — but how do you know the public key you received actually belongs to `bank.com` and not an attacker? A **Certificate Authority (CA)** answers this: it verifies the identity of a website and then signs a **certificate** binding their public key to their name. Your browser trusts a list of CAs; if a certificate is signed by one of them, you can trust the key.
+
+## The Visual Map
+
+```mermaid
+flowchart TD
+  ROOT["Root CA\n(offline, trust anchor)"] -->|"signs"| INTER["Intermediate CA\n(online, issues leaf certs)"]
+  INTER -->|"signs"| LEAF["Server certificate\n(bank.com + public key)"]
+  LEAF -->|"presented in TLS handshake"| BROWSER["Browser"]
+  BROWSER --> TS["Trust store\n(~150 root CAs)"]
+  TS -->|"root CA found"| OK["Chain verified — padlock"]
+  TS -->|"root CA not found"| ERR["Certificate error"]
+  LEAF --> CT["Certificate Transparency log\n(public append-only)"]
+```
 
 ## More detail
 
-A **digital certificate** (X.509 format) contains:
-- The subject's identity (`CN=*.bank.com` or an organisation name for EV certificates).
-- The subject's **public key**.
-- Validity period (not before / not after).
-- The **issuer** (the CA that signed it).
-- The **CA's digital signature** over all the above.
+A **digital certificate** (X.509 format) contains: the subject's identity, the subject's **public key**, validity period, the **issuer** (the CA that signed it), and the **CA's digital signature** over all the above.
 
-**Verification:** your browser verifies that the server's certificate is signed by a CA in its **trust store** (a list of ~150 root CAs pre-installed by the OS and browser vendors). If the chain of signatures leads back to a trusted root, the certificate is valid.
-
-**Certificate chain:** Root CAs are kept offline for security. They sign **intermediate CAs**, which sign end-entity (leaf) certificates. A typical chain is: Root CA → Intermediate CA → Server certificate. Browsers verify the chain from leaf to a trusted root.
+**Verification:** the browser verifies that the server's certificate is signed by a CA in its **trust store** (a list of ~150 root CAs pre-installed by the OS and browser vendors). Root CAs are kept offline for security — they sign **intermediate CAs**, which sign the leaf (server) certificates. A typical chain: Root CA → Intermediate CA → Server certificate.
 
 **Certificate types by validation level:**
-- **DV (Domain Validation)** — CA verifies domain control only (DNS record or file on the server). Automated, free (Let's Encrypt). Gives the padlock but says nothing about the organisation.
-- **OV (Organisation Validation)** — CA verifies legal entity. Takes days.
-- **EV (Extended Validation)** — strict identity verification; used to show the company name in the browser bar (largely deprecated by browsers).
+- **DV (Domain Validation)** — CA verifies domain control only (DNS record or challenge file). Automated, free (Let's Encrypt). Gives the padlock but says nothing about the organisation.
+- **OV (Organisation Validation)** — CA verifies the legal entity. Takes days.
+- **EV (Extended Validation)** — strict identity verification; used to show the company name in the browser bar (largely deprecated).
 
-**Let's Encrypt** is an automated CA (ACME protocol) that issues free DV certificates with 90-day expiry, renewed automatically by tools like Certbot and Caddy. It has issued billions of certificates and driven HTTPS adoption from ~40% to ~90% of web traffic.
+**Let's Encrypt** is an automated CA (ACME protocol) that issues free DV certificates with 90-day expiry, renewed automatically by Certbot and Caddy. It drove HTTPS adoption from ~40% to ~90% of web traffic.
 
-**Certificate Transparency (CT):** public append-only logs of all issued certificates. Browsers reject certificates not in at least two CT logs. This makes it impossible for a rogue CA to issue a certificate for `google.com` without it being detected within hours.
+**Certificate Transparency (CT):** all issued certificates must appear in at least two public CT logs. Browsers reject certificates not in CT logs. This makes it impossible for a rogue CA to issue a certificate for `google.com` without detection within hours.
 
-**Revocation:** if a private key is compromised, the certificate must be revoked via CRL (Certificate Revocation List) or OCSP (Online Certificate Status Protocol). CRL checking is largely abandoned by browsers (latency, privacy); OCSP Stapling (server pre-fetches its own OCSP response and staples it to the TLS handshake) is the modern approach.
+**Revocation:** OCSP Stapling is the modern approach — the server pre-fetches its own revocation status and includes it in the TLS handshake. CRL checking is largely abandoned by browsers due to latency and privacy issues.
 
-## Why it matters
+## Under the Hood
 
-CAs are the trust infrastructure of the entire public web and most enterprise PKI. Without them, HTTPS would require pre-distributing public keys out-of-band — impractical at internet scale. Understanding CAs explains: why browsers show certificate errors, what a wildcard certificate covers, why certificate expiry causes outages, and why misissuance by a CA (e.g., Symantec's 2017 scandal) is so serious. Engineers who configure servers, manage internal PKI, or debug TLS errors need to understand the chain of trust.
+Simulating a three-tier certificate chain — root signs intermediate, intermediate signs leaf, browser verifies:
+
+```python
+import hmac, hashlib, json
+
+def sign(body: dict, ca_secret: bytes) -> dict:
+    body_bytes = json.dumps(body, sort_keys=True).encode()
+    sig = hmac.new(ca_secret, body_bytes, hashlib.sha256).hexdigest()[:32]
+    return {**body, "signature": sig, "sig_by_secret": id(ca_secret)}
+
+def verify_sig(cert: dict, ca_secret: bytes) -> bool:
+    body = {k: v for k, v in cert.items() if k not in ("signature", "sig_by_secret")}
+    body_bytes = json.dumps(body, sort_keys=True).encode()
+    expected = hmac.new(ca_secret, body_bytes, hashlib.sha256).hexdigest()[:32]
+    return hmac.compare_digest(cert["signature"], expected)
+
+root_key   = b"root-ca-offline-private-key"
+inter_key  = b"intermediate-ca-private-key"
+
+inter_cert = sign({"subject": "Intermediate CA", "public_key": "inter-pub-key"}, root_key)
+leaf_cert  = sign({"subject": "bank.com", "public_key": "bank-pub-key-789",
+                   "issuer": "Intermediate CA"}, inter_key)
+
+print("Intermediate cert signed by root:", verify_sig(inter_cert, root_key))
+print("Leaf cert signed by intermediate:", verify_sig(leaf_cert, inter_key))
+print("Tampered leaf cert valid?        ", verify_sig({**leaf_cert, "subject": "evil.com"}, inter_key))
+print()
+print("Chain: bank.com <- Intermediate CA <- Root CA (in browser trust store)")
+```
+
+## Engineering Trade-offs
+
+- **Certificate lifetime vs revocation cost.** Short-lived certificates (90 days, like Let's Encrypt) reduce the revocation problem — an expired cert is automatically invalid. Long-lived certificates require working revocation infrastructure (OCSP stapling), but reduce renewal automation burden.
+- **Root CA vs CA-as-a-service.** Running an internal CA gives full control but requires securing the root key (HSM, offline storage) and operating OCSP/CRL infrastructure. Delegating to Let's Encrypt / DigiCert removes that burden at the cost of depending on a third party.
+- **CT log monitoring vs performance.** All certificates must be submitted to CT logs, which costs a round-trip. In exchange, any organisation can monitor CT logs for certificates issued for their domains — a rogue CA issuance becomes visible within minutes.
+- **Trust store churn.** Browser vendors (and Apple, Microsoft, Google) can distrust a CA at any time — all certificates signed by that CA immediately fail. Symantec's 2017 distrust cascade caused widespread outages for customers who hadn't migrated.
 
 ## Real-world examples
 
 - Let's Encrypt issues ~400 million active certificates for free; almost every small website uses it.
-- DigiCert, Sectigo, and GlobalSign are commercial CAs used for code signing and EV certificates.
-- Internal corporate CAs (often Windows Server CA) issue certificates for internal services, VPNs, and mTLS.
-- Certificate Transparency logs (Google's Argon, Cloudflare's Nimbus) are monitored by companies like Facebook to detect rogue certificates for their domains.
+- DigiCert, Sectigo, and GlobalSign are commercial CAs for code signing and EV certificates.
+- Internal corporate CAs (Windows Server CA) issue certificates for internal services, VPNs, and mutual TLS.
+- CT logs (Google Argon, Cloudflare Nimbus) are monitored by companies like Facebook to detect rogue certificates for their domains within minutes.
 
 ## Common misconceptions
 
-- **"HTTPS means the site is safe."** HTTPS means the connection is encrypted and the domain in the certificate matches the URL. It says nothing about whether the site is legitimate or the content is trustworthy.
+- **"HTTPS means the site is safe."** HTTPS means the connection is encrypted and the domain matches the certificate. It says nothing about whether the site is legitimate or the content is trustworthy.
 - **"Free certificates are less secure."** DV certificates from Let's Encrypt provide the same cryptographic security as expensive certificates — the difference is identity verification, not key strength.
+
+## Try it yourself
+
+Inspect a real server's certificate chain — Python stdlib:
+
+```bash
+python3 -c "
+import ssl, socket
+ctx = ssl.create_default_context()
+conn = ctx.wrap_socket(socket.socket(), server_hostname='google.com')
+conn.connect(('google.com', 443))
+cert = conn.getpeercert()
+conn.close()
+print('Subject:    ', dict(x[0] for x in cert['subject']))
+print('Issuer:     ', dict(x[0] for x in cert['issuer']))
+print('Expires:    ', cert['notAfter'])
+sans = [v for t,v in cert.get('subjectAltName',[]) if t=='DNS']
+print('SANs (first 3):', sans[:3])
+"
+```
 
 ## Learn next
 
-Certificate authorities are the trust root for [TLS](/t/tls) — the padlock. [Public-key cryptography](/t/public-key-cryptography) is the mechanism; CAs answer "whose key is this?" [JWT](/t/jwt) certificates can also use CA-signed keys (RS256 with a CA-issued cert).
+- [Public-key cryptography](/t/public-key-cryptography) — the mechanism CAs use; CAs answer "whose key is this?"
+- [TLS](/t/tls) — the protocol that presents and verifies certificates during the handshake.
+- [Elliptic-curve cryptography](/t/elliptic-curve-cryptography) — the key type (ECDSA, Ed25519) in modern certificates.
+- [JWT](/t/jwt) — RS256 JWTs use keys that can be signed by a CA-issued certificate.

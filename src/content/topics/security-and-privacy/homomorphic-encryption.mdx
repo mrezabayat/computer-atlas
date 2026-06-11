@@ -1,62 +1,141 @@
 ---
 title: Homomorphic Encryption
-aliases: ["HE", "FHE", "fully homomorphic encryption", "computing on encrypted data"]
+aliases: ["FHE", "fully homomorphic encryption", "PHE", "HE"]
 category: security-and-privacy
 domain: security-privacy
 subcategory: cryptography-formal-methods
+structure: 2
 kind: concept
-summary: A form of encryption that allows computation on ciphertext without decrypting it — the result, when decrypted, matches what would have been obtained by computing on the plaintext.
+summary: A form of encryption that allows arbitrary computations to be performed on ciphertext — the results, when decrypted, match what you would get if you had computed on the plaintext directly.
 level: advanced
 status: reviewed
 importance: supplemental
-tags: ["cryptography", "privacy", "machine-learning", "research"]
+tags: ["cryptography", "privacy", "encryption", "cloud"]
 prerequisites: ["cryptography", "public-key-cryptography"]
-related: ["zero-trust", "post-quantum-cryptography"]
-nextSteps: []
-updated: 2026-06-08
+related: ["zero-trust"]
+nextSteps: ["post-quantum-cryptography"]
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
-Normally, to compute on encrypted data you must decrypt it first — which means whoever runs the computation sees the plaintext. Homomorphic encryption (HE) makes the impossible possible: you can add or multiply numbers without ever seeing them. A cloud server can run a machine-learning model on your encrypted medical data and return an encrypted result; you decrypt the result and see the answer — but the cloud never saw your data. It is one of the most powerful privacy-preserving techniques in cryptography.
+Normally, to process data you must decrypt it first — meaning the cloud server you send it to can see it. Homomorphic encryption lets you send encrypted data to a server, the server performs computations on the ciphertext, and when you decrypt the result you get the correct answer — without the server ever seeing your data. Think of a locked box with a slot: you can pass inputs in, the server manipulates the contents through the box, and you unlock it to get the result.
+
+## The Visual Map
+
+```mermaid
+flowchart LR
+  subgraph client["Client (has key)"]
+    A["plaintext a, b"] -->|"encrypt"| CA["E(a), E(b)"]
+  end
+  subgraph server["Server (untrusted, no key)"]
+    CA -->|"HE add/multiply"| CR["E(a+b) or E(a×b)"]
+  end
+  subgraph client2["Client (has key)"]
+    CR -->|"decrypt"| R["a+b or a×b"]
+    A2["a+b directly"] -->|"compare"| R
+    R --> MATCH["Results match ✓"]
+  end
+```
 
 ## More detail
 
-**Homomorphism** (from Greek: "same shape"): an encryption scheme `E` is homomorphic if:
-- `E(a) ⊕ E(b) = E(a + b)` — additive homomorphism
-- `E(a) ⊗ E(b) = E(a × b)` — multiplicative homomorphism
+**Levels of homomorphism:**
+- **Partially Homomorphic (PHE)** — supports one operation type (add OR multiply). Example: Paillier encryption supports unlimited additions; RSA (textbook, unpadded) supports multiplications. Used in e-voting (summing votes).
+- **Somewhat Homomorphic (SHE)** — supports both operations but only a bounded number of times before noise corrupts the result.
+- **Fully Homomorphic (FHE)** — supports unlimited additions AND multiplications, enabling arbitrary computation. Invented by Craig Gentry in 2009. Requires **bootstrapping** to refresh the noise periodically.
 
-A scheme that supports only one operation (Paillier: addition; RSA unpadded: multiplication) is **partially homomorphic (PHE)**. Schemes supporting a limited number of both operations are **somewhat homomorphic (SHE)**. A scheme supporting unlimited operations of both types is **fully homomorphic (FHE)**.
+**How it works (simplified):** most FHE schemes add a small random **noise** to ciphertexts during encryption. Additions are cheap and add little noise. Multiplications amplify noise. Eventually noise grows too large to decrypt correctly — bootstrapping decrypts and re-encrypts under a fresh noise budget, but at high cost.
 
-**FHE history:** Craig Gentry's 2009 construction was the first FHE scheme, based on ideal lattices. It was correct but too slow for practical use (days per operation). Modern schemes (CKKS, BFV, TFHE) are orders of magnitude faster.
+**Practical FHE schemes:**
+- **CKKS** — approximate arithmetic over real/complex numbers. Used for machine learning inference on encrypted data (floating-point).
+- **BFV / BGV** — exact arithmetic over integers. Used for privacy-preserving statistics.
+- **TFHE / FHEW** — gate bootstrapping; very fast per gate but limited to boolean circuits. Used for encrypted database queries.
 
-**Major schemes:**
-- **BFV/BGV** — integer arithmetic; suited for exact integer computations.
-- **CKKS** — approximate arithmetic on real/complex numbers; suited for ML inference (accepts small rounding errors in exchange for efficiency).
-- **TFHE/FHEW** — bootstrapped gate-by-gate computation on bits; fast per-gate, suited for arbitrary circuits.
+**Practical status (2026):** FHE is 100–100,000× slower than plaintext computation. Microsoft SEAL, OpenFHE, and Google's transpiler make it accessible. Practical for: encrypted ML inference (CKKS), private set intersection, encrypted database queries. Not yet practical for real-time general applications.
 
-**Noise and bootstrapping:** HE ciphertexts accumulate noise with each operation; too much noise corrupts the result. **Bootstrapping** (Gentry's key insight) homomorphically evaluates the decryption circuit to reset noise — enabling unlimited operations, at high cost.
+## Under the Hood
 
-**Performance in 2024:** CKKS can run a simple neural network inference in seconds to minutes (10²–10⁵× slower than plaintext). TFHE boolean circuits run at ~1000 gates/second on a modern CPU. Production HE is still primarily for scenarios where privacy value exceeds the performance cost.
+Additive homomorphism with a toy one-time-pad mask — demonstrates `Dec(E(a) + E(b)) = a + b`:
 
-**Libraries:** Microsoft SEAL, OpenFHE, HElib, TFHE-rs (Zama).
+```python
+import secrets
 
-## Why it matters
+MOD = 2**31
 
-HE enables computation outsourcing with zero information leakage: medical record analysis, genome computation, financial risk models on private data, and ML inference on sensitive inputs — all without trusting the compute provider. Regulatory environments (HIPAA, GDPR) and sensitive industries (healthcare, finance, defence) are early adopters. While HE is not yet general-purpose (it's too slow for most workloads), it is the long-term vision for privacy-preserving cloud computing. Cryptographers and applied researchers working on privacy-preserving ML or cloud security need to understand HE's capabilities and limits.
+def keygen():
+    return secrets.randbelow(MOD)
+
+def encrypt(key: int, m: int) -> int:
+    return (m + key) % MOD       # mask plaintext
+
+def decrypt(key: int, c: int) -> int:
+    return (c - key) % MOD       # unmask
+
+def he_add(c1: int, c2: int) -> int:
+    return (c1 + c2) % MOD       # server: no key needed
+
+key1, key2 = keygen(), keygen()
+a, b = 42, 17
+ca, cb = encrypt(key1, a), encrypt(key2, b)
+
+c_sum = he_add(ca, cb)           # server adds ciphertexts
+result = decrypt((key1 + key2) % MOD, c_sum)   # client decrypts with combined key
+
+print(f"a={a}, b={b}, a+b={a+b}")
+print(f"E(a)={ca}, E(b)={cb}  (server cannot reverse without keys)")
+print(f"Server computes E(a)+E(b) = {c_sum}")
+print(f"Client decrypts:           {result}")
+print(f"Matches a+b: {result == a + b}")
+```
+
+## Engineering Trade-offs
+
+- **Security vs performance.** FHE provides the strongest privacy guarantee — the server is truly blind to the data. The cost is orders-of-magnitude overhead. PHE (addition only) is practical today for specific tasks (e-voting, encrypted statistics).
+- **CKKS vs BFV.** CKKS is faster and suited for ML (tolerates small rounding errors); BFV is exact but slower. The choice depends on whether your computation needs bit-exact results.
+- **FHE vs secure multi-party computation (MPC).** MPC splits secrets across multiple parties; FHE processes encrypted data at a single server. MPC requires coordination overhead between parties; FHE requires no server-side secrets but is computationally heavier.
+- **FHE vs trusted execution environments (TEE).** TEEs (Intel SGX, AMD SEV) run code in a hardware-encrypted enclave — much faster than FHE but rely on hardware trust and have had side-channel vulnerabilities. FHE is purely mathematical.
 
 ## Real-world examples
 
-- Microsoft Azure Confidential Computing uses SEAL for healthcare analytics (genomic data queries on encrypted patient records).
-- Google's private join-and-compute uses partially homomorphic encryption for privacy-preserving ad attribution.
-- Zama's Concrete ML library lets data scientists train and run ML models encrypted with TFHE, enabling encrypted-inference SaaS.
-- IBM HElib powers research in encrypted database queries.
+- **Microsoft SEAL** is used for privacy-preserving analytics in Azure; researchers use it for encrypted genomic data analysis.
+- **Google's Private Join and Compute** uses partially homomorphic encryption for privacy-preserving set intersection (e.g., ad attribution without sharing raw user IDs).
+- **E-voting:** some voting protocols use Paillier's additive HE to tally encrypted votes without decrypting individual ballots.
+- **Encrypted ML inference:** Zama.ai's Concrete ML allows training a model normally and running inference on FHE-encrypted inputs.
 
 ## Common misconceptions
 
-- **"Homomorphic encryption makes computation perfectly secure in any cloud."** It provides cryptographic confidentiality of data during computation, but doesn't protect against side-channel leakage from access patterns, or against a cloud that returns wrong answers.
-- **"FHE is ready for general use."** For most applications, FHE is still 10³–10⁶× too slow. It is practical for specific use cases with high privacy requirements and modest computation.
+- **"Homomorphic encryption means the server can't store your data."** HE means the server can't *understand* your data — but it does receive and process ciphertexts. You're protecting the semantic content, not the transmission.
+- **"FHE is not practical yet."** It is practical for bounded, offline workloads — encrypted ML inference, private set intersection. It is not practical for latency-sensitive, general-purpose computation.
+
+## Try it yourself
+
+Additive homomorphism: the server adds encrypted values without seeing them:
+
+```bash
+python3 -c "
+import secrets
+MOD = 2**31
+
+def enc(key, m): return (m + key) % MOD
+def dec(key, c): return (c - key) % MOD
+def he_add(c1, c2): return (c1 + c2) % MOD
+
+k1, k2 = secrets.randbelow(MOD), secrets.randbelow(MOD)
+a, b = 42, 17
+ca, cb = enc(k1, a), enc(k2, b)
+c_sum = he_add(ca, cb)
+result = dec((k1+k2)%MOD, c_sum)
+
+print(f'a={a}, b={b}')
+print(f'E(a)={ca}, E(b)={cb}  (meaningless to server)')
+print(f'Server HE-add = {c_sum}')
+print(f'Decrypted result = {result}  (== a+b: {result==a+b})')
+"
+```
 
 ## Learn next
 
-Homomorphic encryption is a specialised area of [cryptography](/t/cryptography) and [public-key cryptography](/t/public-key-cryptography). It is related to [post-quantum cryptography](/t/post-quantum-cryptography) as both rely on lattice hardness. [Differential privacy](/t/differential-privacy) is a complementary privacy technique — easier to use, different threat model.
+- [Cryptography](/t/cryptography) — the foundation; HE is a specialised construction built on hard problems.
+- [Zero trust](/t/zero-trust) — HE takes "never trust" to its logical extreme: process data without ever decrypting it.
+- [Post-quantum cryptography](/t/post-quantum-cryptography) — lattice-based FHE (LWE) is also quantum-resistant; the same hard problems underlie both.
