@@ -4,6 +4,7 @@ aliases: ["user datagram protocol"]
 category: networks-and-internet
 domain: networks-communications
 subcategory: protocols-components
+structure: 2
 kind: protocol
 summary: A connectionless, "fire and forget" transport protocol. Faster than TCP but with no delivery, ordering, or reliability guarantees.
 level: intermediate
@@ -12,12 +13,33 @@ importance: core
 tags: ["udp", "networking"]
 prerequisites: ["packet", "ip-address"]
 related: ["tcp"]
-updated: 2026-06-07
+nextSteps: ["quic", "dns"]
+updated: 2026-06-11
 ---
 
 ## In simple terms
 
 **UDP** is the simpler sibling of TCP. You put data in a packet, address it, send it — and the network may deliver it, drop it, duplicate it, or deliver it out of order. UDP doesn't try to fix any of that for you. In exchange, it's fast, has tiny overhead, and is great for things that don't mind a missing frame here and there.
+
+## The Visual Map
+
+```mermaid
+sequenceDiagram
+  participant T as TCP client
+  participant TS as TCP server
+  participant U as UDP client
+  participant US as UDP server
+  T->>TS: SYN
+  TS->>T: SYN-ACK
+  T->>TS: ACK
+  T->>TS: data (finally)
+  TS-->>T: ACK
+  Note over T,TS: connection, ordering, retransmission
+  U->>US: datagram 1
+  U->>US: datagram 2
+  U--xUS: datagram 3 (lost — nobody notices)
+  Note over U,US: no handshake, no state, no recovery
+```
 
 ## More detail
 
@@ -42,16 +64,41 @@ UDP is the right choice when:
 
 For each TCP-only feature you forgo, you can add a tailored version: ACK only what matters, retransmit only fresh data, congestion control tuned to your traffic.
 
-## Why it matters
-
 A surprising amount of the modern internet — video calls, online games, DNS, almost all real-time media, HTTP/3 — runs over UDP. It is the foundation for any protocol that needs to escape TCP's assumptions.
+
+## Under the Hood
+
+The full UDP API is two calls — no connect, no accept, no teardown:
+
+```python
+import socket
+
+rx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+rx.bind(("127.0.0.1", 0))
+
+tx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+tx.sendto(b"datagram one", rx.getsockname())     # fire...
+tx.sendto(b"datagram two", rx.getsockname())     # ...and forget
+
+for _ in range(2):
+    data, addr = rx.recvfrom(2048)
+    print(f"from {addr}: {data!r}")               # boundaries preserved
+```
+
+Note the contrast with TCP: each `sendto` is one datagram and arrives (if it arrives) as exactly one `recvfrom` — UDP keeps message boundaries that TCP's byte stream erases.
+
+## Engineering Trade-offs
+
+- **Speed vs guarantees.** Zero setup round-trips and an 8-byte header make UDP the floor for latency — but every reliability property you need (ordering, retransmission, congestion control) becomes your application's code, your bugs, your testing burden.
+- **Statelessness vs spoofing.** No handshake means a server can answer queries with no per-client state — and also that source addresses are trivially forged, which is why UDP services (DNS, NTP) get abused for reflection/amplification attacks.
+- **Message boundaries vs message size.** UDP preserves datagram boundaries, but a datagram larger than the path MTU gets fragmented at the IP layer — and one lost fragment silently kills the whole datagram. Most protocols keep payloads under ~1,400 bytes.
+- **Middlebox hostility.** NATs and firewalls track TCP connections naturally; UDP "flows" are guesses with timeouts. Long-lived UDP applications need keep-alives, and some networks throttle or block UDP outright — QUIC carries a TCP fallback for exactly this reason.
 
 ## Real-world examples
 
 - **DNS** queries are usually a single UDP packet each direction.
 - **WebRTC** video and audio use UDP (via SRTP) so a momentary loss doesn't stall the call.
 - **QUIC** / HTTP/3 are UDP-based replacements for TCP / HTTP/2.
-
 - Apple's iCloud Private Relay relays user traffic over QUIC (UDP-based) instead of TCP to make connections faster and harder to fingerprint per-network.
 
 ## Common misconceptions
@@ -59,6 +106,28 @@ A surprising amount of the modern internet — video calls, online games, DNS, a
 - **"UDP is unreliable, so I shouldn't use it."** UDP is unreliable in the sense that the protocol itself makes no guarantees; well-built UDP applications can be extremely reliable.
 - **"UDP is faster than TCP."** Per packet, yes. End-to-end throughput depends on what your application does on top.
 
+## Try it yourself
+
+Prove there's no connection: send to a port nobody is listening on — the send "succeeds" anyway:
+
+```bash
+python3 -c "
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sent = s.sendto(b'anyone there?', ('127.0.0.1', 49999))   # no listener
+print(f'sendto returned {sent} — no error, no handshake, no idea if it arrived')
+s.settimeout(1)
+try:
+    s.recvfrom(2048)
+except socket.timeout:
+    print('and no reply ever comes. fire and forget.')
+"
+```
+
+A TCP `connect()` to the same closed port would fail immediately — that's the handshake difference in one experiment.
+
 ## Learn next
 
-The reliable, ordered transport: [TCP](/t/tcp). Address layer beneath both: [IP address](/t/ip-address).
+- [TCP](/t/tcp) — the reliable, ordered transport on the other side of the trade.
+- [QUIC](/t/quic) — a modern reliable transport built *on top of* UDP.
+- [DNS](/t/dns) — the most famous single-datagram protocol.
