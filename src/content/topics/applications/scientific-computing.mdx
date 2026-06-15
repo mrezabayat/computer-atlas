@@ -11,41 +11,214 @@ status: reviewed
 importance: important
 tags: ["science", "computing", "simulation"]
 prerequisites: ["python"]
-related: ["gpu", "spreadsheet"]
-updated: 2026-06-08
+related: ["gpu", "floating-point", "simd"]
+nextSteps: ["spreadsheet"]
+updated: 2026-06-15
+structure: 2
 ---
 
 ## In simple terms
 
-**Scientific computing** is using computers as instruments of science — to simulate things too big, too small, too fast, too slow, or too dangerous to experiment on directly. You can't put the whole atmosphere in a lab, so we *simulate* it to forecast weather. You can't easily watch a galaxy form or a protein fold, so we compute it. By turning the equations of physics, chemistry, and biology into numbers a computer can crunch, scientific computing has become a third pillar of science alongside theory and experiment.
+**Scientific computing** is using computers as instruments of science — to simulate things too big, too small, too fast, too slow, or too dangerous to experiment on directly. You can't put the whole atmosphere in a lab, so we *simulate* it to forecast weather. You can't watch a galaxy form or a protein fold in real time, so we compute it.
+
+By turning the equations of physics, chemistry, and biology into numbers a computer can crunch, scientific computing has become a third pillar of science alongside theory and experiment.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    subgraph Problem["Physical Problem"]
+        PDE["Differential equations\n(PDEs / ODEs)"]
+        LinAlg["Linear systems\n(Ax = b)"]
+        Opt["Optimisation\n(minimise f(x))"]
+    end
+
+    subgraph Methods["Numerical Methods"]
+        FD["Finite Differences / FEM"]
+        LAPACK["Dense linear algebra\n(LAPACK / BLAS)"]
+        GD["Gradient descent\nNewton methods"]
+    end
+
+    subgraph Stack["Software Stack"]
+        NumPy["NumPy / SciPy\n(Python)"]
+        Julia["Julia"]
+        FortranC["Fortran / C++\n(HPC kernels)"]
+        CUDA["CUDA / ROCm\n(GPU acceleration)"]
+    end
+
+    subgraph Hardware["Hardware"]
+        CPU["Multi-core CPU\n(laptop → workstation)"]
+        GPU["GPU cluster\n(massively parallel)"]
+        HPC["Supercomputer\n(thousands of nodes, MPI)"]
+    end
+
+    PDE --> FD --> NumPy --> CPU
+    LinAlg --> LAPACK --> FortranC --> GPU
+    Opt --> GD --> Julia --> HPC
+    NumPy --> CUDA --> GPU
+```
 
 ## More detail
 
-The work centers on **numerical methods** — algorithms that approximate the answers to mathematical problems (differential equations, linear algebra, optimization) that have no neat closed-form solution. Continuous reality is broken into discrete pieces (a grid, a mesh, time steps) and solved step by step.
+The work centres on **numerical methods** — algorithms that approximate answers to mathematical problems (differential equations, linear algebra, optimisation) that have no neat closed-form solution. Continuous reality is broken into discrete pieces (a grid, a mesh, time steps) and solved step by step.
 
-The field's practical toolkit:
+**The field's toolkit:**
 
-- **Languages and libraries** — [Python](/t/python) with NumPy, SciPy, and pandas dominates today for its readability; Julia, R, MATLAB, and Fortran/C++ (for the heaviest numerics) are also common. Crucially, the slow parts call fast compiled, [SIMD](/t/simd)-optimized routines underneath.
-- **Hardware** — from a laptop up to **HPC** (high-performance computing) clusters and supercomputers with thousands of nodes. [GPUs](/t/gpu) are now central, since their massive parallelism suits the dense linear algebra these problems involve.
-- **Concerns unique to the field** — *numerical precision* and error accumulation, *stability* of methods, *reproducibility*, and parallelizing computations across many processors.
+| Layer | Options | Notes |
+|---|---|---|
+| Languages | Python, Julia, MATLAB, R, Fortran, C++ | Python for interactivity; Fortran/C++ for raw throughput; Julia attempts both |
+| Key libraries | NumPy, SciPy, LAPACK/BLAS, PETSc, OpenMPI | BLAS Level 3 routines are the inner loop of most scientific computing |
+| Visualisation | Matplotlib, ParaView, VisIt | ParaView handles terabyte-scale simulation output |
+| Hardware | Laptop → GPU workstation → HPC cluster → supercomputer | Top-500 machines run at exaflop scale (10¹⁸ FLOP/s) |
 
-Scientific computing overlaps heavily with data science and machine learning (which is, at bottom, large-scale numerical optimization on GPUs), and it's where many parallel-computing and GPU techniques were first pushed to their limits.
+**Concerns unique to the field:**
 
-## Why it matters
+- **Numerical precision** — IEEE 754 floating-point arithmetic accumulates rounding error. A naive sum of one million floats loses 3–4 significant digits; Kahan compensated summation recovers them.
+- **Stability** — some numerical algorithms amplify error exponentially. An unstable finite-difference scheme for a PDE will diverge even on a perfect computer; the Courant–Friedrichs–Lewy (CFL) condition is the classic stability constraint.
+- **Reproducibility** — floating-point results can differ across hardware, compilers, and thread schedules (non-associativity of parallel reductions). Reproducibility is increasingly treated as a first-class requirement.
+- **Parallelism** — domain decomposition, MPI (message-passing between nodes), OpenMP (threads within a node), and GPU kernels (CUDA/ROCm) are all used, often simultaneously.
 
-Simulation has become indispensable across science and engineering: weather and climate forecasting, drug and materials discovery, aircraft and car design, astrophysics, genomics, and financial modeling all depend on it. It lets researchers explore scenarios that are impossible, unethical, or far too expensive to test physically, and it's a major driver of demand for the most powerful computers ever built — the same parallel hardware that now also powers AI.
+Scientific computing heavily overlaps with machine learning — both are large-scale numerical optimisation on GPUs — and it's where many GPU and parallel-computing techniques were first pushed to their limits.
+
+Simulation has become indispensable across science and engineering: weather and climate forecasting, drug discovery, aircraft design, astrophysics, genomics, and financial modelling all depend on it. It's a major driver of demand for the most powerful computers ever built.
+
+## Under the Hood
+
+NumPy's vectorised operations call BLAS (Basic Linear Algebra Subprograms) compiled with SIMD and multi-threading — the same routines running on supercomputers:
+
+```python
+#!/usr/bin/env python3
+"""Demonstrates why vectorised NumPy outperforms Python loops for numerics."""
+import time
+
+try:
+    import numpy as np
+except ImportError:
+    print("NumPy not available — showing pure Python only.")
+    np = None
+
+N = 1_000_000
+
+# --- Pure Python loop ---
+data = list(range(N))
+t0 = time.perf_counter()
+total = 0.0
+for x in data:
+    total += x * x
+python_ms = (time.perf_counter() - t0) * 1000
+print(f"Python loop:    {python_ms:7.1f} ms  (result={total:.2e})")
+
+# --- NumPy vectorised (calls BLAS DDOT / SIMD internally) ---
+if np is not None:
+    arr = np.arange(N, dtype=np.float64)
+    t0 = time.perf_counter()
+    result = np.dot(arr, arr)          # single BLAS call
+    numpy_ms = (time.perf_counter() - t0) * 1000
+    print(f"NumPy vectorised:{numpy_ms:6.1f} ms  (result={result:.2e})")
+    speedup = python_ms / max(numpy_ms, 0.001)
+    print(f"Speedup: {speedup:.0f}x")
+
+# --- Numerical precision: catastrophic cancellation ---
+a, b     = 1.0 + 1e-15, 1.0
+diff     = a - b          # should be 1e-15; gets 11% relative error
+print(f"\nCatastrophic cancellation: (1.0+1e-15) - 1.0 = {diff!r}")
+print(f"  expected 1e-15; relative error = {abs(diff - 1e-15)/1e-15:.1%}")
+
+# Kahan vs naive sum of many small values
+vals = [1e-8] * 10_000
+naive_s = sum(vals)                    # Python's sum has some compensation but drifts
+kahan_s, c = 0.0, 0.0
+for v in vals:
+    y = v - c; t = kahan_s + y; c = (t - kahan_s) - y; kahan_s = t
+print(f"  naive sum(10000 × 1e-8) = {naive_s:.20f}")
+print(f"  kahan sum              = {kahan_s:.20f}  (exact: 0.0001)")
+```
+
+## Engineering Trade-offs
+
+**Accuracy vs. speed**
+Higher-order numerical methods (more terms in a Taylor expansion, finer mesh) give more accurate results but cost more compute. Climate models run at ~10 km grid resolution because the atmosphere is 510 million km² — doubling resolution increases compute by ~8× (2D area × smaller timestep from CFL). Finding the coarsest grid that gives acceptable error is a core skill.
+
+**Float64 vs. Float32 vs. Float16**
+Double precision (float64) halves the accumulated rounding error vs. single precision. But float32 is 2× faster on most CPUs and 2–4× on GPUs, and float16 (common in ML training) is 2× faster still — at the cost of a dynamic range of only 3 orders of magnitude (catastrophic for scientific work). Mixed-precision methods compute most work in float32, then accumulate in float64.
+
+**Shared-memory parallelism (OpenMP) vs. distributed (MPI)**
+OpenMP adds `#pragma omp parallel for` to a loop — trivial to add, limited to one machine's cores. MPI sends data between nodes over the network — scales to millions of cores but requires explicitly partitioning and communicating the problem domain. Most HPC codes use both: MPI between nodes, OpenMP within.
+
+**GPU throughput vs. CPU latency**
+A GPU has thousands of cores optimised for throughput (many operations in flight simultaneously). A CPU core is optimised for latency (one operation as fast as possible). Dense matrix operations are GPU-friendly; sparse, branchy algorithms with data-dependent control flow favour CPUs. Choosing the wrong hardware for the algorithm can make things slower, not faster.
+
+**Reproducibility vs. performance**
+Non-associative floating-point means `(a + b) + c ≠ a + (b + c)` when values differ in magnitude. Multi-threaded reductions produce non-deterministic results unless reductions are ordered — which kills parallelism. Most HPC codes accept non-reproducibility for performance; reproducibility-critical work (regulatory, clinical) uses ordered reductions and fixed seeds.
 
 ## Real-world examples
 
-- **Weather and climate models** simulating the atmosphere on supercomputers to forecast days ahead and project decades out.
-- **Drug discovery** simulating how molecules bind to proteins, narrowing millions of candidates before any lab work.
-- **Engineering simulation** — crash tests, airflow, and stress analysis done computationally before a physical prototype is ever built.
+- **ECMWF (European Centre for Medium-Range Weather Forecasts)** — global weather model running at 9 km resolution on a Cray supercomputer; tens of petaFLOP/s, produces the world's most accurate 10-day forecast.
+- **AlphaFold2 (2021)** — used GPU-accelerated deep learning + structural biology numerical methods to predict protein structures, solving a 50-year grand challenge and depositing 200+ million structures in the public database.
+- **Crash simulation** — Volkswagen, Toyota, and BMW run finite-element crash simulations (LS-DYNA) on clusters of thousands of CPU cores to reduce physical crash test requirements.
+- **LIGO (gravitational wave detection)** — signal processing uses matched-filter algorithms running in near-real-time on GPU clusters to detect gravitational wave signatures buried in noise.
+- **Monte Carlo drug screening** — pharmaceutical companies simulate billions of ligand–receptor binding poses to rank drug candidates before synthesis, reducing wet-lab cost by orders of magnitude.
 
 ## Common misconceptions
 
-- **"Scientific computing is just fast math on big computers."** The hard parts are the *methods* — choosing numerical algorithms that are accurate, stable, and don't accumulate catastrophic error — not merely raw speed.
-- **"A simulation is the same as reality."** Models are approximations with assumptions and discretization error; they're powerful but must be validated against real measurements, not trusted blindly.
+- **"Scientific computing is just fast math on big computers."** The hard parts are the *methods* — choosing numerical algorithms that are accurate, stable, and don't accumulate catastrophic error. A naïve algorithm run on the fastest computer in the world may give wrong answers; a well-chosen algorithm on a laptop gives correct ones.
+- **"A simulation is the same as reality."** Models are approximations with assumptions and discretisation error. Simulation outputs must be validated against physical measurements and understood as statistical ensembles, not ground truth.
+
+## Try it yourself
+
+See the cost of floating-point error and the speedup of vectorised numerics:
+
+```bash
+python3 - << 'EOF'
+import time
+
+N = 500_000
+
+# Floating-point precision: subtract nearly-equal numbers to expose error
+a = 1.0 + 1e-15
+b = 1.0
+naive_diff = a - b
+expected   = 1e-15
+rel_err    = abs(naive_diff - expected) / expected
+print("Catastrophic cancellation demo:")
+print(f"  (1.0 + 1e-15) - 1.0 = {naive_diff!r}")
+print(f"  expected              = {expected!r}")
+print(f"  relative error        = {rel_err:.1%}")
+
+# Kahan vs naive sum of many small values
+N_KAHAN = 10_000
+vals = [1e-8] * N_KAHAN
+naive_sum = 0.0
+for v in vals: naive_sum += v
+kahan, c = 0.0, 0.0
+for v in vals:
+    y = v - c; t = kahan + y; c = (t - kahan) - y; kahan = t
+exact = N_KAHAN * 1e-8
+print(f"\nSum of {N_KAHAN} x 1e-8 (exact={exact}):")
+print(f"  naive:  {naive_sum:.20f}")
+print(f"  kahan:  {kahan:.20f}")
+
+# Python loop vs list-comprehension timing
+data = list(range(N))
+t0 = time.perf_counter()
+s = 0.0
+for x in data: s += x * x
+loop_ms = (time.perf_counter() - t0) * 1000
+
+t0 = time.perf_counter()
+s2 = sum(x * x for x in data)
+gen_ms = (time.perf_counter() - t0) * 1000
+
+print(f"\nSum of squares for {N:,} elements:")
+print(f"  for-loop:      {loop_ms:.1f} ms")
+print(f"  generator:     {gen_ms:.1f} ms")
+print("  (numpy.dot would be 10-100x faster still — calls BLAS SIMD internally)")
+EOF
+```
 
 ## Learn next
 
-The dominant language here is [Python](/t/python); heavy workloads lean on the [GPU](/t/gpu), and the humbler everyday cousin for tabular calculation is the [spreadsheet](/t/spreadsheet).
+- [Floating-Point](/t/floating-point) — the IEEE 754 representation that underlies all scientific arithmetic; understanding it is essential for diagnosing precision and stability problems.
+- [GPU](/t/gpu) — the hardware that powers modern scientific and ML workloads; the massive parallelism of GPU cores maps directly onto the dense linear algebra scientific computing requires.
+- [SIMD](/t/simd) — the CPU instruction set that makes NumPy's vectorised operations fast; BLAS routines are hand-optimised SIMD assembly under the hood.
+- [Spreadsheet](/t/spreadsheet) — the humbler everyday cousin for tabular calculation; understanding both clarifies where scripted numerical methods start to win.
