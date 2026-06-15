@@ -11,41 +11,190 @@ status: reviewed
 importance: important
 tags: ["mobile", "web", "apps"]
 prerequisites: ["mobile-app"]
-related: ["web-browser"]
-updated: 2026-06-08
+related: ["web-browser", "progressive-web-app", "electron"]
+nextSteps: ["webassembly"]
+updated: 2026-06-15
+structure: 2
 ---
 
 ## In simple terms
 
-When you build an app, one of the first big choices is **native vs. web**. A **native app** is written for a specific platform (iOS, Android, Windows), installed from an app store, and runs directly on the device — fast and able to use every hardware feature, but you build and maintain a separate version per platform. A **web app** runs inside a [web browser](/t/web-browser), so one codebase reaches everyone with a URL — instantly updatable and cross-platform, but with less access to device hardware and (sometimes) less polish. Most of mobile and desktop software development is navigating this trade-off.
+When you build an app, one of the first big choices is **native vs. web**. A **native app** is written for a specific platform (iOS, Android, Windows), installed from an app store, and runs directly on the device — fast and able to use every hardware feature, but requires a separate version per platform. A **web app** runs inside a [web browser](/t/web-browser), so one codebase reaches everyone with a URL — instantly updatable and cross-platform, but with less access to device hardware.
+
+Most app development is navigating this trade-off and choosing where to land on the spectrum between them.
+
+## The Visual Map
+
+```mermaid
+graph LR
+    subgraph Native["Native (per platform)"]
+        iOS["iOS\nSwift / SwiftUI"]
+        Android["Android\nKotlin / Compose"]
+        Win["Windows\nC++ / WinUI"]
+    end
+
+    subgraph CrossNative["Cross-platform Native"]
+        Flutter["Flutter\n(Dart → Skia)"]
+        RN["React Native\n(JS → native views)"]
+        KMM["Kotlin Multiplatform"]
+    end
+
+    subgraph Hybrid["Hybrid / Packaged Web"]
+        Electron["Electron\n(Chromium + Node.js)"]
+        Capacitor["Capacitor / Cordova\n(web view wrapper)"]
+        PWA["Progressive Web App\n(installable web)"]
+    end
+
+    subgraph Web["Pure Web"]
+        Browser["Web Browser\n(HTML / CSS / JS)"]
+    end
+
+    Native -- "best performance\nfull platform APIs" --> CrossNative
+    CrossNative -- "one codebase\nnear-native" --> Hybrid
+    Hybrid -- "web reuse\nsome native access" --> Web
+```
 
 ## More detail
 
-The two approaches sit at opposite ends, with hybrids in between:
+The approaches sit on a spectrum from maximum capability to maximum reach:
 
-- **Native** — written in the platform's language/SDK (Swift for iOS, Kotlin for Android). Best performance, full access to camera, sensors, notifications, and the smoothest feel — but separate codebases, app-store review, and per-platform expertise. (See [mobile app](/t/mobile-app).)
-- **Web** — built with HTML/CSS/JavaScript, runs in any browser. One codebase, no install, instant updates, universal reach — but constrained by what browsers expose, historically weaker at heavy graphics and deep hardware integration, and dependent on connectivity.
-- **Hybrid / cross-platform** — frameworks that try to get both: **React Native** and **Flutter** render near-native UIs from one codebase; **Electron** packages a web app as a desktop app (VS Code, Slack, Discord); **Progressive Web Apps (PWAs)** make web apps installable and offline-capable.
+**Native** — written in the platform's language and SDK (Swift/SwiftUI for iOS, Kotlin/Jetpack Compose for Android). Best performance, full access to all platform APIs (camera, sensors, NFC, health kit, ARKit), and the smoothest platform-native feel. The cost: separate codebases and teams per platform, app-store review delays, and platform-specific expertise required.
 
-The deciding factors are usually: **reach** (web wins — a link works everywhere), **performance and hardware access** (native wins), **development cost** (one web/hybrid codebase vs. several native ones), **update control** (web ships instantly; native goes through stores), and **discoverability/monetization** (app stores vs. the open web).
+**Cross-platform native** — one codebase compiled to native UIs per platform:
+- **Flutter** renders its own pixel-perfect UI via the Skia/Impeller engine (bypasses native widgets entirely).
+- **React Native** maps JS components to actual native platform views (UIKit on iOS, Android Views on Android).
+- **Kotlin Multiplatform** shares business logic in Kotlin while keeping native UIs per platform.
 
-The line keeps blurring — browsers gain capabilities (WebGPU, camera, push), and cross-platform frameworks get closer to native — so "it depends" is increasingly the honest answer.
+**Hybrid / packaged web** — web technology wrapped in a native shell:
+- **Electron** bundles Chromium + Node.js as a desktop app (VS Code, Slack, Discord).
+- **Capacitor / Cordova** wraps a web app in a mobile system web view with JS bridges to native APIs.
+- **Progressive Web Apps (PWAs)** make a web app installable, offline-capable, and push-notification-aware without a native wrapper.
 
-## Why it matters
+**Pure web** — HTML/CSS/JS in the browser. One codebase, zero install, instant updates, universal reach — but constrained by what browsers expose and historically weaker for heavy graphics or deep hardware integration.
 
-This decision shapes a product's cost, reach, performance, and team structure from day one, and it's expensive to reverse. Choosing native means committing to per-platform development for the best experience; choosing web means trading some capability for universal reach and rapid iteration; choosing hybrid means betting a framework can deliver enough of both. Nearly every app-building team faces this choice, and the right answer depends entirely on the product's priorities.
+The deciding factors:
+
+| Factor | Native wins | Web wins |
+|---|---|---|
+| Performance | Heavy graphics, real-time | Most business apps |
+| Hardware access | Camera, sensors, NFC, ARKit | Camera (WebRTC), some sensors |
+| Reach | — | Link works everywhere |
+| Update speed | — | Ship instantly, no review |
+| Discoverability | App stores | Search engines |
+| Monetisation | In-app purchases, subscriptions | Open web (ads, SaaS) |
+| Dev cost | High (per platform) | Low (one codebase) |
+
+The line keeps blurring — browsers gain capabilities (WebGPU, WebUSB, Web Bluetooth, push notifications), and cross-platform frameworks close the native gap. "It depends" is increasingly the correct answer.
+
+This decision shapes a product's cost, reach, performance, and team structure from day one, and is expensive to reverse. Choosing native commits to per-platform development for the best experience; choosing web trades some capability for universal reach and rapid iteration.
+
+## Under the Hood
+
+The core technical difference is in how each approach calls platform APIs. Here is how the same "get camera frame" operation works at different layers:
+
+```swift
+// Native (Swift, iOS) — direct OS call, zero indirection:
+let session = AVCaptureSession()
+let device  = AVCaptureDevice.default(for: .video)!
+let input   = try! AVCaptureDeviceInput(device: device)
+session.addInput(input)   // one function call to the OS framework
+```
+
+```javascript
+// React Native — same operation crosses a JS bridge:
+// JS thread serialises the call → IPC to native module → AVCaptureSession
+import { Camera } from 'react-native-camera';
+// ~1 ms bridge round-trip per call; new JSI uses direct C++ pointer instead
+
+// Web (WebRTC) — browser exposes a sandboxed API:
+const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+// Sandboxed renderer → browser process IPC → OS driver
+// No native code; constrained to browser-exposed surface
+```
+
+The call path from JS to hardware:
+
+```
+Native:          App code → OS framework                       (0 hops)
+React Native:    JS → JSI/bridge → native module → OS         (2 hops)
+Capacitor:       JS → postMessage → WKWebView → plugin → OS   (3 hops)
+Web:             JS → browser IPC → browser process → OS       (2 hops, sandboxed)
+```
+
+The further from native, the more indirection layers — and the more each layer can limit performance, add latency, and restrict what you can access.
+
+## Engineering Trade-offs
+
+**Native performance vs. cross-platform productivity**
+Native apps have direct access to GPU pipelines, audio hardware, and system schedulers with zero abstraction overhead. For a game, a camera filter, or a music app, this matters. For a to-do list or a news reader, the difference is imperceptible to users and the cross-platform savings are real.
+
+**Flutter's own renderer vs. React Native's native views**
+Flutter bypasses native widgets and draws everything with Skia/Impeller — pixel-perfect consistency across platforms, but no free system animations, accessibility tree wiring, or dark-mode adaptation. React Native delegates to real native views — automatic platform fidelity, but behavioural inconsistencies between platforms when the bridge leaks.
+
+**Electron's memory cost vs. desktop reach**
+Electron ships a full Chromium instance per app — adding 100–200 MB of baseline RAM and 50–150 MB to the installer. The payoff is one web codebase reaching Windows, macOS, and Linux with a single Electron shell. Tauri (Rust-based, uses the system web view) is a leaner alternative but sacrifices cross-platform rendering consistency.
+
+**App store distribution vs. web distribution**
+Stores provide discovery, trusted distribution, and billing infrastructure. They also impose review latency, a 15–30% revenue cut, and the ability to de-list your app. Web distribution is instant and ungated but requires building your own discovery and payment stack.
+
+**PWA capabilities vs. native capabilities**
+PWAs in 2026 support offline, push notifications, background sync, camera, geolocation, and installation to the home screen. They still cannot access Bluetooth (without origin trial), NFC, background audio on iOS, or health data. The gap narrows each year but has not closed.
 
 ## Real-world examples
 
-- **Instagram** and banking apps are native for performance and deep device integration.
-- **Figma** is a powerful web app proving the browser can host serious, complex software.
-- **Slack, VS Code, and Discord** are Electron apps — web technology packaged as desktop software — illustrating the hybrid middle ground.
+- **Instagram / banking apps** — native on iOS and Android; camera integration, biometric authentication, and performance are cited as drivers.
+- **Figma** — a web app running a WebAssembly-compiled rendering engine in the browser; demonstrates that the web can host complex, high-performance creative tools.
+- **Slack, VS Code, Discord** — Electron apps showing how web technology scales to professional desktop tools that ship on every OS from one codebase.
+- **Twitter/X PWA** — the Twitter web app is installable as a PWA; used as the primary mobile experience in markets with low-end Android hardware where a native app install is a barrier.
+- **Khan Academy, Starbucks** — PWAs that load fast on any device, work offline, and reduced install friction for users with limited storage.
 
 ## Common misconceptions
 
-- **"Native is always faster and better."** For graphics- and hardware-heavy apps, yes — but for many apps a good web or hybrid app is indistinguishable to users and far cheaper to ship everywhere.
-- **"Web apps can't work offline or access hardware."** Progressive Web Apps and modern browser APIs increasingly support offline use, push notifications, cameras, and more, narrowing the old gap.
+- **"Native is always faster and better."** For graphics-heavy and hardware-intensive apps, yes. For most business, productivity, and content apps, a well-built web or hybrid app is indistinguishable to users — and delivers in half the engineering time.
+- **"Web apps can't work offline or access hardware."** Progressive Web Apps and modern browser APIs support offline use, push notifications, cameras, geolocation, WebUSB, and Web Bluetooth, narrowing the old gap significantly. The constraint is now specific API availability per browser, not the web platform broadly.
+
+## Try it yourself
+
+Simulate the performance difference between native-direct and bridge-mediated API calls:
+
+```bash
+python3 - << 'EOF'
+import time
+
+def native_call():
+    """Direct OS call — no serialisation overhead."""
+    return 42  # Instant: direct memory access
+
+def bridge_call():
+    """Cross-process bridge — serialise args, IPC, deserialise result."""
+    import json
+    payload = json.dumps({"method": "getCount", "args": []})
+    time.sleep(0.001)   # ~1 ms bridge round-trip
+    result = json.loads('{"result": 42}')
+    return result["result"]
+
+N = 500
+print(f"Calling an API {N} times each way:\n")
+
+t0 = time.perf_counter()
+for _ in range(N): native_call()
+native_ms = (time.perf_counter() - t0) * 1000
+
+t0 = time.perf_counter()
+for _ in range(N): bridge_call()
+bridge_ms = (time.perf_counter() - t0) * 1000
+
+print(f"  Native  (direct):  {native_ms:7.2f} ms total  ({native_ms/N:.4f} ms/call)")
+print(f"  Bridge  (JS→IPC):  {bridge_ms:7.2f} ms total  ({bridge_ms/N:.4f} ms/call)")
+ratio = bridge_ms / max(native_ms, 0.001)
+print(f"\n  Bridge overhead: {ratio:.0f}x slower per call.")
+print("  In practice, batching calls across the bridge is the key optimisation.")
+EOF
+```
 
 ## Learn next
 
-The native end of the spectrum is covered in [mobile app](/t/mobile-app); the web end runs on the [web browser](/t/web-browser).
+- [Web Browser](/t/web-browser) — the runtime for all web and hybrid apps; understanding the browser's rendering pipeline and sandbox explains the web approach's constraints.
+- [Progressive Web App](/t/progressive-web-app) — the web strategy that narrows the gap with native; offline support, push, and installability without an app store.
+- [Electron](/t/electron) — the dominant hybrid desktop strategy; Chromium + Node.js as a desktop app shell.
+- [WebAssembly](/t/webassembly) — the technology closing the performance gap between web and native; the reason Figma and complex web tools are now possible.
