@@ -168,14 +168,14 @@ x86-64 originally used 4-level paging (48-bit virtual addresses, 256 TB user spa
 - **PostgreSQL huge_pages=on** — PostgreSQL allocates its shared buffer pool as huge pages (2 MB). For a 256 GB buffer pool, 4 KB pages need 65,536 TLB entries; 2 MB huge pages need 128. Typical PostgreSQL configurations see 15–30% throughput improvement on large OLAP queries with huge pages.
 - **Oracle SGA with 1 GB huge pages** — Oracle 19c/21c uses 1 GB huge pages for the System Global Area (SGA). A 512 GB SGA requires 512 TLB entries with 1 GB pages vs. 134 million with 4 KB pages.
 - **JVM `-XX:+UseHugePages`** — Java heap with 64 GB RAM, using 4 KB pages: ~16M TLB entries needed. With 2 MB huge pages: ~32,768. GC-intensive applications see 30–50% less time in page-walk code.
-- **KPTI performance recovery with PCID** — Initial Linux 4.15 KPTI patches on Meltdown-affected hardware (pre-Skylake): up to 30% regression on Redis. With PCID on Skylake/Ice Lake: regression reduced to <1%, because TLBs are tagged and not flushed on syscall boundary.
+- **KPTI performance recovery with PCID** — Initial Linux 4.15 KPTI patches on Meltdown-affected hardware (pre-Skylake): up to 30% regression on Redis. With PCID on Skylake/Ice Lake: regression reduced to &lt;1%, because TLBs are tagged and not flushed on syscall boundary.
 - **TLB shootdown in tcmalloc** — Google's tcmalloc (thread-cached malloc) defers returning memory to the OS to avoid frequent `munmap` TLB shootdowns. It batches memory returns in "release to OS" background threads to reduce IPI overhead on high-core-count servers.
 
 ## Common misconceptions
 
 - **"Virtual memory is slow because of address translation."** With a high TLB hit rate (99%+ for programs with good locality), the overhead is under 1%. The TLB makes virtual memory essentially free.
 - **"Huge pages are always better."** Huge pages are beneficial for large, contiguous working sets. For general-purpose heap allocation, they waste memory (most allocations are much smaller than 2 MB) and can cause OOM by fragmenting the physical address space.
-- **"KPTI is still expensive."** Initial KPTI (Linux 4.15, January 2018) was expensive because it flushed TLBs on every syscall. With PCID and optimised context-switch code in Linux 5.x+, KPTI overhead on PCID-capable hardware is <1%.
+- **"KPTI is still expensive."** Initial KPTI (Linux 4.15, January 2018) was expensive because it flushed TLBs on every syscall. With PCID and optimised context-switch code in Linux 5.x+, KPTI overhead on PCID-capable hardware is &lt;1%.
 
 ## Try it yourself
 

@@ -135,7 +135,7 @@ Hardware-level mitigations (Intel's Enhanced IBRS, AMD's IBPB on all context swi
 ## Real-world examples
 
 - **Disclosure (January 3, 2018)** — Google Project Zero, Qualcomm, Microsoft Research, and academic groups disclosed Spectre/Meltdown simultaneously after an embargo. Every x86 CPU from the past decade was affected. Cloud providers patched all physical servers within days under an industry-wide emergency response.
-- **Google Cloud performance impact** — Google publicly reported the initial Meltdown/KPTI patch cost ~5% on compute workloads and up to 17% on I/O-intensive workloads. Later optimised mitigations reduced this to <1% for most cases.
+- **Google Cloud performance impact** — Google publicly reported the initial Meltdown/KPTI patch cost ~5% on compute workloads and up to 17% on I/O-intensive workloads. Later optimised mitigations reduced this to  &lt;1% for most cases.
 - **V8 JavaScript engine** — patched within 24 hours: reduced `performance.now()` resolution, disabled SharedArrayBuffer (re-enabled with Site Isolation in Chrome 68, July 2018), and randomised array buffer addresses.
 - **Linux kernel `array_index_nospec`** — introduced in kernel 4.15 (January 2018) to mask array indexes after bounds checks; used in dozens of subsystems (network, sockets, v4l2, USB) wherever a bounds-guarded access could be a Spectre gadget.
 - **Intel Ice Lake (2019+) eIBRS** — Enhanced IBRS keeps IBRS always enabled in hardware, reducing the performance cost of Spectre v2 mitigation from 30% to ~1%.

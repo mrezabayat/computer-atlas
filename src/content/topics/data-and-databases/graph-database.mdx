@@ -176,7 +176,7 @@ Property graphs are schema-optional: you can add a new node label or edge type w
 Every edge addition must update the source node's adjacency list pointer. For bulk data loads (import 100M edges), updating adjacency pointers sequentially can be a bottleneck. Graph databases typically offer batch import modes (`neo4j-admin import`, Gremlin bulk load) that bypass online indexing for better throughput, requiring the database to be taken offline during import.
 
 **Graph databases vs. PostgreSQL recursive CTEs**
-PostgreSQL's recursive CTE (`WITH RECURSIVE`) can traverse graph structures stored as a relational edge table. For shallow traversal (2–3 hops) on small graphs (<1M edges), PostgreSQL with an indexed edge table often matches graph database performance. For deep traversal or large graphs, index-free adjacency in a purpose-built graph database pulls ahead significantly. The rule: start with PostgreSQL recursive CTEs; migrate to a graph database when multi-hop traversal becomes a bottleneck.
+PostgreSQL's recursive CTE (`WITH RECURSIVE`) can traverse graph structures stored as a relational edge table. For shallow traversal (2–3 hops) on small graphs (&lt;1M edges), PostgreSQL with an indexed edge table often matches graph database performance. For deep traversal or large graphs, index-free adjacency in a purpose-built graph database pulls ahead significantly. The rule: start with PostgreSQL recursive CTEs; migrate to a graph database when multi-hop traversal becomes a bottleneck.
 
 ## Real-world examples
 

@@ -160,7 +160,7 @@ Cerebras CS-3 (Wafer Scale Engine 3) places 900K cores on a single 46,225 mm² s
 ## Real-world examples
 
 - **Google TPUv4 pod** — 4096 TPUs, 2 × 128×128 BF16 arrays each, 275 TFLOPS/chip = ~1.1 exaFLOPS per pod. Used to train Gemini Ultra, PaLM-2, and Bard. Each TPU connects to the pod via 3D torus ICI at 460 GB/s.
-- **Apple A17 Pro Neural Engine** — 38 TOPS at <2W, running Core ML models (Stable Diffusion, on-device LLM inference). The systolic array handles the attention + FFN matrix multiplies; Apple's GPU handles the embedding and normalization ops that the fixed-function array can't run.
+- **Apple A17 Pro Neural Engine** — 38 TOPS at &lt;2W, running Core ML models (Stable Diffusion, on-device LLM inference). The systolic array handles the attention + FFN matrix multiplies; Apple's GPU handles the embedding and normalization ops that the fixed-function array can't run.
 - **AWS Trainium2** — Amazon's custom ASIC training chip (2023); systolic array for matrix multiply + NeuronCore-v2 for custom ops; used for Amazon Titan and internally for AWS services.
 - **Nvidia H100 Tensor Cores** — 4th-gen tensor cores: 4×4 matrix-multiply units, 2000 INT8 TOPS. Hybrid: SIMT cores for irregular compute, tensor cores for dense matrix multiply. Allows flexibility while approaching systolic efficiency for matmul.
 - **Waymo TPU-based inference** — Waymo's autonomous driving perception stack runs on TPUs in data centers for training and custom ASICs in the car; the perception model's matrix multiplies map efficiently to systolic array hardware.
