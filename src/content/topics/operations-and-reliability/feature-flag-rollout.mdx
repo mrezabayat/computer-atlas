@@ -13,16 +13,37 @@ tags: ["operations", "devops", "deployment", "reliability"]
 prerequisites: ["ci-cd", "deployment", "rest-api"]
 related: ["dora-metrics", "chaos-engineering", "error-budget"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
 Normally, deploying code = releasing a feature. Feature flags separate these two things: you deploy code with a new feature but behind a flag that is off by default. You can then turn the flag on for 1% of users, watch for errors, then 10%, then 50%, then 100% — without redeployment. If something goes wrong, flip the flag to off in seconds — no rollback, no hotfix, no deployment required. This makes deployment safer, enables A/B testing, and allows teams to merge code continuously without "releasing" half-finished features.
 
+## The Visual Map
+
+```mermaid
+graph TD
+    Code["if flags.enabled('new-checkout', userId)\n  renderNewCheckout()\nelse\n  renderOldCheckout()"] --> FlagSDK["Flag SDK\n(local cache, async sync)"]
+    FlagSDK --> FlagService["Flag Management Service\n(LaunchDarkly / Unleash\n/ Redis / DB)"]
+
+    FlagService --> Rollout["Rollout control"]
+    subgraph RolloutOpts ["Rollout strategies"]
+        Pct["Percentage rollout\nhash(userId) % 100 < 5"]
+        Target["Targeting\norg_id, region, beta_users"]
+        Ring["Ring\ninternal -> beta -> all"]
+        Dark["Dark launch\nreal traffic, discard response"]
+    end
+    Rollout --> RolloutOpts
+
+    FlagService -->|"flag off"| Rollback["Instant 'rollback'\n(no deploy required)"]
+```
+
 ## More detail
 
 **Core concept:** a feature flag is a conditional in code:
+
 ```javascript
 if (featureFlags.isEnabled('new-checkout-flow', userId)) {
   return renderNewCheckout();
@@ -47,39 +68,73 @@ The flag's state is controlled externally — a flag management service, environ
 
 *Percentage rollout:* expose the feature to X% of users, increasing over time. `if (hash(userId) % 100 < rolloutPercentage)`.
 
-*Targeting:* expose to specific users, organisations, or geographic regions. "Enable for `org_id = 12345`" or "enable for users in `country = CA`."
+*Targeting:* expose to specific users, organisations, or geographic regions.
 
 *Gradual increments:* 1% → 5% → 25% → 50% → 100%, with monitoring at each step. If error rate spikes, pause or roll back.
 
-*Ring deployment:* internal employees → beta users → all users. Also called "canary release" when applied to infrastructure.
+*Dark launch:* deploy a feature but discard the results — used to test performance without exposing users. Common for database migrations, algorithm changes.
 
-**Dark launch:** deploy a feature (with traffic going to it) but discard the results — used to test the performance and correctness of a new implementation without exposing users to it. Common for database migrations, algorithm changes, or API rewrites.
+**Key benefits:** trunk-based development (merge to main continuously; half-finished features are hidden), instant rollback (flip flag to off in seconds, MTTR drops from minutes to seconds), safer deployments, and A/B testing capability.
 
-**The benefits:**
+**Risks:** *flag debt* — flags accumulate if not removed after launch. Code littered with `if (flag_enabled(...))` becomes hard to reason about. Define a flag lifecycle: create, rollout, launch, cleanup. *Testing complexity:* every flag doubles the number of code paths; 10 flags = 1024 combinations.
 
-- **Trunk-based development:** developers merge to `main` continuously; half-finished features are hidden behind flags. No long-lived feature branches; no merge hell.
-- **Instant rollback:** turn off a misbehaving feature without a deployment. MTTR goes from minutes (deploy a hotfix) to seconds (flip a flag).
-- **Safer deployments:** deploy code → validate in production with 0.1% traffic → gradually increase → fully release. Each step has an exit ramp.
-- **A/B testing:** measure the impact of a feature on business metrics (conversion, retention) before full launch.
+## Under the Hood
 
-**Feature flag management:**
+A minimal feature flag system with percentage rollout and targeting:
 
-Flag state must be stored externally (not in code). Options:
-- **SaaS platforms:** LaunchDarkly, Split.io, Flagsmith, Unleash. Provide targeting, rollout %, analytics, and SDKs.
-- **Internal tools:** many companies build simple flag management on Redis, DynamoDB, or a database.
-- **Environment variables:** the simplest form; per-environment on/off; no runtime control.
+```python
+import hashlib
 
-**Risks:**
+class FeatureFlag:
+    def __init__(self, name: str, rollout_pct: float = 0.0,
+                 allowed_users: list = None):
+        self.name         = name
+        self.rollout_pct  = rollout_pct         # 0-100
+        self.allowed_users = set(allowed_users or [])
 
-*Flag debt:* flags accumulate if not removed after launch. Code becomes littered with `if (flag_enabled(...))` conditionals that make reasoning difficult. Define a flag lifecycle: create, rollout, launch, cleanup.
+    def is_enabled(self, user_id) -> bool:
+        # Targeted users always get the flag
+        if user_id in self.allowed_users:
+            return True
+        # Stable hash-based percentage rollout (same user always same bucket)
+        bucket = int(hashlib.md5(f"{self.name}:{user_id}".encode()).hexdigest(), 16) % 100
+        return bucket < self.rollout_pct
 
-*Testing complexity:* every flag doubles the number of code paths; 10 flags = 1024 combinations. Use flag coverage in tests.
+class FlagManager:
+    def __init__(self):
+        self._flags = {}
 
-*Performance:* SDKs for feature flags must be low-latency (local cache of flag states, async sync from flag service). LaunchDarkly's SDK caches flag states locally — a flag evaluation costs nanoseconds.
+    def register(self, flag: FeatureFlag):
+        self._flags[flag.name] = flag
 
-## Why it matters
+    def enabled(self, flag_name: str, user_id) -> bool:
+        flag = self._flags.get(flag_name)
+        return flag.is_enabled(user_id) if flag else False
 
-Feature flags are one of the highest-leverage DevOps practices. They enable trunk-based development (a key DORA predictor of performance), make deployments reversible, and decouple release from deployment. Facebook, Netflix, LinkedIn, and virtually every major tech company use feature flags as a standard part of their deployment process. The ability to roll back a feature in seconds rather than hours has a direct impact on MTTR and on-call stress. Engineers at any company deploying frequently should understand and use feature flags.
+flags = FlagManager()
+flags.register(FeatureFlag("new-checkout", rollout_pct=20,
+                            allowed_users=["beta_user_1", "beta_user_2"]))
+
+# Simulate 20 users
+users = [f"user_{i}" for i in range(20)] + ["beta_user_1", "beta_user_2"]
+enabled = [u for u in users if flags.enabled("new-checkout", u)]
+
+print(f"Feature flag 'new-checkout' (20% rollout + 2 beta users):")
+print(f"  Users: {len(users)}")
+print(f"  Enabled: {len(enabled)} ({len(enabled)/len(users)*100:.0f}%)")
+print(f"  Enabled for: {enabled[:5]}{'...' if len(enabled)>5 else ''}")
+print(f"  Beta users always enabled: beta_user_1={flags.enabled('new-checkout','beta_user_1')}")
+```
+
+## Engineering Trade-offs
+
+**Flag debt:** every flag that isn't removed after launch is a maintenance burden and a test path. A codebase with 200 old flags is hard to reason about and hard to test. Define a cleanup SLA: release flags must be removed within 30 days of full rollout. Use your tracking tool's "stale flag" report.
+
+**SDK latency:** flag evaluation must be nanoseconds-fast on the hot path. LaunchDarkly and similar SDKs maintain a local in-memory cache of flag states, sync asynchronously. A flag evaluation that blocks on a network call would be catastrophic for latency. Never evaluate flags synchronously against a remote service on each request.
+
+**A/B test validity:** a flag-driven A/B test is only valid if the assignment is: (1) stable (same user always sees the same variant), (2) independent (flag assignment doesn't correlate with other flags), and (3) has sufficient sample size before making a decision. The biggest pitfall is stopping an A/B test early (p-hacking).
+
+**Trunk-based development enabler:** the core reason big tech companies use flags heavily is trunk-based development — everyone commits to main, and flags hide half-finished code. This eliminates long-lived feature branches (and the merge conflicts they cause). Flags enable continuous integration at scale.
 
 ## Real-world examples
 
@@ -93,6 +148,33 @@ Feature flags are one of the highest-leverage DevOps practices. They enable trun
 - **"Feature flags require a paid service."** Simple boolean flags can be implemented with a database or Redis and a wrapper function. LaunchDarkly adds targeting, analytics, and SDKs, but the concept is implementable without it.
 - **"Feature flags are only for UI features."** Ops flags (circuit breakers), backend algorithm rollouts, database schema migrations, and infrastructure experiments all benefit from flags.
 
+## Try it yourself
+
+Simulate a percentage-based flag rollout and verify stable user assignment:
+
+```bash
+python3 - <<'EOF'
+import hashlib
+
+def flag_enabled(flag_name: str, user_id: str, rollout_pct: float) -> bool:
+    """Stable percentage rollout: same user always gets same result."""
+    bucket = int(hashlib.md5(f"{flag_name}:{user_id}".encode()).hexdigest(), 16) % 100
+    return bucket < rollout_pct
+
+N = 1000
+flag = "new-checkout"
+
+for pct in [1, 5, 10, 25, 50, 100]:
+    users   = [f"user_{i}" for i in range(N)]
+    enabled = sum(1 for u in users if flag_enabled(flag, u, pct))
+    # Verify stability: same user same result on second call
+    stable  = all(flag_enabled(flag, u, pct) == flag_enabled(flag, u, pct) for u in users[:10])
+    print(f"Rollout {pct:>3}%: {enabled:>4}/{N} users enabled ({enabled/N*100:>5.1f}%)  stable={stable}")
+EOF
+```
+
 ## Learn next
 
-Feature flags are one mechanism for improving [DORA metrics](/t/dora-metrics) — specifically deployment frequency and MTTR. They work alongside [chaos engineering](/t/chaos-engineering) (test failure modes) and [error budgets](/t/error-budget) (decide when to pause rollouts).
+- [DORA metrics](/t/dora-metrics) — feature flags directly improve deployment frequency and MTTR; trunk-based development (enabled by flags) is a DORA high-performance predictor
+- [Chaos engineering](/t/chaos-engineering) — ops flags (circuit breaker flags) are a key chaos mitigation tool: flip a flag to disable a failing feature without deploying a fix, buying time to repair
+- [Error budget](/t/error-budget) — instant flag rollback (MTTR: seconds) preserves error budget that a slow hotfix-and-redeploy cycle (MTTR: 30+ min) would have consumed

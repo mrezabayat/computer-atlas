@@ -13,12 +13,34 @@ tags: ["deployment", "ops"]
 prerequisites: ["version-control"]
 related: ["git", "ci-cd", "blue-green-deployment", "canary-deployment"]
 nextSteps: ["monitoring", "sre"]
-updated: 2026-06-07
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
 **Deployment** is everything that happens between "the code is merged" and "users are running it". For a static site that might be one file copy. For a global service serving millions of users it can be a multi-step orchestration involving canaries, traffic shifts, automated health checks, and a one-click rollback if anything looks wrong. Good deployment makes shipping boring: small, frequent, reversible.
+
+## The Visual Map
+
+```mermaid
+graph LR
+    Code["Code merged\nto main"] --> CI["CI Build\ntest + lint\nbuild artifact"]
+    CI --> Artifact["Immutable Artifact\ncontainer image\ndeploy package"]
+    Artifact --> Strategy{"Release\nStrategy"}
+
+    Strategy -->|"In-place"| InPlace["Stop old\nDeploy new\nStart\n(brief downtime)"]
+    Strategy -->|"Rolling"| Rolling["Replace N instances\nat a time\n(zero downtime)"]
+    Strategy -->|"Blue/Green"| BG["Flip load balancer\ninstant cutover\ninstant rollback"]
+    Strategy -->|"Canary"| Canary["1% -> 10% -> 100%\nwatch metrics\nauto-rollback on error"]
+
+    InPlace --> Prod["Production"]
+    Rolling --> Prod
+    BG --> Prod
+    Canary --> Prod
+    Prod --> Monitor["Monitoring\n+ Alerts"]
+    Monitor -->|"regression"| Rollback["Rollback"]
+```
 
 ## More detail
 
@@ -34,39 +56,122 @@ Common deployment strategies, ordered roughly by safety:
 |---|---|---|
 | **In-place** | Stop, replace binary, start | Brief downtime |
 | **Rolling** | Replace instances one at a time | Mixed versions briefly serve users |
-| **Blue / green** | Run two full environments; flip traffic at once | Doubles infra during rollout |
+| **Blue/green** | Run two full environments; flip traffic at once | Doubles infra during rollout |
 | **Canary** | Send a small slice of traffic to the new version, ramp if healthy | Best balance; requires metrics |
 | **Shadow** | Mirror traffic to new version, discard responses | Lets you load-test in prod |
-| **Feature flag** | Deploy disabled; enable per user / cohort | Decouples deploy from release |
+| **Feature flag** | Deploy disabled; enable per user/cohort | Decouples deploy from release |
 
-Healthy modern deployments share a few traits:
-
-- **Automated**, end-to-end, no manual scp.
-- **Versioned**, immutable artefacts (a container image's digest is the version).
-- **Observable** — every deploy emits an event the dashboards mark.
-- **Reversible** — rolling back is a one-click action, not an emergency.
-- **Gradual** when scale demands it (canary or progressive rollout).
-- **Idempotent** — re-running a deploy is safe.
+Healthy modern deployments share a few traits: **automated** end-to-end, **versioned** immutable artefacts, **observable** (every deploy emits an event dashboards mark), **reversible** (rolling back is one click), **gradual** when scale demands it, and **idempotent** (re-running is safe).
 
 The classical separation between "deploy" and "release" is worth knowing. **Deploy** = the bits are in production. **Release** = users see them. Feature flags let teams do many deploys per day with releases gated by experiment results or marketing schedules.
 
-## Why it matters
+## Under the Hood
 
-How often a team deploys (and how confidently) is one of the strongest predictors of organisational performance — the DORA research repeatedly finds elite performers deploy on-demand, many times per day, with low change-failure rate and short mean time to restore. The lever you pull to get there is the deployment pipeline.
+A minimal Python deployment controller — health-check and promote/rollback logic:
+
+```python
+import time, random
+
+def health_check(version: str, endpoint: str = "/health") -> bool:
+    """Simulate a health check call to a newly deployed instance."""
+    # In production: requests.get(f"http://{endpoint}").status_code == 200
+    return random.random() > 0.15   # 85% pass rate simulation
+
+def rolling_deploy(instances: list, new_version: str, max_unavailable: int = 1) -> dict:
+    """
+    Rolling deployment: update one instance at a time.
+    Rolls back if health checks fail on any instance.
+    """
+    healthy   = 0
+    failed    = 0
+    rolled_back = []
+
+    for i, instance in enumerate(instances):
+        print(f"  Deploying {new_version} to {instance}...")
+        ok = health_check(new_version, instance)
+        if ok:
+            healthy += 1
+            print(f"  {instance}: health check PASSED")
+        else:
+            failed += 1
+            rolled_back.append(instance)
+            print(f"  {instance}: health check FAILED -- rolling back this instance")
+
+    return {"healthy": healthy, "failed": failed, "rolled_back": rolled_back}
+
+random.seed(42)
+instances = [f"app-{i}" for i in range(6)]
+print("Rolling deployment: v1.2.3 -> v1.3.0")
+result = rolling_deploy(instances, "v1.3.0")
+print(f"\nResult: {result['healthy']}/{len(instances)} healthy, "
+      f"{result['failed']} rolled back: {result['rolled_back']}")
+success_rate = result['healthy'] / len(instances)
+print(f"Deployment {'SUCCESS' if success_rate > 0.8 else 'FAILED -- manual review required'}")
+```
+
+## Engineering Trade-offs
+
+**Deploy frequency vs. batch size:** large, infrequent deploys feel safer but contain more changes per incident — a regression is harder to isolate. Small, frequent deploys each contain a few changes — easy to bisect, smaller blast radius. DORA research consistently shows elite performers deploy on-demand and have lower change-failure rates than low-frequency deployers.
+
+**Immutable vs. mutable artefacts:** mutable deployment (copy a binary in place) is simpler but makes rollback harder — the previous binary is gone. Immutable artefacts (container images, versioned S3 objects) make rollback trivial: re-point to the old version tag. The cost is a registry and slightly more build tooling.
+
+**Zero-downtime complexity:** a rolling deploy that avoids downtime requires the new version to handle in-flight requests from the old load-balancer connection, and the old version to handle new requests after deploy starts. This complicates session handling and database schema changes.
+
+**Database migration timing:** the hardest part of deployment is database schema changes. The expand/contract pattern separates them: first expand the schema to support both versions, deploy code that works with both, then contract by removing old fields after all instances are on the new version. Running a migration that breaks the old code causes an outage during the deploy window.
 
 ## Real-world examples
 
 - A serverless function: `git push`, the platform builds, the new code is live in seconds.
 - A Kubernetes deployment: a YAML update triggers a rolling update with readiness probes, gating each replica on a health check.
-- A major bank: a deploy is a multi-day choreography with change boards, approvals, and a freeze window before holidays. Not bad — just a different cost/risk balance.
-- Amazon famously deploys to production thousands of times per day across thousands of services.
+- A major bank: a deploy is a multi-day choreography with change boards, approvals, and a freeze window before holidays — not bad, just a different cost/risk balance.
+- Amazon deploys to production thousands of times per day across thousands of services via fully automated pipelines.
 
 ## Common misconceptions
 
-- **"Deploys cause incidents, so we should deploy less."** Counter-intuitively, the opposite. *Big, infrequent* deploys cause more incidents than *small, frequent* ones, because each contains more change. Smaller deploys = smaller blast radius = faster diagnosis.
+- **"Deploys cause incidents, so we should deploy less."** Counter-intuitively, the opposite: *big, infrequent* deploys cause more incidents than *small, frequent* ones, because each contains more change. Smaller deploys = smaller blast radius = faster diagnosis.
 - **"Deploy = release."** They can be the same in simple setups, but separating them via feature flags is the foundation of modern continuous delivery.
 - **"Zero-downtime deployment is just for big sites."** Modern platforms make it the default — even a small SaaS benefits from rolling or canary deploys to avoid 30-second outages on every push.
 
+## Try it yourself
+
+Model change-failure risk as a function of batch size — why frequent small deploys beat infrequent large ones:
+
+```bash
+python3 - <<'EOF'
+import random
+
+random.seed(42)
+
+def simulate_deploys(n_changes: int, changes_per_deploy: int, bug_rate: float = 0.02) -> dict:
+    """
+    Simulate a deployment strategy over n_changes total changes.
+    changes_per_deploy: how many changes go into each deployment.
+    A deploy fails if ANY change in it has a bug.
+    Returns: number of deploys, number of failed deploys, failure rate per deploy.
+    """
+    n_deploys = max(1, n_changes // changes_per_deploy)
+    failures  = 0
+    for _ in range(n_deploys):
+        has_bug = any(random.random() < bug_rate for _ in range(changes_per_deploy))
+        if has_bug:
+            failures += 1
+    return {"deploys": n_deploys, "failures": failures,
+            "failure_rate": failures / n_deploys}
+
+N = 200   # total changes to deploy
+
+print(f"Deploying {N} changes at different batch sizes (bug rate: 2% per change)")
+print(f"{'Changes/deploy':>15}  {'Deploys':>8}  {'Failures':>9}  {'Failure rate':>14}")
+print("-" * 52)
+for size in [1, 5, 10, 25, 50, 200]:
+    r = simulate_deploys(N, size)
+    print(f"{size:>15}  {r['deploys']:>8}  {r['failures']:>9}  {r['failure_rate']:>13.0%}")
+EOF
+```
+
 ## Learn next
 
-The pipeline that produces deploys: [CI/CD](/t/ci-cd). What watches the deploy after it lands: [monitoring](/t/monitoring). The wider engineering discipline that thinks about this: [SRE](/t/sre).
+- [CI/CD](/t/ci-cd) — the pipeline that produces deployable artefacts automatically on every merge; CI/CD is what makes frequent, reliable deployment possible at scale
+- [Blue-green deployment](/t/blue-green-deployment) — one of the two main zero-downtime strategies: run two environments and flip traffic at once for instant rollback
+- [Canary deployment](/t/canary-deployment) — the gradual alternative: ramp traffic to the new version in small increments, watching metrics at each step
+- [Monitoring](/t/monitoring) — watches the deployed service after it goes live; the feedback loop that tells you whether a deploy succeeded or needs rollback
