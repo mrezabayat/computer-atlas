@@ -13,48 +13,125 @@ tags: ["hardware", "history", "semiconductors", "performance"]
 prerequisites: ["cpu", "binary-numbers"]
 related: ["dennard-scaling", "asic", "fpga"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
-In 1965, Gordon Moore (later Intel co-founder) observed that the number of transistors engineers could fit on a chip was doubling every year (later revised to every two years). This meant computing power would double every two years at the same price — roughly. For 50 years, this held. A 1971 Intel 4004 had 2,300 transistors; a 2024 Apple M4 has 28 billion. Computers got better faster than anything in human history. Now, the pace is slowing.
+In 1965, Gordon Moore (later Intel co-founder) observed that the number of transistors engineers could fit on a chip was doubling every year (later revised to every two years). This meant computing power would double every two years at the same price. For 50 years, this held. A 1971 Intel 4004 had 2,300 transistors; a 2024 Apple M4 has 28 billion. Computers got better faster than anything in human history. The pace is now slowing.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    Moore["Moore's Law\n1965: transistors double\nevery 1-2 years"] --> Density["Density doubles\n→ 2x more transistors/mm2\n→ half cost/transistor"]
+    Density --> Perf["Performance\n(pre-2004)\nclock speed also doubled\n→ free single-thread speedup"]
+    Moore --> Economic["Economic corollary\nCost/transistor halves\nevery 2 years"]
+
+    Perf -->|"Dennard scaling\nbroke ~2004"| Wall["Power Wall\nclock speeds plateau\n3-5 GHz since 2005"]
+    Density -->|"still happening\nbut slowing"| Now["2024 state\n3nm at TSMC\n~100M transistors/mm2"]
+
+    Wall --> Multi["Multi-core CPUs\n(2005-present)"]
+    Wall --> Accel["Specialised Accelerators\nGPU / TPU / NPU / FPGA"]
+    Wall --> Chiplet["Chiplets + 3D stacking\nextends Moore economically"]
+```
 
 ## More detail
 
 **The original observation:** Moore published "Cramming more components onto integrated circuits" in 1965, noting that component counts had doubled each year since integrated circuits were invented (1959) and predicting this would continue for at least another decade.
 
-**Why it held:** shrinking transistors allows more transistors per mm² (density), and smaller transistors switch faster (performance) and use less power (Dennard scaling — see below). The semiconductor industry organised itself around Moore's Law as a roadmap — ITRS (International Technology Roadmap for Semiconductors) coordinated research to hit two-year cadence targets.
+**Why it held:** shrinking transistors allows more transistors per mm² (density), and smaller transistors switch faster (performance) and use less power per switch. The semiconductor industry organised itself around Moore's Law as a roadmap — ITRS (International Technology Roadmap for Semiconductors) coordinated global research to hit two-year cadence targets, creating a self-fulfilling prophecy.
 
-**Economic corollary:** as density doubled, cost per transistor halved. Computing power per dollar doubled every two years. This compounding made electronics progressively cheaper and enabled entirely new markets: mainframes → minicomputers → PCs → smartphones → cloud → IoT.
+**Economic corollary:** as density doubled, cost per transistor halved. Computing power per dollar doubled every two years. This compounding made electronics progressively cheaper: mainframes → minicomputers → PCs → smartphones → cloud → IoT. A $500 phone in 2026 has more compute than a $1M supercomputer from 1990.
 
-**The slowing:** from 1971 to ~2012, Moore's Law held with density roughly doubling every 18–24 months. Since then:
-- Physics limits: quantum tunnelling through gate oxide when gates reach ~1nm makes further shrinking increasingly difficult.
-- Economic limits: a 5nm TSMC wafer costs ~$20,000; equipment (EUV lithography machines: $150M each) costs are enormous.
-- Power limits: even if you pack more transistors in, you can't always run them all at once (dark silicon).
-- The density is still increasing, but more slowly (~2–3× per process generation, not consistently 2×).
+**The slowing — three limits:**
+1. **Physics:** quantum tunnelling through gate oxide when features reach ~1 nm makes further shrinking increasingly difficult. Gate lengths at 3 nm nodes are approaching the point where classical transistor models break down.
+2. **Economics:** a 5 nm TSMC wafer costs ~$20,000; EUV lithography machines cost $150–350M each. The R&D investment per node transition is billions of dollars. Only 3 companies (TSMC, Samsung, Intel Foundry) can afford leading-edge nodes.
+3. **Power:** even if density keeps growing, you can't run all transistors simultaneously without exceeding thermal design power (dark silicon). 50%+ of a leading-edge chip may be powered off at any time.
 
-**Moore's Law ≠ Dennard scaling:** Dennard scaling (transistors shrink and use proportionally less power) broke down around 2005 when leakage current became significant — transistors got leakier as they got smaller. This is why clock speeds plateaued around 4 GHz. CPU performance improvement since then comes from multi-core, wider pipelines (superscalar), specialised accelerators (NPUs, GPUs), and architecture improvements — not raw clock speed increases.
+**Moore's Law ≠ Dennard scaling:** Dennard scaling (power per transistor decreases proportionally as they shrink) broke around 2005 when leakage current became significant. This is why clock speeds plateaued at 3–5 GHz. CPU performance improvement since then comes from IPC improvements, multi-core, specialised accelerators, and architecture innovations — not raw MHz increases.
 
-**What continues:** transistor density is still increasing at TSMC 3nm and 2nm, though more expensively and slowly. Chiplet design (combining multiple dies in one package — AMD EPYC, Intel Meteor Lake) extends density gains economically. 3D stacking (TSMC SoIC, Samsung X-Cube, HBM memory) adds vertical layers.
+**What continues:** transistor density is still increasing at TSMC 3 nm and 2 nm, though more slowly and expensively. Chiplet design (combining multiple dies in one package — AMD EPYC, Intel Meteor Lake) extends economic scaling without a single monolithic die. 3D stacking (TSMC SoIC, HBM memory) adds vertical density.
 
-**End of Moore's Law predictions:** industry leaders have said "Moore's Law is dead" many times; it keeps limping along. TSMC's 2nm (2025) and 1.4nm (2027) suggest density gains continuing, but at diminishing returns. The era of automatic performance doubling every two years without architectural innovation is over.
+## Under the Hood
 
-## Why it matters
+Modelling the transistor count doubling from historical data — the empirical basis of Moore's Law:
 
-Moore's Law is the foundation of the modern world. Every assumption about computing cost and capability — that a smartphone costs $500, that cloud VMs are affordable, that machine learning is tractable — rests on 50 years of exponential improvement. Understanding its slowdown is essential for predicting where performance gains will come from in the future: specialised hardware (NPUs, TPUs, FPGAs), software optimisation, new computing paradigms (quantum computing, neuromorphic). Engineers who assume "hardware will get faster" need to understand that this is now a much slower and less certain process.
+```python
+chips = [
+    # (year, name, transistors)
+    (1971, "Intel 4004",          2_300),
+    (1978, "Intel 8086",         29_000),
+    (1982, "Intel 286",         134_000),
+    (1989, "Intel 486",       1_200_000),
+    (1993, "Pentium",         3_100_000),
+    (2000, "Pentium 4",      42_000_000),
+    (2006, "Core 2 Duo",    291_000_000),
+    (2012, "Ivy Bridge",   1_400_000_000),
+    (2019, "Zen 2 (EPYC)", 9_890_000_000),
+    (2024, "Apple M4",    28_000_000_000),
+]
+
+print(f"{'Year':<6} {'Chip':<22} {'Transistors':>15}  {'2yr doubling'}  {'Actual'}")
+print("-" * 70)
+prev_year, prev_tr = chips[0][:2][0], chips[0][2]
+for year, name, tr in chips:
+    years = year - prev_year if year > prev_year else 1
+    expected = prev_tr * (2 ** (years / 2))
+    ratio = tr / prev_tr if year > prev_year else 1
+    doublings = f"{ratio:.1f}x in {years}y"
+    print(f"{year:<6} {name:<22} {tr:>15,}  {doublings}")
+    prev_year, prev_tr = year, tr
+```
+
+## Engineering Trade-offs
+
+**What Moore's Law gave us (pre-2004):**
+- Free performance: each process node provided faster clocks, lower power, and lower cost simultaneously — software developers needed only to wait for the next CPU generation.
+- Single-core dominance: sequential code ran faster on every new chip with no software changes.
+
+**What the slowdown changed:**
+- Performance no longer comes automatically. It requires explicit parallelism (multi-core, SIMD), specialisation (GPU, NPU), or algorithmic improvement.
+- Software must be written to exploit parallelism — Amdahl's Law caps benefit for sequential code regardless of core count.
+- Power efficiency (performance per watt) replaced raw GHz as the key hardware metric — critical for mobile, IoT, and data-centre TCO.
+
+**Chiplet strategy:** instead of building one huge monolithic die (expensive, lower yield as die area grows), AMD/Intel break chips into smaller **chiplets** connected by high-speed die-to-die links (AMD XGMI, Intel EMIB). A chiplet can use different process nodes for different functions — logic at 3 nm, I/O at 6 nm (cheaper and more reliable). This extends Moore's Law economics without requiring a perfect monolithic 3 nm die.
 
 ## Real-world examples
 
-- Intel 4004 (1971): 2,300 transistors at 10µm. Apple M4 (2024): 28 billion transistors at 3nm — ~12 million× more dense in 53 years.
-- TSMC is the world's most advanced foundry; EUV lithography (Extreme Ultraviolet, λ=13.5nm) is used for 7nm and below.
-- NVIDIA's H100: 80 billion transistors on a 4nm node — the GPU equivalent of Moore's Law for ML hardware.
+- Intel 4004 (1971): 2,300 transistors at 10 µm process. Apple M4 (2024): 28 billion transistors at 3 nm — 12 million times more dense in 53 years.
+- TSMC 3 nm (N3) has ~117 million logic transistors per mm². TSMC 2 nm (N2, 2025) targets ~180–200 million per mm² using GAAFET.
+- NVIDIA H100: 80 billion transistors on 4 nm — the GPU equivalent of Moore's Law applied to ML compute.
 
 ## Common misconceptions
 
-- **"Moore's Law is a physical law."** It is an empirical observation and economic prediction, not a law of physics. It held because the semiconductor industry organised itself to make it hold.
-- **"Moore's Law means computers double in speed every two years."** It describes transistor density. Performance gains (IPC, clock speed) are separate and involve many other factors.
+- **"Moore's Law is a physical law."** It is an empirical observation and economic self-fulfilling prophecy, not a law of physics. It held because the semiconductor industry organised itself to make it hold.
+- **"Moore's Law means computers double in speed every two years."** It describes transistor density. Performance gains (IPC, clock speed, single-thread) are separate and involve many additional factors — including software and architecture.
+
+## Try it yourself
+
+Project transistor counts forward assuming 30% per year density growth (slowed from 40% historical):
+
+```bash
+python3 - <<'EOF'
+BASE_YEAR = 2024
+BASE_TR   = 28_000_000_000   # Apple M4 transistors
+RATE      = 0.30             # ~30% annual density growth (slowing Moore)
+
+print(f"Transistor count projections (starting from {BASE_YEAR} Apple M4):")
+print(f"{'Year':<6} {'Transistors':>18}  {'vs 2024'}")
+print("-" * 38)
+tr = BASE_TR
+for yr in range(BASE_YEAR, BASE_YEAR + 15):
+    mult = tr / BASE_TR
+    print(f"{yr:<6} {tr:>18,.0f}  {mult:>5.1f}x")
+    tr *= (1 + RATE)
+EOF
+```
 
 ## Learn next
 
-[Dennard scaling](/t/dennard-scaling) explains why the transistor density gains from Moore's Law stopped automatically translating into proportional performance gains after ~2005. Understanding the limits of Moore's Law motivates [ASICs](/t/asic), [FPGAs](/t/fpga), and [GPU](/t/gpu) acceleration — because general-purpose scaling is no longer enough.
+- [Dennard scaling](/t/dennard-scaling) — the complementary law that explained why transistor density gains also translated into clock speed gains; it broke down ~2004, explaining why GHz stopped growing
+- [ASIC](/t/asic) — domain-specific chips that exploit Moore's Law density gains for one specific task: when general scaling isn't enough, purpose-built silicon is the answer
+- [FPGA](/t/fpga) — reconfigurable hardware that sits between ASIC and CPU; understanding why FPGAs exist requires understanding the economics of chip customisation that Moore's Law shapes
