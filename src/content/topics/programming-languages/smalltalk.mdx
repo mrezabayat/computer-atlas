@@ -12,58 +12,140 @@ importance: supplemental
 tags: ["programming-languages", "oop", "history", "xerox-parc"]
 prerequisites: ["programming-language", "design-pattern"]
 related: ["erlang", "closure", "homoiconicity"]
-nextSteps: []
-updated: 2026-06-08
+nextSteps: ["xerox-parc"]
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
-Smalltalk was created at Xerox PARC in the 1970s by Alan Kay, Dan Ingalls, and Adele Goldberg. Kay envisioned a computer as a "dynamic medium" where everything is an object and objects communicate only by sending messages — no global state, no procedure calls, just objects talking to each other. Smalltalk pioneered the graphical user interface (Xerox Alto), the first modern windowing system, the MVC (Model-View-Controller) pattern, and live programming (change code while the program runs). Java, Python, Ruby, Objective-C, and Swift all acknowledge Smalltalk as a direct ancestor.
+Smalltalk was created at Xerox PARC in the 1970s by Alan Kay, Dan Ingalls, and Adele Goldberg. Kay envisioned a computer as a "dynamic medium" where everything is an object and objects communicate *only* by sending messages — no global state, just objects talking to each other. Smalltalk pioneered the graphical user interface, the first modern windowing system, the MVC (Model-View-Controller) pattern, and live programming (changing code while the program runs). Java, Python, Ruby, Objective-C, and Swift all acknowledge it as a direct ancestor.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    subgraph Msg["Everything is an object; everything is a message send"]
+        Int["3"] -->|"+ 4 (binary message)"| R1["7"]
+        Bool["true"] -->|"ifTrue: [block] (keyword message)"| R2["runs the block"]
+        Coll["aCollection"] -->|"do: [block]"| R3["iterates"]
+    end
+
+    subgraph Image["The live image (one persistent world)"]
+        Objs["all objects + classes"]
+        IDE["IDE, compiler, debugger"]
+        App["running application"]
+        Objs --- IDE --- App
+    end
+
+    note["Edit a class while it runs → behaviour changes instantly.\nControl flow (if, while) is messages to objects, not syntax."]
+```
 
 ## More detail
 
-**Everything is an object:** in Smalltalk, *literally* everything — integers, booleans, classes, blocks of code — is an object. `3 + 4` is not a built-in operation; it sends the `+` message to the integer object `3` with argument `4`. `true ifTrue: [...]` sends `ifTrue:` to the boolean object `true`. There are no primitive types in the VM sense — the integer object handles `+` internally.
+**Everything is an object:** *literally* everything — integers, booleans, classes, and blocks of code. `3 + 4` is not a built-in operation; it sends the `+` message to the integer object `3` with argument `4`. `true ifTrue: [...]` sends `ifTrue:` to the boolean object `true`. There are no VM-level primitive types exposed to the programmer.
 
-**Message sending:**
+**Three message forms:**
 ```smalltalk
 | x |
 x := OrderedCollection new.
 x add: 42.
-x add: 'hello'.
-x do: [:each | Transcript showCrLf: each printString].
+x do: [:each | Transcript showCr: each printString].
+```
+- **Unary** — `x size` (no argument, highest precedence).
+- **Binary** — `3 + 4` (one argument, medium precedence).
+- **Keyword** — `x at: 1 put: 'a'` (named arguments, lowest precedence).
+
+**Blocks (closures):** `[:x | x + 1]` is a first-class closure over its lexical scope. Crucially, `ifTrue:`, `whileTrue:`, and `do:` are *not* language keywords — they're messages sent to booleans, blocks, and collections, with blocks as arguments. Control flow is library code.
+
+**The live image:** Smalltalk isn't compiled to a binary and run. The whole system lives in a persistent **image** — a snapshot of the heap with all objects, classes, and running state. The IDE, compiler, debugger, and application all share that one image, so editing a running class changes its behaviour immediately — the original "hot reload." Smalltalk-80 also introduced **MVC** (the structure behind Rails, Django, Cocoa) and deep **reflection** (every object knows its class; classes can be inspected and modified at runtime), which seeded Java reflection, Python's `inspect`, and Ruby's `method_missing`. Modern Smalltalks include **Pharo** and **Squeak**.
+
+## Under the Hood
+
+A class definition and its use in Smalltalk (GNU Smalltalk syntax). Note that defining a class, looping, and branching are *all* message sends — there is barely any "syntax", just objects receiving messages:
+
+```smalltalk
+"Define a class with one instance variable and three methods."
+Object subclass: Counter [
+  | count |
+  init       [ count := 0 ]
+  increment  [ count := count + 1 ]   "+ is a message to the integer 'count'"
+  count      [ ^count ]               "^ returns a value"
+]
+
+| c |
+c := Counter new.
+c init.
+c increment; increment; increment.    "cascade: send 3 messages to the same object"
+Transcript showCr: c count printString. "=> 3"
+
+"Control flow is a message to a Boolean, taking blocks as arguments:"
+(c count > 2)
+  ifTrue:  [ Transcript showCr: 'big'   ]
+  ifFalse: [ Transcript showCr: 'small' ].
+
+"Iteration is a message too: send 'to:do:' with a block."
+1 to: 3 do: [:i | Transcript showCr: i printString ].
 ```
 
-Three message types:
-- **Unary messages** — `x size` (no arguments, highest precedence).
-- **Binary messages** — `3 + 4`, `x = y` (one argument, medium precedence).
-- **Keyword messages** — `x at: 1 put: 'a'` (named args, lowest precedence).
+There is no `if` statement and no `for` loop in the grammar: `ifTrue:ifFalse:` is a method on `Boolean`, and `to:do:` is a method on `Integer`. Everything reduces to objects sending each other messages.
 
-**Blocks (closures):** `[:x | x + 1]` is a block — a first-class closure over its lexical scope. Blocks are passed as arguments to control structures. `ifTrue:`, `whileTrue:`, `do:` are not language keywords; they're messages sent to booleans, blocks, and collections.
+## Engineering Trade-offs
 
-**The live environment:** Smalltalk is not compiled to a binary and run. The entire Smalltalk system lives in a persistent **image** — a snapshot of the heap containing all objects, classes, and running state. The IDE, the compiler, the debugger, and the running application all exist in the same image. You can modify the source of a running class and the behaviour changes immediately — the first "hot reload."
+**Pure message passing vs. performance and predictability**
+Treating *everything* as a message send (even `3 + 4`, even `ifTrue:`) gives a tiny, uniform, deeply malleable language where you can redefine control flow itself. The cost is that naive implementations are slow (every operation is a dynamic dispatch) and behaviour is hard to predict statically — modern Smalltalk VMs claw back speed with aggressive JIT inlining, but the dynamism resists the static analysis that catches bugs early.
 
-**MVC (Model-View-Controller):** Smalltalk-80 introduced MVC as the canonical pattern for GUI application structure. The Model holds domain state; the View displays it; the Controller handles input and updates the Model. This pattern underlies web frameworks (Rails, Django, Spring MVC) and GUI toolkits (Cocoa, Qt) to this day.
+**The live image vs. reproducible builds**
+A persistent live image is a magical development experience — inspect and modify a running system, fix a bug in the debugger and resume. But the image *is* mutable global state: it can drift into a one-of-a-kind configuration that's hard to reproduce, version-control, or deploy, which clashes with modern "build from source, immutable artifact" practice.
 
-**Reflection:** every object knows its class; every class knows its methods. You can list a class's methods, inspect an object's slots, and change a class's implementation at runtime. Smalltalk's reflection influenced Java reflection, Python's `inspect` module, and Ruby's `method_missing`.
+**Reflection and dynamism vs. tooling and safety**
+Total reflection (any object inspectable, any class changeable at runtime) enables extraordinary tools and metaprogramming. The same openness defeats static guarantees and makes large systems harder to reason about — the recurring dynamic-language trade that Smalltalk pioneered and Python/Ruby inherited.
 
-**Modern Smalltalk:** Pharo (open-source, MIT) and Squeak (educational, OLPC) are active Smalltalks. Pharo has a thriving community, a Smalltalk-80 image model, and modern tools. Amber Smalltalk compiles to JavaScript.
-
-## Why it matters
-
-Smalltalk is where modern OOP was defined — not "encapsulation + inheritance" (which came later as a watered-down version) but "objects + message passing + polymorphism." Alan Kay has since lamented that Java/C++ OOP missed the message-passing essence. Smalltalk's live image environment was decades ahead of its time and is re-emerging in "live programming" research, hot reload in React Native, and Notebook (Jupyter) computing. Understanding Smalltalk explains where OOP's ideas actually came from and what was lost in translation to C++/Java.
+**Vision vs. adoption**
+Smalltalk defined OOP as objects + message passing + polymorphism, plus the GUI and live programming — decades ahead of its time. Yet the mainstream adopted a *watered-down* OOP (C++/Java: method dispatch, primitive types, static compilation) that Alan Kay argues missed the message-passing essence. Purity of vision and market success diverged, as they often do.
 
 ## Real-world examples
 
-- The Xerox Alto (1973) was the first computer with a GUI; it was programmed in Smalltalk and Interlisp.
-- Objective-C was created by Brad Cox in 1984 as "Smalltalk messaging on top of C" — and became the language of iOS until Swift.
-- Ruby was explicitly designed by Matz to feel like Smalltalk with a friendlier syntax.
-- JPMorgan used VisualWorks Smalltalk for financial systems for decades; some systems still run today.
+- The **Xerox Alto** (1973), the first GUI computer, was programmed in Smalltalk and Interlisp — the environment that birthed windows, icons, and the mouse-driven desktop.
+- **Objective-C** was created as "Smalltalk messaging on top of C" and became the language of Mac and iOS until Swift.
+- **Ruby** was explicitly designed by Matz to feel like Smalltalk with friendlier, more Perl-like syntax.
+- **JPMorgan** and other financial firms ran large VisualWorks Smalltalk systems for decades, some still in production.
 
 ## Common misconceptions
 
-- **"Smalltalk is slow."** Modern Smalltalk VMs (Pharo's Cog VM) are highly optimised with JIT compilation, competitive with Python and Ruby for most workloads.
-- **"OOP in Java and Python is the same as OOP in Smalltalk."** Java OOP uses method dispatch (not pure message passing), has primitive types (not objects), and compiles to fixed bytecode (not a live image). The philosophies differ significantly.
+- **"Smalltalk is slow."** Modern VMs (Pharo's Cog VM) JIT-compile and are competitive with Python and Ruby on typical workloads.
+- **"OOP in Java/Python is the same as in Smalltalk."** Java uses method dispatch (not pure message passing), has primitive types (not objects), and compiles to fixed bytecode (not a live image) — different philosophy, not just different syntax.
+- **"`ifTrue:` is a keyword."** It's a method on `Boolean` taking blocks as arguments — which is *why* you can define your own control structures in Smalltalk.
+
+## Try it yourself
+
+Smalltalk's defining idea — control flow as messages to objects — is reproducible in Python, where (as in Smalltalk) everything is already an object. Here `if` becomes a method on a boolean-like object, taking blocks (lambdas) as arguments:
+
+```bash
+python3 - << 'EOF'
+# In Smalltalk, 'if' is a message to a Boolean with blocks as arguments.
+class STrue:
+    def ifTrue_ifFalse(self, then_blk, else_blk): return then_blk()
+class SFalse:
+    def ifTrue_ifFalse(self, then_blk, else_blk): return else_blk()
+def boolean(b): return STrue() if b else SFalse()
+
+# 'x > 5 ifTrue: [...] ifFalse: [...]'  becomes a method call with two blocks:
+for x in (3, 9):
+    print(boolean(x > 5).ifTrue_ifFalse(lambda: f"{x} is big",
+                                         lambda: f"{x} is small"))
+
+# And like Smalltalk, even integers are objects responding to messages:
+print("(3).__add__(4)     =", (3).__add__(4))      # '3 + 4' is a message to 3
+print("(255).bit_length() =", (255).bit_length())
+print("all objects        :", type(3).__name__, type(int).__name__)
+EOF
+```
+
+`boolean(x > 5).ifTrue_ifFalse(...)` chooses a branch with *no `if` statement at all* — the boolean object decides which block to run. That's exactly how Smalltalk works, and `(3).__add__(4)` shows Python shares the "everything is an object you send messages to" lineage Smalltalk created.
 
 ## Learn next
 
-Smalltalk's message-passing model influenced [Erlang](/t/erlang)'s actor model. Its [closures](/t/closure) (blocks) are first-class. Alan Kay's vision also inspired the [Xerox PARC](/t/xerox-parc) research environment that created the GUI and other computing fundamentals.
+- [Erlang](/t/erlang) — took Smalltalk's message-passing idea to concurrency: isolated processes (actors) communicating only by messages.
+- [Closure](/t/closure) — Smalltalk's blocks are first-class closures, the mechanism that lets control flow be ordinary library methods.
+- [Xerox PARC](/t/xerox-parc) — the research lab where Smalltalk, the GUI, and much of modern personal computing were invented.
