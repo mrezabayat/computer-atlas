@@ -12,52 +12,159 @@ importance: core
 tags: ["gpu", "hardware"]
 prerequisites: ["cpu"]
 related: ["neural-network", "game-engine", "tpu"]
-updated: 2026-06-07
+nextSteps: []
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
-A **GPU** (graphics processing unit) is a chip with thousands of small cores that all do the same operation on different pieces of data at the same time. It was designed for rendering pixels, where every pixel needs roughly the same maths. Today it's the engine behind almost all modern machine learning.
+A **GPU** (graphics processing unit) is a chip with thousands of small cores that all do the same operation on different pieces of data at the same time. It was designed for rendering pixels, where every pixel needs roughly the same maths. Today it is the engine behind almost all modern machine learning — training a large language model on CPUs alone would take centuries.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    Host["CPU Host"] -->|"1. allocate GPU memory\n2. copy data host to device\n3. launch kernel"| GPU
+
+    subgraph GPU ["GPU Die"]
+        SMs["Streaming Multiprocessors\n108 SMs on H100"] --> Warps["Warps / Wavefronts\n32 threads in lockstep\nSIMT execution model"]
+        Warps --> Cores["CUDA Cores\nfloat + int operations\n~16,000 per SM cluster"]
+        Warps --> TC["Tensor Cores\n4x4 matrix MAC per cycle\nBF16 / FP8 for AI"]
+        SMs --> SMEM["Shared Memory\n256 KB / SM\nfast on-chip scratchpad"]
+        GPU --> HBM["HBM3 Memory\n80+ GB at 3.3 TB/s"]
+        GPU --> L2["L2 Cache\n50 MB shared by all SMs"]
+    end
+
+    GPU -->|"4. copy result device to host"| Host
+```
 
 ## More detail
 
-CPUs and GPUs are both processors but optimised for opposite things:
+CPUs and GPUs are both processors but optimised for opposite workloads:
 
-| Property         | CPU                          | GPU                              |
-|------------------|------------------------------|----------------------------------|
-| Number of cores  | ~4–128                       | Thousands                        |
-| Per-core power   | Very powerful, complex       | Simple, narrow                   |
-| Branch handling  | Excellent (branch prediction)| Poor (whole groups stall)        |
-| Best at          | Sequential, branchy work     | Massive data-parallel work       |
-| Memory model     | Coherent caches, low latency | High-bandwidth, higher latency   |
+| Property | CPU | GPU |
+|---|---|---|
+| Number of cores | 4–128 | Thousands |
+| Per-core power | Very powerful, complex | Simple, narrow |
+| Branch handling | Excellent (prediction) | Poor (whole warp stalls) |
+| Best at | Sequential, branchy work | Massive data-parallel work |
+| Memory model | Low-latency caches | High-bandwidth, higher latency |
 
-GPUs execute in **warps** / **wavefronts** of 32–64 lanes; all lanes in a warp do the same instruction at the same time (**SIMD/SIMT**). This is exactly what dense matrix multiplication needs — which is exactly what neural-network training does.
+**SIMT execution model:** GPUs execute in **warps** (Nvidia) or **wavefronts** (AMD) of 32–64 lanes. All lanes in a warp execute the same instruction on different data simultaneously — **Single Instruction, Multiple Threads**. When threads in a warp diverge (take different branches), the hardware serialises both paths, masking inactive lanes. This means branchy code is catastrophically slow on GPUs.
 
-Programmable APIs that exposed GPUs beyond graphics:
+**Architecture tiers:**
+- **Shader cores (CUDA cores):** simple ALUs for float/int; ~16,000+ per modern GPU.
+- **Tensor cores:** 4×4 matrix multiply-accumulate in one clock cycle; BF16/FP8 for AI training; responsible for most of the "TFLOPS" headline numbers.
+- **HBM (High Bandwidth Memory):** stacked DRAM dies directly on the GPU package. H100: 80 GB HBM3 at 3.3 TB/s — orders of magnitude more bandwidth than CPU DDR5.
+- **Shared memory / L1:** programmer-controlled on-chip scratchpad (256 KB/SM on H100) used as a fast tile buffer for matrix ops.
 
-- **CUDA** (Nvidia, 2007) — the de facto standard for ML.
-- **OpenCL** — cross-vendor, less popular.
-- **ROCm** (AMD), **Metal** (Apple), **DirectX Compute** (Microsoft).
+**General-purpose APIs:**
+- **CUDA** (Nvidia, 2007) — the de facto standard for ML; dominates AI workloads.
+- **ROCm / HIP** (AMD) — CUDA-compatible runtime for MI300/MI325 GPUs.
+- **Metal** (Apple) — used for both graphics and ML on M-series chips.
+- **OpenCL** — cross-vendor but rarely used for new work.
 
-In 2026, a top-end data-centre GPU has tens of billions of transistors, 80+ GB of HBM memory, and performs hundreds of teraflops to petaflops on AI workloads.
+## Under the Hood
 
-## Why it matters
+Simulating SIMT divergence — the core reason branchy code is slow on a GPU:
 
-Without GPUs, modern AI would not exist at its current scale. Training a large language model on CPUs would take centuries.
+```python
+def simt_warp(thread_vals: list, cond_fn, true_fn, false_fn):
+    """
+    Warp: all threads execute in lockstep.
+    Divergence -> both branches run with masking -> 2x cycles.
+    """
+    true_mask  = [v for v in thread_vals if cond_fn(v)]
+    false_mask = [v for v in thread_vals if not cond_fn(v)]
+    divergent  = bool(true_mask) and bool(false_mask)
+    cycles     = 2 if divergent else 1   # serialised on divergence
+
+    result = [true_fn(v) if cond_fn(v) else false_fn(v) for v in thread_vals]
+    return result, cycles, divergent
+
+cases = [
+    ("Uniform warp (all even — no divergence)",  [2*i      for i in range(32)]),
+    ("Divergent warp (mixed even/odd values)", list(range(32))),
+]
+
+for label, vals in cases:
+    res, cycles, div = simt_warp(vals,
+                                  lambda x: x % 2 == 0,
+                                  lambda x: x * 4,
+                                  lambda x: x + 1)
+    print(f"{label}:")
+    print(f"  divergent={div}  cycles={cycles}  first 6 results={res[:6]}")
+```
+
+Real GPU kernels are written in CUDA C++ and compiled to PTX assembly — the equivalent of launching 65,536 instances of the inner function simultaneously across all streaming multiprocessors.
+
+## Engineering Trade-offs
+
+**GPU vs. CPU — when GPUs win:**
+- Dense matrix multiply (matrix × matrix, convolution, attention) — perfectly uniform, massively parallel, no branches.
+- Texture sampling, ray tracing, physics simulation — thousands of independent parallel calculations.
+- At large batch sizes for ML inference — the GPU stays busy when there are thousands of identical operations per batch.
+
+**When CPUs win:**
+- Sequential code with unpredictable branches — a single core with excellent branch prediction beats thousands of GPU cores that stall on divergence.
+- Small-batch ML inference (batch size 1) — the GPU's massive parallelism sits idle; an FPGA or NPU often wins on latency.
+- Workloads requiring fine-grained synchronisation between results — GPU inter-thread synchronisation is expensive and limited.
+
+**Memory bandwidth is the bottleneck:** at 3.3 TB/s, H100 HBM3 delivers enormous bandwidth, but large models (70B+ parameters at FP16 = 140 GB) still exceed a single GPU's memory. Multi-GPU training uses NVLink or InfiniBand for model parallelism — adding latency and coordination overhead.
+
+**Power:** H100 has a 700W TDP. A rack of 8 H100s consumes ~5.6 kW. This is why data-centre AI clusters are measured in megawatts.
 
 ## Real-world examples
 
-- Nvidia H100 / B100 — the standard ML training GPUs.
-- Apple M-series GPUs handle the screen on a Mac and run on-device ML.
-- A gaming PC uses its GPU for 3D rendering primarily but increasingly also for upscaling (DLSS) and physics.
-
-- Modern data-centre GPUs now ship with HBM3 stacks delivering 3+ TB/s of memory bandwidth — orders of magnitude more than CPU memory, and the reason GPUs dominate AI training.
+- Nvidia H100 / B200: standard ML training GPUs; H100 delivers ~66.9 TFLOPS FP32 or ~3,958 TFLOPS BF16 (sparse).
+- Apple M4 GPU (38 cores): handles display rendering, ML inference, and media encoding on a laptop using ~20W total chip power — radical efficiency vs. discrete GPUs.
+- A gaming PC GPU (RTX 4090): 82.6 TFLOPS FP32 — used for 3D rendering, but increasingly for AI upscaling (DLSS 3), denoising, and running local LLMs.
+- AWS EC2 P5 instances: 8× H100s per instance; used for LLM training, genomics, drug discovery.
 
 ## Common misconceptions
 
-- **"GPUs are faster than CPUs."** Only at parallel work. A GPU is terrible at sequential code with lots of branches.
-- **"GPUs are only for graphics."** That hasn't been true for two decades; today most data-centre GPUs barely render anything.
+- **"GPUs are faster than CPUs."** Only at parallel, uniform work. For sequential branchy code, a GPU is dramatically slower than a CPU — a GPU kernel launch itself has microseconds of overhead.
+- **"GPUs are only for graphics."** Less than 20% of GPU revenue in 2025 came from gaming; the majority is data-centre AI and HPC workloads.
+
+## Try it yourself
+
+Compare Python single-thread matrix multiply performance against GPU peak numbers:
+
+```bash
+python3 - <<'EOF'
+import time
+
+def matmul(A, B, n):
+    C = [[0.0]*n for _ in range(n)]
+    for i in range(n):
+        for k in range(n):
+            for j in range(n):
+                C[i][j] += A[i][k] * B[k][j]
+    return C
+
+N = 48
+A = [[float(i+j+1)  for j in range(N)] for i in range(N)]
+B = [[float((i*j)%7+1) for j in range(N)] for i in range(N)]
+
+t0 = time.perf_counter_ns()
+C = matmul(A, B, N)
+ms = (time.perf_counter_ns() - t0) / 1e6
+
+ops      = 2 * N**3
+gflops   = ops / (ms / 1000) / 1e9
+h100_bf16 = 3_958_000   # H100 BF16 GFLOPS (sparse)
+
+print(f"Matrix size   : {N}x{N}")
+print(f"Elapsed       : {ms:.1f} ms  (Python single-thread CPU)")
+print(f"Throughput    : {gflops:.4f} GFLOPS")
+print(f"H100 BF16     : {h100_bf16:,} GFLOPS")
+print(f"Peak speedup  : {h100_bf16/gflops:,.0f}x  (real workloads: 100x-10,000x)")
+EOF
+```
 
 ## Learn next
 
-The architectural cousin: [CPU](/t/cpu). What GPUs are mostly used for now: [neural network](/t/neural-network).
+- [Neural network](/t/neural-network) — the dominant consumer of GPU compute; understanding matrix multiply at GPU scale explains why Transformer training needs thousands of H100s
+- [TPU](/t/tpu) — Google's custom chip for matrix multiply: narrower than a GPU (only matrix ops), far more efficient; shows what happens when you specialize a GPU's main workload into silicon
+- [Game engine](/t/game-engine) — the original consumer of GPU parallelism: scene graphs, rasterisation, shader programs, and how GPU APIs map onto real-time rendering pipelines
