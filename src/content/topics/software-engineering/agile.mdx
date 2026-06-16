@@ -11,12 +11,28 @@ status: reviewed
 importance: important
 tags: ["agile", "process"]
 related: ["ci-cd", "code-review", "mob-programming"]
-updated: 2026-06-07
+nextSteps: ["dora-metrics"]
+updated: 2026-06-16
+structure: 2
 ---
 
 ## In simple terms
 
-**Agile** is a way of building software in short loops: plan a tiny slice, build it, ship it, see how it landed, adjust, repeat. The opposite is the older "waterfall" model where you wrote a 300-page spec, built the whole thing, and then discovered six months later that you'd misunderstood what users wanted. Agile, done well, replaces that with a continuous conversation between the team and reality.
+**Agile** is a way of building software in short loops: plan a tiny slice, build it, ship it, see how it landed, adjust, repeat. The opposite is the older "waterfall" model where you wrote a 300-page spec, built the whole thing, and then discovered six months later that you'd misunderstood what users wanted. Agile replaces that with a continuous conversation between the team and reality — each iteration is a small bet, and you collect the winnings (or cut the losses) every one to two weeks.
+
+## The Visual Map
+
+```mermaid
+graph LR
+    Backlog["Product Backlog"] --> Planning["Sprint Planning"]
+    Planning --> Sprint["Sprint\n(1–2 weeks)"]
+    Sprint --> Standup["Daily Standup"]
+    Standup --> Sprint
+    Sprint --> Review["Sprint Review"]
+    Review --> Increment["Shippable\nIncrement"]
+    Review --> Retro["Retrospective"]
+    Retro --> Backlog
+```
 
 ## More detail
 
@@ -31,7 +47,7 @@ The term was crystallised in the 2001 **Agile Manifesto**, four short value stat
 
 Specific named methodologies under the agile umbrella:
 
-- **Scrum** — sprints (typically 1-2 weeks), defined roles (Product Owner, Scrum Master, Dev Team), ceremonies (planning, standup, retrospective, review).
+- **Scrum** — sprints (typically 1–2 weeks), defined roles (Product Owner, Scrum Master, Dev Team), ceremonies (planning, standup, retrospective, review).
 - **Kanban** — continuous flow on a board with WIP limits; no fixed-length iterations.
 - **XP (Extreme Programming)** — pair programming, TDD, continuous integration, small releases. The technical practices that aged best.
 - **SAFe / LeSS / Disciplined Agile** — scaled agile for large organisations.
@@ -44,30 +60,94 @@ Common practices across methodologies:
 - **Continuous integration / delivery** — every change is integrated and shippable.
 - **Backlog grooming** — keep the upcoming work list clean and prioritised.
 
-The dark side:
-
-- "Agile" has become a brand and a job title; many organisations practice "Cargo Cult Agile" — adopting the ceremonies without the values.
-- Heavyweight scaling frameworks (SAFe) often add the bureaucracy agile was supposed to remove.
-- Daily standups can drift into status meetings that should be a Slack message.
+Agile changed the default way software is built across the industry. Even teams that don't say "agile" out loud have adopted iteration, short feedback loops, and continuous integration — all originally agile ideas.
 
 The 2020s pushback: **post-agile**, **shape-up** (Basecamp), **continuous delivery** (Accelerate / DORA). The thread: focus on outcomes (deploy frequency, lead time, change-failure rate, mean time to recovery) over rituals.
 
-## Why it matters
+## Under the Hood
 
-Agile changed the default way software is built across the industry. Even teams that don't say "agile" out loud have adopted iteration, short feedback loops, and continuous integration — all originally agile ideas. Knowing the vocabulary lets you participate in any modern team.
+A backlog prioritised with the **MoSCoW** method, then sliced into a capacity-bounded sprint — a pattern every agile team implements in some tool (Jira, Linear, a spreadsheet):
+
+```python
+#!/usr/bin/env python3
+stories = [
+    ("Login system",  "Must",   8),
+    ("Dark mode",     "Could",  3),
+    ("Export to PDF", "Should", 5),
+    ("OAuth login",   "Must",   5),
+    ("Bulk import",   "Should", 8),
+    ("Email alerts",  "Won't",  2),
+]
+
+order = {"Must": 0, "Should": 1, "Could": 2, "Won't": 3}
+ranked = sorted(stories, key=lambda s: (order[s[1]], -s[2]))
+
+print(f"{'Story':<20} {'Priority':<8} Points")
+print("-" * 38)
+for story, prio, pts in ranked:
+    print(f"{story:<20} {prio:<8} {pts}")
+
+cap, total = 20, 0
+print(f"\nSprint (≤{cap} pts):")
+for story, prio, pts in ranked:
+    if prio in ("Must", "Should") and total + pts <= cap:
+        print(f"  ✓ {story} ({pts} pts)")
+        total += pts
+print(f"  Total: {total}/{cap} pts")
+```
+
+## Engineering Trade-offs
+
+**Why iterative development wins:**
+- Short feedback cycles surface misunderstandings *before* they compound — a two-week miss costs two weeks, not eighteen months.
+- Shippable increments mean stakeholders see progress; trust and course-correction are continuous.
+- Small batches are statistically easier to debug and revert than big-bang releases.
+
+**Where agile struggles:**
+- Upfront cost and timeline estimation is genuinely harder — problematic for fixed-price contracts or hardware co-development.
+- The feedback loop depends on consistent stakeholder availability; if the Product Owner is absent or decisions require committee consensus, iterations stall.
+- Scales poorly without explicit coordination structures: 50+ engineers running independent Scrum teams produce integration chaos (the root problem SAFe tries to solve, controversially).
+- Without a strong **Definition of Done**, velocity becomes a vanity metric — teams inflate story points, and "done" means "works on my machine."
+- Technical debt accumulates when sprint velocity is rewarded over code health; refactoring rarely fits neatly in a backlog item.
+
+**Dark side:** "Agile" has become a brand. Many organisations practice Cargo Cult Agile — adopting the ceremonies (standups, story points) without the values (working software, adapting to feedback). Heavyweight scaling frameworks (SAFe) often restore exactly the bureaucracy agile was invented to remove.
 
 ## Real-world examples
 
-- **Spotify's** mid-2010s "Spotify model" (squads, tribes, chapters, guilds) was hugely influential, even though Spotify themselves have since moved past most of it.
+- **Spotify's** mid-2010s model (squads, tribes, chapters, guilds) was hugely influential, even though Spotify themselves have since moved past most of it.
 - **Basecamp's Shape Up** — a deliberate alternative to Scrum: six-week cycles, written pitches, betting tables. Influential among smaller teams.
 - The **DORA / Accelerate** research (annual State of DevOps report) shows that the practices most correlated with organisational performance are technical (CI/CD, monitoring, trunk-based development) rather than ceremonial.
-- Many high-performing teams in 2026 don't sprint at all — they do continuous flow (Kanban-ish) with backlog grooming and weekly demos. Often labelled "agile" loosely; mechanically quite different from Scrum.
+- Many high-performing teams in 2026 do continuous flow (Kanban-ish) with backlog grooming and weekly demos — often labelled "agile" loosely, but mechanically quite different from Scrum.
 
 ## Common misconceptions
 
-- **"Agile means no planning."** It means short planning cycles, not zero. Good agile teams plan constantly — they just plan one iteration at a time, not the whole project up front.
-- **"Agile and waterfall are the only options."** There's a continuum. Most modern teams blend agile practices with longer-form roadmapping.
+- **"Agile means no planning."** It means *short* planning cycles, not zero. Good agile teams plan constantly — they just plan one iteration at a time, not the whole project upfront.
+- **"Agile and waterfall are the only options."** There's a continuum. Most modern teams blend agile practices with longer-form roadmapping; few pure examples of either extreme exist in production.
+
+## Try it yourself
+
+Simulate a sprint burndown to see how iteration cadence and scope interact:
+
+```bash
+python3 - <<'EOF'
+total, days = 40, 10
+done_daily = [3, 5, 4, 6, 3, 0, 0, 8, 5, 6]
+done = 0
+print(f"Sprint: {total} pts over {days} days\n")
+print(f"{'Day':>4} {'Done':>6} {'Left':>6} {'Ideal':>6}")
+print("-" * 28)
+for i, d in enumerate(done_daily, 1):
+    done += d
+    left = total - done
+    ideal = total - round(total / days * i)
+    flag = "  << behind" if left > ideal + 3 else ""
+    print(f"{i:>4} {done:>6} {left:>6} {ideal:>6}{flag}")
+EOF
+```
 
 ## Learn next
 
-The technical practice that makes iteration possible: [CI/CD](/t/ci-cd). The collaboration practice agile teams rely on: [code review](/t/code-review).
+- [CI/CD](/t/ci-cd) — the technical practice (automated build, test, deploy) that makes short agile iterations safe to ship
+- [Code review](/t/code-review) — how agile teams maintain quality without a formal QA gate at the end of a waterfall phase
+- [Mob programming](/t/mob-programming) — an extreme XP collaboration technique where the whole team works on one thing at once
+- [DORA metrics](/t/dora-metrics) — the four measurements (deploy frequency, lead time, change-failure rate, MTTR) that tell you whether your agile process is actually working
