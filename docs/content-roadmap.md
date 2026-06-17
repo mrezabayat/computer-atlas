@@ -1,4 +1,4 @@
-# Computer Atlas — Content Roadmap
+# CS Map — Content Roadmap
 
 > **Status (2026-06-08):** All three rings are **complete** across all 18 categories. The Atlas has **334 topics** (all `status: reviewed`) and **25 learning paths**, 100% connected (`npm run audit:importance` reports `core=98 important=129`, Ring 1 COMPLETE; `npm run audit:orphans` reports 100% connected; `lint:content`, `check-refs` all clean; `npm run build` → 334 pages indexed).
 >

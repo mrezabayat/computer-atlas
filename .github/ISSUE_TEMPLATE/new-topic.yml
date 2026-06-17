@@ -1,5 +1,5 @@
 name: Suggest a new topic
-description: Propose a new topic for the Computer Atlas.
+description: Propose a new topic for CS Map.
 title: "[Topic] <topic name>"
 labels: ["new-topic", "triage"]
 body:

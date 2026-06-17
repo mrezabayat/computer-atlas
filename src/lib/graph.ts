@@ -95,7 +95,7 @@ export async function loadGraph() {
 
   if (errors.length > 0) {
     throw new Error(
-      `Computer Atlas content graph has ${errors.length} broken reference(s):\n  - ${errors.join("\n  - ")}`,
+      `CS Map content graph has ${errors.length} broken reference(s):\n  - ${errors.join("\n  - ")}`,
     );
   }
 

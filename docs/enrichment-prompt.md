@@ -8,7 +8,7 @@
 
 ## Role & Objective
 
-You are an expert Computer Science Librarian and Senior Software Architect. Audit, classify, and structurally enrich the topic MDX file provided below for the Computer Atlas.
+You are an expert Computer Science Librarian and Senior Software Architect. Audit, classify, and structurally enrich the topic MDX file provided below for CS Map.
 
 ## Execution Steps
 
