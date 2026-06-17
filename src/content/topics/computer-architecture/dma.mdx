@@ -131,7 +131,7 @@ RDMA bypasses the kernel networking stack entirely: a userspace process register
 
 - **"The CPU still copies the data, just faster."** No — the entire point is that the DMA *controller* (or device, for PCIe bus masters) moves the data; the CPU is free to execute unrelated instructions during the transfer.
 - **"DMA is old/legacy."** The 8237 ISA DMA controller from 1974 is indeed legacy. But PCIe bus mastering, NVMe, RDMA, and GPU texture streaming are all DMA at modern bus speeds — the concept is everywhere in current hardware.
-- **"DMA is always faster."** For small transfers (< ~4 KB), DMA setup overhead — interrupt latency, cache invalidation, IOMMU mapping — exceeds the cost of a CPU copy. High-throughput drivers batch many small operations or use polling (completions rings, not interrupts) to amortise this overhead.
+- **"DMA is always faster."** For small transfers (&lt;~4 KB), DMA setup overhead — interrupt latency, cache invalidation, IOMMU mapping — exceeds the cost of a CPU copy. High-throughput drivers batch many small operations or use polling (completions rings, not interrupts) to amortise this overhead.
 
 ## Try it yourself
 

@@ -47,7 +47,7 @@ graph TD
 Coined and popularised at Google (Beyer et al., *Site Reliability Engineering*, 2016). The defining ideas:
 
 - **SLI / SLO / SLA**:
-  - **SLI** (Indicator) — a metric measuring reliability ("fraction of HTTP requests with status < 500 served in < 300 ms").
+  - **SLI** (Indicator) — a metric measuring reliability ("fraction of HTTP requests with status &lt;500 served in &lt;300 ms").
   - **SLO** (Objective) — the target for the SLI ("99.9% over any 30-day window").
   - **SLA** (Agreement) — the contractually-promised version, usually one notch weaker than the SLO.
 - **Error budget** — `1 - SLO`. The amount of unreliability you've decided is acceptable. When you've spent the budget, you stop shipping risky changes until reliability recovers. This is the lever that lets engineering and product agree on velocity vs. reliability.
@@ -66,7 +66,7 @@ SRE is one model among several; you'll also see "DevOps" (broader cultural movem
 
 **SRE vs. DevOps:** DevOps is a culture and philosophy; SRE is a concrete job role with specific practices (SLOs, error budgets, toil tracking). Many teams call themselves DevOps but practice SRE mechanics. The overlap is large; the distinction is mostly useful for hiring and organisational design.
 
-**On-call sustainability:** SRE on-call works if the alert-to-action ratio is sane. If every page requires a manual intervention, on-call becomes toil that burns out engineers. Healthy SRE on-call: <2 pages per shift that require action; most others auto-resolve.
+**On-call sustainability:** SRE on-call works if the alert-to-action ratio is sane. If every page requires a manual intervention, on-call becomes toil that burns out engineers. Healthy SRE on-call: &lt;2 pages per shift that require action; most others auto-resolve.
 
 ## Real-world examples
 

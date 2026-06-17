@@ -143,7 +143,7 @@ print(f"vs {3**3} separate MACs for naive scalar. Data reuse: A row reused 3 tim
 ## Engineering Trade-offs
 
 **Arithmetic intensity vs. array size**
-A larger systolic array (more PEs) increases arithmetic intensity: each A row element is reused by H PEs (H = array height), each B column element by W PEs (W = array width). A 256×256 array achieves 256× data reuse over naive element-wise compute. But the array must be kept fed: if the input matrices are small (< 256×256), many PEs are idle and arithmetic intensity is low. Systolic arrays are only efficient at large batch sizes and large matrix dimensions.
+A larger systolic array (more PEs) increases arithmetic intensity: each A row element is reused by H PEs (H = array height), each B column element by W PEs (W = array width). A 256×256 array achieves 256× data reuse over naive element-wise compute. But the array must be kept fed: if the input matrices are small (&lt;256×256), many PEs are idle and arithmetic intensity is low. Systolic arrays are only efficient at large batch sizes and large matrix dimensions.
 
 **Fixed-function efficiency vs. programmability**
 A systolic array does one thing: dense matrix multiply. The PEs have no branch prediction, no cache hierarchy, no complex decode logic — the die area and power that a CPU would use for those features goes into more MAC units instead. Google's TPUv1 achieved 92 TOPS with significantly less power than an equivalent GPU for the same workload. But a systolic array cannot run irregular workloads (sparse attention, custom ops) without additional general-purpose compute alongside it.

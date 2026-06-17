@@ -144,7 +144,7 @@ for n_rows in [1_000, 1_000_000, 100_000_000]:
 ## Engineering Trade-offs
 
 **Index selectivity vs. usefulness**
-A query optimizer uses an index when it's selective — the fraction of rows matching the index condition is small (< 5–15%). An index on a column with 2 distinct values (boolean `is_active`) returns 50% of the table — the planner often prefers a sequential scan. High-cardinality columns (email, UUID, user ID) are ideal index candidates.
+A query optimizer uses an index when it's selective — the fraction of rows matching the index condition is small (&lt;5–15%). An index on a column with 2 distinct values (boolean `is_active`) returns 50% of the table — the planner often prefers a sequential scan. High-cardinality columns (email, UUID, user ID) are ideal index candidates.
 
 **Composite index column order vs. query coverage**
 The leftmost column in a composite index must appear in the WHERE clause for the index to be used at all. `(country, city)` can satisfy `WHERE country = ?` and `WHERE country = ? AND city = ?`, but not `WHERE city = ?`. Designing for the most common queries means ordering columns by decreasing selectivity and decreasing query frequency. This is the "composite index left-prefix rule" — understanding it eliminates most "why isn't my index being used?" questions.
@@ -169,7 +169,7 @@ Creating an index on a large table with `CREATE INDEX` locks the table (in many 
 ## Common misconceptions
 
 - **"More indexes = faster database."** Reads get faster; writes get slower; storage grows; query planning becomes more complex (the planner must consider more plans). Add an index only if a query you care about is slower than acceptable and `EXPLAIN` shows a sequential scan on a large table.
-- **"Indexes always help."** The query planner may skip an index if: the table is small (< ~1000 rows), the condition matches > ~10% of rows, or the index is too fragmented. Always verify with `EXPLAIN ANALYZE` before and after.
+- **"Indexes always help."** The query planner may skip an index if: the table is small (&lt;~1000 rows), the condition matches > ~10% of rows, or the index is too fragmented. Always verify with `EXPLAIN ANALYZE` before and after.
 - **"The index is used because it exists."** SQL query planners use statistics (row count estimates, histogram buckets) to decide whether to use an index. Stale statistics (after a bulk load without ANALYZE) can cause the planner to make wrong decisions. Run `ANALYZE` after bulk changes.
 
 ## Try it yourself

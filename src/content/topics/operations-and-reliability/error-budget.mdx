@@ -40,7 +40,7 @@ graph TD
 **From SLO to error budget:**
 
 - **SLI (Service Level Indicator):** a measure of a service's performance — request latency, error rate, availability (% of successful requests), throughput.
-- **SLO (Service Level Objective):** a target for the SLI: "99.9% of requests succeed," "99th-percentile latency < 200ms." An SLO is internal; it drives engineering decisions.
+- **SLO (Service Level Objective):** a target for the SLI: "99.9% of requests succeed," "99th-percentile latency &lt;200ms." An SLO is internal; it drives engineering decisions.
 - **SLA (Service Level Agreement):** a contract with a customer defining consequences of SLO breach. SLAs are typically less strict than SLOs.
 
 **Error budget:** `error budget = 100% - SLO%` of total requests or time.

@@ -126,7 +126,7 @@ print(f"  Error rate   {err_rate*100:.1f}%  {'FIRING (>5%)' if err_rate > 0.05 e
 
 **Alert on symptoms, not causes:** alerting on "CPU > 80%" is a cause; alerting on "error rate > 0.1% for 5 minutes" is a symptom users feel. Symptom-based alerts reduce false positives and make on-call more sustainable. Reserve cause-based alerts for things that always lead to user-visible problems.
 
-**Cardinality cost:** labelling metrics with high-cardinality dimensions (user ID, trace ID, request path) can cause exponential growth in time-series count and makes Prometheus run out of memory. Keep label cardinality low (< 100 distinct values per label).
+**Cardinality cost:** labelling metrics with high-cardinality dimensions (user ID, trace ID, request path) can cause exponential growth in time-series count and makes Prometheus run out of memory. Keep label cardinality low (&lt;100 distinct values per label).
 
 ## Real-world examples
 

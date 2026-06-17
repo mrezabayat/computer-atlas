@@ -52,7 +52,7 @@ Key features:
 - **COW (copy-on-write):** writes go to new blocks; old blocks remain valid. Snapshots are instantaneous (just pin the current block tree) and space-efficient.
 - **RAID-Z (1/2/3):** software RAID integrated into ZFS, without the "RAID-5 write hole" of traditional software RAID.
 - **ARC cache:** adaptive read cache with optional L2ARC (SSD cache) and ZIL (ZFS Intent Log — synchronous write acceleration via NVMe).
-- **Deduplication and compression:** LZ4 compression is always worth enabling (CPU overhead < I/O savings); dedup is storage-efficient but RAM-intensive.
+- **Deduplication and compression:** LZ4 compression is always worth enabling (CPU overhead &lt;I/O savings); dedup is storage-efficient but RAM-intensive.
 
 *ZFS downside:* licensing (CDDL, not GPL) prevented inclusion in the Linux kernel; installed as out-of-tree module. RAM-hungry (1 GB ARC minimum for production). Resizing pools is more complex than LVM.
 

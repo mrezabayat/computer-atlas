@@ -121,7 +121,7 @@ print(f"  Speedup: {aos_ms/soa_ms:.1f}x  (much larger in C/C++ with SIMD)")
 
 **When DOD matters most:** tight loops over large numbers of entities where only a subset of fields are accessed each iteration. Rule of thumb: if the loop body accesses fewer than half the struct's fields and runs on >1,000 objects, SoA is likely faster.
 
-**When AoS is fine:** small collections (< ~100 entities), access patterns that need *all* fields together (serialisation, per-entity logic), or codebases where cache misses aren't the bottleneck. DOD is applied where measured profiling shows cache misses as the top cost.
+**When AoS is fine:** small collections (&lt;~100 entities), access patterns that need *all* fields together (serialisation, per-entity logic), or codebases where cache misses aren't the bottleneck. DOD is applied where measured profiling shows cache misses as the top cost.
 
 **SIMD readiness:** SoA data is naturally SIMD-ready. Eight `float` values from `x[]` load into a single 256-bit AVX2 register; eight AoS elements require gather instructions that are 4–8× slower. This is why DOD and [SIMD intrinsics](/t/simd-intrinsics) are almost always paired.
 

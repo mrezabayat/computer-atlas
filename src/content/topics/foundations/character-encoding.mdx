@@ -44,7 +44,7 @@ flowchart LR
 
 Important properties of UTF-8:
 - **Self-synchronising** — you can find the start of any character by scanning for a byte whose high bits are `0xxxxxxx` or `11xxxxxx`; continuation bytes always start `10xxxxxx`.
-- **ASCII-safe** — any byte with value < 128 is a single-byte ASCII character; no two-byte or four-byte sequence ever produces a byte in that range.
+- **ASCII-safe** — any byte with value &lt;128 is a single-byte ASCII character; no two-byte or four-byte sequence ever produces a byte in that range.
 - **Not fixed-width** — `string.length` in bytes ≠ number of characters. Python `len("中")` is 1 (code points), but `len("中".encode("utf-8"))` is 3 (bytes).
 
 Every program that handles text — every web server, database, editor, terminal, and network protocol — must know what encoding text is in. Encoding bugs break everything: incorrect byte-lengths crash string operations, misidentified encodings corrupt data, and injected malformed bytes can bypass security checks. "Always use UTF-8" is the modern consensus because it is universal, compact, and ASCII-compatible — but you still have to know it's variable-width, what a BOM is (a UTF-8 BOM is three bytes the Windows ecosystem adds and everything else ignores), and why `\n` vs `\r\n` is also an encoding concern.

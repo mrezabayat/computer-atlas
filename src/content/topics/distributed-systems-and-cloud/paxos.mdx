@@ -48,7 +48,7 @@ sequenceDiagram
 
 **Single-decree Paxos** (the basic form) achieves agreement on one value in two phases:
 
-**Phase 1 — Prepare/Promise.** A **proposer** picks a unique proposal number `n` and broadcasts `Prepare(n)` to a quorum (majority) of **acceptors**. Each acceptor that hasn't already promised a higher number responds with `Promise(n, last_accepted)` — committing to reject any future proposals with number < n, and reporting any value it has already accepted.
+**Phase 1 — Prepare/Promise.** A **proposer** picks a unique proposal number `n` and broadcasts `Prepare(n)` to a quorum (majority) of **acceptors**. Each acceptor that hasn't already promised a higher number responds with `Promise(n, last_accepted)` — committing to reject any future proposals with number &lt; n, and reporting any value it has already accepted.
 
 **Phase 2 — Accept/Accepted.** If the proposer receives promises from a quorum, it sends `Accept(n, v)` where `v` is either the value from the highest-numbered previous acceptance (if any acceptor reported one) or the proposer's own value. Acceptors accept the proposal if they haven't promised a higher `n`, and notify **learners**. Once a quorum accepts, consensus is reached.
 
