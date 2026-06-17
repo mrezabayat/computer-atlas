@@ -1,6 +1,6 @@
 # Content Enrichment & Taxonomy Plan
 
-> **Status (2026-06-17):** Phase 0 (infrastructure) shipped, **Phase 1 complete** (334/334 classified; ambiguous calls recorded in the per-category commit messages, `git log --grep="Master Computing Taxonomy"`). **Phase 2 in progress: 258/334 enriched** — 76 topics remaining across 5 categories. Next: mathematical-foundations. Use `/enrich-topic` per topic; `npm run audit:taxonomy` is the progress meter.
+> **Status (2026-06-17):** Phase 0 (infrastructure) shipped, **Phase 1 complete** (334/334 classified; ambiguous calls recorded in the per-category commit messages, `git log --grep="Master Computing Taxonomy"`). **Phase 2 in progress: 270/334 enriched** — 64 topics remaining across 4 categories. Next: human-computer-interaction. Use `/enrich-topic` per topic; `npm run audit:taxonomy` is the progress meter.
 >
 > | Category | Topics | Status |
 > |---|---|---|
@@ -17,9 +17,9 @@
 > | hardware | 19/19 | ✅ Complete |
 > | low-latency-systems | 12/12 | ✅ Complete |
 > | operations-and-reliability | 15/15 | ✅ Complete |
-> | **mathematical-foundations** | **0/12** | ⏳ Next |
+> | mathematical-foundations | 12/12 | ✅ Complete |
+> | **human-computer-interaction** | **0/12** | ⏳ Next |
 > | graphics-and-media | 0/14 | Pending |
-> | human-computer-interaction | 0/12 | Pending |
 > | artificial-intelligence | 0/23 | Pending |
 > | history-and-society | 0/15 | Pending (last) |
 >
