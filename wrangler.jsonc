@@ -8,7 +8,17 @@
     "binding": "ASSETS",
     "directory": "./dist",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
+    // Routes that must hit the SSR worker instead of being served (or 404'd) as
+    // static assets. Keep in sync with the `include` list Astro emits in
+    // dist/_routes.json — every prerender=false page/endpoint belongs here.
+    // (This is a Workers deploy, so _routes.json itself is not used.)
+    "run_worker_first": [
+      "/api/*",
+      "/admin/*",
+      "/me",
+      "/_server-islands/*",
+      "/_image"
+    ]
   },
   "d1_databases": [
     {
