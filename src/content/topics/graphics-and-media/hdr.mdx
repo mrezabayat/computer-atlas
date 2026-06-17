@@ -13,60 +13,86 @@ tags: ["graphics", "display", "imaging", "colour"]
 prerequisites: ["computer-vision", "gpu"]
 related: ["color-management", "anti-aliasing", "subpixel-rendering"]
 nextSteps: []
-updated: 2026-06-08
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
-A candle flame and a snow-covered landscape on a sunny day differ in brightness by about a factor of one million. A standard (SDR) display can only show a factor of about 1,000. High Dynamic Range (HDR) displays show up to a factor of one million — a much closer approximation of what eyes see in reality. A candle in a dark room actually looks like a point of fire rather than a washed-out blob. HDR requires new display hardware (local dimming LCD or OLED), new content formats (HDR10, Dolby Vision), and new software to correctly map the wide range of brightness values to what each display can show.
+A candle flame and a snow-covered landscape on a sunny day differ in brightness by about a factor of one million. A standard (SDR) display can only show a factor of about 1,000. High Dynamic Range (HDR) displays show up to a factor of one million — a much closer approximation of what eyes see in reality. A candle in a dark room actually looks like a point of fire rather than a washed-out blob. HDR requires new display hardware (local-dimming LCD or OLED), new content formats (HDR10, Dolby Vision), and new software to correctly map the wide range of brightness values to what each display can show.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    scene["Scene luminance\n0 – 10,000+ nits"] --> enc["Encode: 10/12-bit + PQ or HLG\n(HDR10 · HDR10+ · Dolby Vision · HLG)"]
+    enc --> tone["Tone mapping\ncompress to display's peak nits\n(Reinhard · ACES · filmic)"]
+    tone --> disp["Display\nOLED ~0 nit black, 1000–2000 peak"]
+    sdr["SDR baseline\n~100–300 nits, 8-bit, gamma 2.2"] -.contrast.-> disp
+    enc --> meta["Metadata:\nstatic (HDR10) vs dynamic (DV/HDR10+)"]
+```
 
 ## More detail
 
-**Key concepts:**
+**Dynamic range** is the ratio of brightest to darkest luminance a display can show simultaneously, measured in nits (cd/m²). SDR is typically 100–300 nits peak with ~1000:1 contrast; HDR reaches 600–10,000+ nits peak (OLED ~1000–2000 with near-0 black, giving ~1,000,000:1 contrast). HDR also needs more **bit depth** — 10-bit (1024 levels) or 12-bit instead of SDR's 8-bit — to span that range without visible banding.
 
-**Dynamic range:** the ratio of the brightest to the darkest luminance a display can simultaneously show. Measured in nits (candelas per square metre, cd/m²).
-- SDR (Standard Dynamic Range): typically 100–300 nits peak, ~0.01 nit black → ~1000:1 contrast ratio.
-- HDR (High Dynamic Range): 600–10,000+ nits peak (OLED: typically 1000–2000 nits; mini-LED: 2000–5000+), near-0 nit black on OLED → 1,000,000:1 contrast ratio on OLED.
+**Standards** include **HDR10** (open, royalty-free, PQ transfer function, 10-bit, *static* metadata describing the whole programme), **HDR10+** (Samsung's open standard with *dynamic* per-scene metadata), **Dolby Vision** (proprietary, 12-bit, dynamic per-frame metadata, licensed displays), and **HLG** (broadcast-oriented, backward-compatible with SDR, no metadata). **Transfer functions** differ from SDR's gamma 2.2: HDR uses **PQ** (SMPTE ST 2084), a perceptually-uniform curve with absolute luminance values, or HLG's log-gamma hybrid that degrades gracefully to SDR.
 
-**Bit depth:** SDR uses 8-bit per channel (256 levels each of R, G, B). HDR uses 10-bit (1024 levels) or 12-bit (4096 levels) to represent the wider range without visible banding (Mach bands at 8-bit are visible in smooth gradients).
+**Tone mapping** is the crucial step: when 10,000-nit content is shown on a 1000-nit TV, the brightness must be compressed — algorithms like ACES, Reinhard, and filmic preserve highlight and shadow detail differently. Games render into a floating-point (FP16) buffer internally and map to the display's PQ signal on output. The recurring problems are that content mastered on a 4000-nit reference monitor looks different on a 600-nit consumer panel (dynamic metadata helps), and that the same "HDR" label spans wildly different hardware capabilities.
 
-**HDR standards:**
+## Under the Hood
 
-*HDR10:* open standard (royalty-free); uses PQ (Perceptual Quantizer) transfer function; 10-bit; static metadata (maxCLL, maxFALL describe the entire content, not per-scene). Supported by all HDR displays and streaming platforms.
+Tone mapping is where HDR meets the limits of real hardware. The Reinhard operator — `L / (1 + L)` — is the classic compressor: it leaves dark detail almost untouched while gently rolling very bright values toward the display's peak, so nothing simply clips to white:
 
-*HDR10+:* Samsung's open HDR standard with dynamic metadata per scene — allows better tone mapping for each scene's actual brightness range. Supported on many Samsung TVs, some Amazon Prime content.
+```python
+def reinhard(L):                 # L = scene luminance (relative)
+    return L / (1 + L)           # maps [0, ∞) → [0, 1)
 
-*Dolby Vision:* Dolby's proprietary format; 12-bit; dynamic metadata per frame; requires Dolby Vision-licensed displays and content. Higher quality than HDR10 in theory; many Netflix and Apple TV+ titles are mastered in DV.
+def reinhard_extended(L, Lwhite):    # lets values up to Lwhite reach full white
+    return L * (1 + L / (Lwhite * Lwhite)) / (1 + L)
 
-*HLG (Hybrid Log-Gamma):* broadcast-oriented (BBC/NHK); backward-compatible with SDR displays; no metadata required. Used for live TV and HDR broadcast.
+print(f"{'scene L':>8}{'Reinhard':>12}{'extended(8)':>14}")
+for L in [0.1, 0.5, 1, 2, 4, 8, 20, 100]:
+    print(f"{L:>8.1f}{reinhard(L):>12.3f}{reinhard_extended(L, 8):>14.3f}")
+```
 
-**Transfer functions:** SDR uses the sRGB transfer function (gamma ≈ 2.2). HDR uses PQ (SMPTE ST 2084) — a perceptually-uniform curve calibrated to the human visual system's response to luminance, with absolute luminance values (0–10,000 nits). HLG uses a log-gamma hybrid that degrades gracefully to SDR.
+Notice dark values (0.1 → ~0.09) pass through nearly linearly while bright values (100 → ~0.99) are squeezed into the top of the range — preserving shadow detail and highlight separation instead of blowing out.
 
-**Tone mapping:** when HDR content with a 10,000-nit range is displayed on a 1000-nit TV, the brightness must be compressed (tone mapped). Different tone mapping algorithms (ACES, Reinhard, filmic) preserve highlight/shadow detail differently. For games, the tone mapper is built into the rendering pipeline; for video, the display or HDR player performs it.
+## Engineering Trade-offs
 
-**Game HDR:** games generate a floating-point frame buffer (FP16) internally; the HDR output path maps the game's luminance values to the display's PQ signal. Games that support "Auto HDR" (Windows 11) have HDR conversion applied by the OS for SDR-only games.
-
-**Problems:**
-- **Mastering for HDR:** content mastered on a 4000-nit reference monitor looks different on a 600-nit consumer display. Dolby Vision's per-scene metadata helps; HDR10 doesn't.
-- **HDR in SDR environments:** watching an HDR TV in a bright room negates the benefit of OLED's deep blacks.
-- **Content consistency:** same "HDR" content looks very different across displays because peak brightness, local dimming, and tone mapping differ.
-
-## Why it matters
-
-HDR is the most visible display quality improvement since 1080p. On OLED or high-end mini-LED displays, HDR dramatically changes the viewing experience — highlights in movies and games look real rather than clipped. For developers and engineers: HDR requires specific rendering pipeline changes (FP16 framebuffer, PQ output, tone mapping), colour management, and correct colour space handling. Game developers targeting HDR must implement HDR rendering paths. Platform engineers must implement OS-level HDR support (Windows HDR, macOS EDR).
+- **Peak brightness vs panel cost/power.** Higher nits and local dimming make highlights pop but cost panel complexity, power, and heat; cheap "HDR" panels accept a signal they can't actually display.
+- **Static vs dynamic metadata.** HDR10's single metadata set is simple and universal but tone-maps every scene the same; Dolby Vision/HDR10+ adapt per scene at the cost of licensing or limited support.
+- **Bit depth vs bandwidth.** 10–12 bit removes banding across the wide range but increases data rate and pipeline width versus 8-bit SDR.
+- **Authoring control vs consistency.** Mastering for a bright reference monitor maximises impact but looks different across the fragmented field of consumer displays.
 
 ## Real-world examples
 
-- Netflix serves Dolby Vision HDR to Apple TV, LG OLED, and Samsung TVs; HDR10 as the fallback.
-- Apple's "Extended Dynamic Range" (EDR) on macOS and Pro Display XDR supports up to 6000 nits for professional HDR reference monitoring.
-- Xbox Series X / PlayStation 5 both support HDR10 and Dolby Vision; most games ship with HDR rendering support.
-- iPhone 15 Pro: 2000 nit HDR display; ProRes video recording in HDR (Log or HLG for post-production flexibility).
+- Netflix serves Dolby Vision to capable TVs with HDR10 as the fallback.
+- Apple's Extended Dynamic Range (EDR) on macOS and the Pro Display XDR support up to ~1600 nits sustained for HDR reference work.
+- Xbox Series X and PlayStation 5 support HDR10 and Dolby Vision; most modern games ship HDR rendering paths.
+- iPhone Pro models record video in HDR (HLG/Dolby Vision) and have ~2000-nit displays.
 
 ## Common misconceptions
 
-- **"Any HDR badge means better quality."** Many cheap "HDR" monitors lack local dimming or have insufficient peak brightness; they display an HDR signal but don't actually render the wide dynamic range. Look for DisplayHDR 1000+ certification or OLED.
-- **"HDR is only for movies."** Game HDR, UI HDR (Apple's EDR for professional use), and medical imaging (radiology, dermatology) all use HDR for different reasons.
+- **"Any HDR badge means better quality."** Many cheap "HDR" monitors lack local dimming or sufficient peak brightness; they accept an HDR signal but can't render the wide range. Look for DisplayHDR 1000+ or OLED.
+- **"HDR is only for movies."** Game HDR, professional UI (Apple's EDR), and medical imaging all use HDR for different reasons.
+
+## Try it yourself
+
+Apply Reinhard tone mapping and watch huge scene luminances fold into a displayable 0–1 range without clipping (`python3` only):
+
+```bash
+python3 - <<'EOF'
+reinhard = lambda L: L/(1+L)
+print(f"{'scene nits (rel)':>16}{'displayed (0-1)':>16}")
+for L in [0.05, 0.2, 1, 3, 10, 50, 500]:
+    print(f"{L:>16.2f}{reinhard(L):>16.3f}")
+EOF
+```
 
 ## Learn next
 
-HDR is closely related to [colour management](/t/color-management) — correct HDR requires accurate colour spaces (Rec. 2020, DCI-P3) and colour-managed rendering pipelines. [Anti-aliasing](/t/anti-aliasing) and [subpixel rendering](/t/subpixel-rendering) address other aspects of display quality.
+- [Color management](/t/color-management) — HDR needs wide color spaces (Rec. 2020, P3) and accurate conversions
+- [Color space](/t/color-space) — the primaries and transfer functions (PQ/HLG) HDR depends on
+- [Anti-aliasing](/t/anti-aliasing) — another facet of display image quality
+- [Subpixel rendering](/t/subpixel-rendering) — a related display-precision technique for text
