@@ -7,7 +7,9 @@
 import {
   pathsMeta,
   topicTitles,
+  topicsMeta,
   type ProgressPathMeta,
+  type TopicMeta,
 } from "./progress-meta.generated";
 
 const pathsById = new Map<string, ProgressPathMeta>(
@@ -22,4 +24,9 @@ export function getTopicTitle(id: string): string | undefined {
   return topicTitles[id];
 }
 
-export type { ProgressPathMeta };
+/** All topics' lightweight metadata (no astro:content). For the digest route. */
+export function getAllTopicsMeta(): TopicMeta[] {
+  return topicsMeta;
+}
+
+export type { ProgressPathMeta, TopicMeta };

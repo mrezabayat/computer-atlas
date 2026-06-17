@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getCloudflareEnv, type CloudflareEnv } from "~/lib/cloudflare";
-import { getAllTopics, topicUrl } from "~/lib/graph";
+import { getAllTopicsMeta } from "~/lib/progress-meta";
 import { escapeHtml } from "~/lib/newsletter";
 import { authorizeAdmin, sendCampaignToConfirmed } from "~/lib/newsletter-send";
 import { checkRateLimit } from "~/lib/rate-limit";
@@ -127,13 +127,10 @@ export const POST: APIRoute = async (context) => {
   const since = watermark ?? runStart - FIRST_RUN_LOOKBACK_MS;
 
   // Half-open window (since, runStart] guarantees no topic is ever sent twice.
-  const topics = await getAllTopics();
-  const fresh = topics
-    .filter((t) => {
-      const u = t.data.updated.getTime();
-      return u > since && u <= runStart;
-    })
-    .sort((a, b) => b.data.updated.getTime() - a.data.updated.getTime())
+  const fresh = getAllTopicsMeta()
+    .map((t) => ({ ...t, updatedMs: t.updated ? Date.parse(t.updated) : NaN }))
+    .filter((t) => t.updatedMs > since && t.updatedMs <= runStart)
+    .sort((a, b) => b.updatedMs - a.updatedMs)
     .slice(0, MAX_ITEMS);
 
   if (fresh.length === 0) {
@@ -142,9 +139,9 @@ export const POST: APIRoute = async (context) => {
   }
 
   const items: DigestItem[] = fresh.map((t) => ({
-    title: t.data.title,
-    summary: t.data.summary,
-    url: `${siteOrigin}${topicUrl(t.id)}`,
+    title: t.title,
+    summary: t.summary,
+    url: `${siteOrigin}/t/${t.id}`,
   }));
   const content = buildDigestBody(items);
 

@@ -50,9 +50,21 @@ async function main() {
   const pathFiles = globSync("src/content/paths/**/*.mdx").sort();
 
   const topicTitles = {};
+  // Lightweight per-topic metadata for the on-demand newsletter digest route
+  // (prerender = false), which must not import astro:content. updated is an ISO
+  // string so it serializes cleanly and round-trips via new Date().
+  const topicsMeta = [];
   for (const file of topicFiles) {
     const fm = frontmatter(await readFile(file, "utf8"));
-    if (fm?.title) topicTitles[slug(file)] = fm.title;
+    if (!fm?.title) continue;
+    const id = slug(file);
+    topicTitles[id] = fm.title;
+    topicsMeta.push({
+      id,
+      title: fm.title,
+      summary: fm.summary ?? "",
+      updated: fm.updated ? new Date(fm.updated).toISOString() : null,
+    });
   }
 
   const pathsMeta = [];
@@ -77,12 +89,20 @@ async function main() {
     `  /** Topic slugs that count toward completion (optional excluded). */\n` +
     `  requiredTopicIds: string[];\n` +
     `}\n\n` +
+    `export interface TopicMeta {\n` +
+    `  id: string;\n` +
+    `  title: string;\n` +
+    `  summary: string;\n` +
+    `  /** ISO timestamp, or null if the topic has no \`updated\` date. */\n` +
+    `  updated: string | null;\n` +
+    `}\n\n` +
     `export const topicTitles: Record<string, string> = ${JSON.stringify(topicTitles, null, 2)};\n\n` +
+    `export const topicsMeta: TopicMeta[] = ${JSON.stringify(topicsMeta, null, 2)};\n\n` +
     `export const pathsMeta: ProgressPathMeta[] = ${JSON.stringify(pathsMeta, null, 2)};\n`;
 
   await writeFile(OUT, out);
   console.log(
-    `gen-progress-meta OK → ${pathsMeta.length} paths, ${Object.keys(topicTitles).length} topic titles → ${OUT}`,
+    `gen-progress-meta OK → ${pathsMeta.length} paths, ${Object.keys(topicTitles).length} topic titles, ${topicsMeta.length} topics meta → ${OUT}`,
   );
 }
 
