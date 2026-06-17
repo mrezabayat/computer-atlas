@@ -12,62 +12,97 @@ importance: important
 tags: ["ml", "optimisation", "training"]
 prerequisites: ["machine-learning"]
 related: ["neural-network", "training-and-inference"]
-updated: 2026-06-07
+nextSteps: ["backpropagation"]
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
 **Gradient descent** is how you train almost every machine-learning model. Picture the loss as a landscape: high in places where the model is wrong, low where it's right. At each step, you compute the slope (gradient) under your feet and take a small step downhill. Repeat enough times and you reach a valley — a set of parameters that minimises the loss. That's training.
 
+## The Visual Map
+
+```mermaid
+graph TD
+    init["Random parameters θ"] --> grad["Compute gradient ∇L(θ)\n(via backpropagation)"]
+    grad --> step["θ ← θ − η·∇L(θ)\nstep downhill by learning rate η"]
+    step --> check{"Loss still falling?"}
+    check -->|yes| grad
+    check -->|"flat / minimum"| done["Trained parameters"]
+    batch["How much data per step?"] --- grad
+    batch --> b1["Batch: whole set (slow, exact)"]
+    batch --> b2["SGD: 1 example (fast, noisy)"]
+    batch --> b3["Mini-batch: 32–1024 (the default)"]
+```
+
 ## More detail
 
-The basic update rule:
+The basic update rule is `θ_new = θ_old − η · ∇L(θ_old)`, where `θ` is the parameter vector, `L` the loss, `∇L` the gradient, and `η` the **learning rate**. Variants differ mostly in how much data each step uses: **batch** gradient descent (whole training set per step — accurate but slow), **stochastic** SGD (one example per step — fast but noisy), and **mini-batch** SGD (32–1024 examples — the sweet spot everyone uses). Computing the gradient through a deep model is the job of **backpropagation**; modern autograd libraries (PyTorch, JAX) derive the backward pass automatically from your forward pass.
 
+Modern improvements on plain SGD include **momentum** (accumulate a velocity to smooth noisy gradients), **Adam** (per-parameter adaptive rates, the default for ~a decade), **AdamW** (Adam with decoupled weight decay, the usual choice for transformers), and **learning-rate schedules** (warmup, cosine decay) that often matter more than the optimiser itself. Practical realities: the **learning rate** is the most important hyper-parameter (too high diverges, too low crawls); **gradient clipping** stops rare huge gradients from exploding training; **mixed precision** (FP16/BF16) gives 2–3× speedup; and **distributed training** averages gradients across many GPUs each step. Knowing how the loop works lets you debug training failures and read new optimisation papers.
+
+## Under the Hood
+
+The whole algorithm is "evaluate the gradient, step against it." Fitting a line to noisy data shows every moving part — the squared-error loss, its gradient, and the learning-rate step — with nothing hidden:
+
+```python
+data = [(1, 2.1), (2, 3.9), (3, 6.2), (4, 7.8)]    # ~ y = 2x
+w, b, lr = 0.0, 0.0, 0.01
+
+def loss(w, b):
+    return sum(((w*x + b) - y) ** 2 for x, y in data) / len(data)
+
+for step in range(0, 1001):
+    if step % 250 == 0:
+        print(f"step {step:>4}: w={w:.3f} b={b:.3f}  loss={loss(w,b):.4f}")
+    gw = sum(2*((w*x + b) - y)*x for x, y in data) / len(data)   # ∂L/∂w
+    gb = sum(2*((w*x + b) - y)   for x, y in data) / len(data)   # ∂L/∂b
+    w -= lr * gw                                                 # descend
+    b -= lr * gb
 ```
-θ_new = θ_old − η · ∇L(θ_old)
-```
 
-where `θ` is the parameter vector, `L` is the loss, `∇L` is the gradient (vector of partial derivatives), and `η` (eta) is the **learning rate**.
+`optimizer.step()` in PyTorch is this exact `θ -= lr * grad`, except the gradient comes from automatic differentiation through millions of parameters instead of two.
 
-Variants (mostly about how much data each step uses):
+## Engineering Trade-offs
 
-- **Batch gradient descent** — compute the gradient over the whole training set per step. Accurate but slow.
-- **Stochastic gradient descent (SGD)** — one example per step. Fast but noisy.
-- **Mini-batch SGD** — batch of 32-1024 examples per step. Sweet spot; what everyone actually uses.
-
-How to compute the gradient through a deep model is the job of **backpropagation** — the chain rule of calculus applied to the network's computation graph. Modern autograd libraries (PyTorch, JAX, TensorFlow) do this automatically; you write the forward pass and they derive the backward pass.
-
-Modern improvements on plain SGD:
-
-- **Momentum** — accumulate a velocity that smooths over noisy gradients.
-- **Adam** — adaptive learning rates per parameter using moving averages of gradients and squared gradients. The default optimiser for ~10 years.
-- **AdamW** — Adam with decoupled weight decay; usually the right default for transformers.
-- **Lion** — a 2023 alternative with similar performance and slightly less memory.
-- **Learning rate schedules** — warm up, decay, cosine, restart. Often matter more than the choice of optimiser.
-
-Practical realities of training:
-
-- **Choosing the learning rate** is famously the most important hyper-parameter. Too high diverges; too low takes forever.
-- **Gradient clipping** prevents rare huge gradients from exploding training.
-- **Mixed precision** (FP16 / BF16) uses half-precision arithmetic for forward/backward and full precision for the update — 2-3× speedup with minimal accuracy loss.
-- **Distributed training** splits batches across GPUs; gradients are averaged across all of them each step.
-
-## Why it matters
-
-Almost every "I trained a model" workflow is a gradient descent loop under the hood. Knowing how it works lets you debug training failures (loss not decreasing, NaN gradients, overfit, underfit), pick optimisers and learning rates, and understand papers when they propose new optimisation tricks.
+- **Batch size vs noise.** Large batches give smooth, accurate gradients but cost memory and can generalise worse; small batches are noisy and cheap, and the noise can help escape sharp minima.
+- **Learning rate: speed vs stability.** A high rate converges fast until it overshoots and diverges; a low rate is stable but slow — schedules try to get both.
+- **Adam vs SGD.** Adam converges quickly and tunes itself per-parameter; well-tuned SGD+momentum often generalises better on vision tasks at the cost of more tuning.
+- **Mixed precision: throughput vs numerical safety.** FP16/BF16 doubles speed and halves memory but needs loss scaling and care to avoid underflow/NaNs.
 
 ## Real-world examples
 
-- **GPT-class LLM training** runs SGD-with-Adam variants for trillions of token-steps across thousands of GPUs, costing tens of millions of dollars per model.
-- **The 2015 ResNet** paper showed that with residual connections, you could train networks 100+ layers deep with plain SGD — a result that reshaped computer vision.
-- **PyTorch's `optimizer.step()`** is a single function call; everything in this article is what happens behind it.
-- **One-cycle learning rate** (Smith, 2018) became a popular default and is built into PyTorch Lightning, fastai, and many other training stacks.
+- **GPT-class LLM training** runs Adam-variant SGD for trillions of token-steps across thousands of GPUs, costing tens of millions of dollars per model.
+- **The 2015 ResNet** paper showed residual connections let plain SGD train 100+-layer networks — reshaping computer vision.
+- **PyTorch's `optimizer.step()`** is a single call; everything here is what happens behind it.
+- **One-cycle learning-rate** schedules (Smith, 2018) became a popular default across fastai, Lightning, and other stacks.
 
 ## Common misconceptions
 
-- **"Gradient descent finds the global minimum."** It finds a *local* minimum (or saddle point). For non-convex deep networks, that's apparently fine — but it's not a guaranteed best.
-- **"Adam is always better than SGD."** SGD with momentum, properly tuned, often generalises better on image tasks. Use Adam as the default; tune SGD if you really care.
+- **"Gradient descent finds the global minimum."** It finds a *local* minimum or saddle point. For non-convex deep networks that's apparently fine — but not guaranteed best.
+- **"Adam is always better than SGD."** Tuned SGD+momentum often generalises better on images; use Adam as a default and tune SGD when accuracy really matters.
+
+## Try it yourself
+
+Watch gradient descent fit a line to noisy data, with the loss falling each step (`python3` only):
+
+```bash
+python3 - <<'EOF'
+data=[(1,2.1),(2,3.9),(3,6.2),(4,7.8)]
+w=b=0.0; lr=0.01
+loss=lambda: sum(((w*x+b)-y)**2 for x,y in data)/len(data)
+for s in range(1001):
+    if s%250==0: print(f"step {s:>4}: w={w:.3f} b={b:.3f} loss={loss():.4f}")
+    gw=sum(2*((w*x+b)-y)*x for x,y in data)/len(data)
+    gb=sum(2*((w*x+b)-y)   for x,y in data)/len(data)
+    w-=lr*gw; b-=lr*gb
+EOF
+```
 
 ## Learn next
 
-What gradient descent is training: [neural network](/t/neural-network). The wider training-time vs run-time split: [training and inference](/t/training-and-inference).
+- [Backpropagation](/t/backpropagation) — how the gradient is computed through a deep network
+- [Neural network](/t/neural-network) — what gradient descent is training
+- [Training and inference](/t/training-and-inference) — the wider train-time vs run-time split
+- [Optimization theory](/t/optimization-theory) — the mathematics of minima, convexity, and convergence

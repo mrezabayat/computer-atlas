@@ -13,54 +13,94 @@ tags: ["ml", "neural-network", "ai"]
 prerequisites: ["machine-learning"]
 related: ["large-language-model", "gpu", "gradient-descent", "computer-vision", "convolutional-neural-network"]
 nextSteps: ["transformer"]
-updated: 2026-06-07
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
 A **neural network** is a stack of layers. Each layer is a pile of simple units ("neurons") that each take a weighted sum of their inputs, push it through a non-linear function, and pass the result on. Stack enough of these layers together, train the weights on a lot of data, and the network can learn to recognise faces, translate languages, generate images, or play games — without anyone writing the rules by hand. The "deep" in **deep learning** just means *many layers*.
 
+## The Visual Map
+
+```mermaid
+graph LR
+    x["Input x"] --> h1["Hidden layer 1\ny = f(W·x + b)"]
+    h1 --> h2["Hidden layer 2"]
+    h2 --> out["Output layer\n(prediction)"]
+    out --> loss["Loss vs correct answer"]
+    loss -. "backprop: ∂loss/∂W" .-> h2
+    loss -. .-> h1
+    h1 --- act["f = ReLU / sigmoid\n(non-linearity is essential)"]
+```
+
 ## More detail
 
-A neuron computes `y = f(W · x + b)` — a weighted sum of inputs `x` with weights `W` and bias `b`, passed through a non-linear activation function `f` (ReLU is the default in 2026; older networks used sigmoid or tanh). The non-linearity is essential; without it, any stack of layers collapses into a single linear function.
+A neuron computes `y = f(W · x + b)` — a weighted sum of inputs `x` with weights `W` and bias `b`, passed through a non-linear activation function `f` (ReLU is the default; older networks used sigmoid or tanh). The non-linearity is essential; without it, any stack of layers collapses into a single linear function.
 
-Training works the same way for almost every neural network in modern use:
+Training works the same way for almost every modern network: a **forward pass** pushes input through and compares the output to the correct answer with a **loss function**; **backpropagation** uses the chain rule to compute how much each weight contributed to the loss; **gradient descent** nudges every weight a tiny step to reduce the loss; repeat for billions of examples. Major architectural families include the **MLP** (fully connected, the simplest deep model), the **CNN** (weight-sharing across spatial regions, the workhorse of vision in ~2012–2020), **RNN/LSTM/GRU** (for sequences, now largely replaced), the **transformer** (attention-based, under every modern LLM and a growing share of vision/audio), and **diffusion models** (iteratively denoise random noise into an image). Two realities shape everything: **GPUs/TPUs** are essential because every layer is dense matrix multiplication, and performance scales smoothly with more data, parameters, and compute (the "scaling laws").
 
-1. **Forward pass** — push input through the network, compare the output to the correct answer with a **loss function**.
-2. **Backpropagation** — use the chain rule of calculus to compute how much each weight contributed to the loss.
-3. **Gradient descent** — nudge every weight a tiny step in the direction that reduces the loss.
-4. Repeat for billions of training examples.
+## Under the Hood
 
-Major architectural families:
+A neural network is just matrix multiplies interleaved with a non-linearity. Here a tiny two-layer net does a forward pass on the XOR problem — something no single linear layer can solve, which is exactly why the hidden layer and non-linearity matter:
 
-- **Multilayer perceptron (MLP)** — fully connected; the simplest deep model.
-- **Convolutional neural network (CNN)** — weight-sharing across spatial regions; the workhorse of computer vision for ~2012-2020.
-- **Recurrent neural network (RNN / LSTM / GRU)** — designed for sequences; replaced by transformers for most tasks.
-- **Transformer** — attention-based; the architecture under every modern large language model and a growing share of vision and audio models.
-- **Diffusion models** — iteratively denoise random noise into an image; the basis of Stable Diffusion and most modern image generators.
+```python
+import math
+def relu(x): return max(0.0, x)
 
-Two practical realities that shape everything in deep learning:
+# Hand-set weights that solve XOR: hidden layer builds OR and AND, output combines
+def forward(a, b):
+    h1 = relu(1*a + 1*b - 0.5)     # fires if a OR b
+    h2 = relu(1*a + 1*b - 1.5)     # fires if a AND b
+    out = 1*h1 - 2*h2              # OR minus 2*AND = XOR
+    return out
 
-- **GPUs (and TPUs)** are essential. Training a useful model on CPUs would take centuries; GPUs do the dense matrix multiplications at the core of every layer in massively parallel batches.
-- **Data and compute scale beautifully.** The "scaling laws" of the last decade say performance keeps improving smoothly as you add more data, more parameters, and more compute. This is why the biggest models keep winning.
+for a in (0, 1):
+    for b in (0, 1):
+        print(f"XOR({a},{b}) = {forward(a, b):.0f}")
+```
 
-## Why it matters
+Training would *discover* these weights by gradient descent; here they're set by hand to show that two linear layers plus a non-linearity can represent a function a single layer cannot.
 
-Neural networks are the engine of the current AI wave. ChatGPT, Claude, Gemini, Midjourney, Stable Diffusion, GitHub Copilot, AlphaFold — all neural networks at heart. They are also, increasingly, embedded in places you don't see: spam filters, photo enhancements, voice assistants, fraud detection, code completion. The architecture and the discipline of training them are now part of mainstream software engineering.
+## Engineering Trade-offs
+
+- **Depth/width vs compute.** Bigger networks approximate more complex functions and keep improving with scale, but training and inference cost grows with every parameter.
+- **Expressiveness vs interpretability.** Deep nets learn powerful representations but are opaque — hard to audit or explain compared with linear models or small trees.
+- **Generalisation vs memorisation.** Enough capacity can memorise the training set; regularisation, dropout, and more data push it toward patterns that transfer.
+- **Precision vs throughput.** FP16/BF16 and quantised inference cut memory and double throughput at some risk to numerical accuracy the model usually tolerates.
 
 ## Real-world examples
 
-- A **CNN** on your phone classifies photos of your dog faster than you can blink, all on-device.
-- A **transformer**-based **LLM** writes most of the code in some IDE extensions.
-- A **diffusion** model generates a never-before-seen image of a "raccoon astronaut on Mars" in seconds.
-- **AlphaFold-2** predicts protein structures and won a Nobel Prize for its authors — using a neural network with attention layers, trained on the Protein Data Bank.
+- A **CNN** on your phone classifies photos on-device in milliseconds.
+- A **transformer**-based **LLM** writes much of the code in some IDE extensions.
+- A **diffusion** model generates a never-before-seen "raccoon astronaut on Mars" in seconds.
+- **AlphaFold-2** predicts protein structures (a Nobel-winning result) with attention-based networks trained on the Protein Data Bank.
 
 ## Common misconceptions
 
-- **"Neural networks work like the brain."** Loosely inspired by biology, but the maths is linear algebra and calculus, not biology. The analogy stops being useful past introductory teaching.
-- **"They reason."** They pattern-match very well, sometimes in ways that look like reasoning. Whether that *is* reasoning is a genuinely open philosophical question; what's clear is that they have no introspective access to *how* they produced an answer.
-- **"You need a PhD to use one."** Using one (calling an API, fine-tuning a pre-trained model, running inference) is now an everyday programming task. Inventing new architectures is the part that needs deep expertise.
+- **"Neural networks work like the brain."** Loosely inspired by biology, but the maths is linear algebra and calculus. The analogy stops being useful past introductory teaching.
+- **"They reason."** They pattern-match extremely well, sometimes in ways that look like reasoning; whether that *is* reasoning is genuinely open. They have no introspective access to *how* they produced an answer.
+- **"You need a PhD to use one."** Calling an API, fine-tuning, or running inference is an everyday programming task; inventing new architectures is the part needing deep expertise.
+
+## Try it yourself
+
+Run a forward pass of a hand-built network that solves XOR — proof that one hidden layer plus a non-linearity beats any single linear layer (`python3` only):
+
+```bash
+python3 - <<'EOF'
+relu=lambda x:max(0.0,x)
+def net(a,b):
+    h1=relu(a+b-0.5); h2=relu(a+b-1.5)   # OR and AND
+    return h1-2*h2                        # = XOR
+for a in (0,1):
+    for b in (0,1):
+        print(f"XOR({a},{b}) = {net(a,b):.0f}")
+EOF
+```
 
 ## Learn next
 
-The architectural breakthrough that started the current wave: [transformer](/t/transformer). The technology built on top of transformers: [large language model](/t/large-language-model). The hardware that makes any of it tractable: [GPU](/t/gpu).
+- [Transformer](/t/transformer) — the attention-based architecture behind the current AI wave
+- [Large language model](/t/large-language-model) — what transformers are scaled into
+- [GPU](/t/gpu) — the parallel hardware that makes training tractable
+- [Convolutional neural network](/t/convolutional-neural-network) — the architecture that dominated computer vision

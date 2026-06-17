@@ -12,62 +12,99 @@ importance: important
 tags: ["ml", "vision", "ai"]
 prerequisites: ["neural-network"]
 related: ["transformer", "embedding"]
-updated: 2026-06-07
+nextSteps: ["convolutional-neural-network"]
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
 **Computer vision** is the field of getting computers to interpret images and video — figuring out what's in a picture, where objects are, what's happening, sometimes even creating new images. Modern computer vision is overwhelmingly deep learning: convolutional networks until the late 2010s, transformer-based vision models from then onward.
 
+## The Visual Map
+
+```mermaid
+graph TD
+    img["Image / video"] --> tasks["Core tasks"]
+    tasks --> cls["Classification — what is it?"]
+    tasks --> det["Detection — what & where (boxes)?"]
+    tasks --> seg["Segmentation — per-pixel labels"]
+    tasks --> gen["Generation — make new images"]
+    img --> eras["Architectural eras"]
+    eras --> hand["Hand-crafted features (SIFT/HOG)"]
+    hand --> cnn["CNNs (AlexNet→ResNet)"]
+    cnn --> vit["Vision Transformers + CLIP"]
+    vit --> diff["Diffusion + multimodal LLMs"]
+```
+
 ## More detail
 
-The core tasks:
+The core tasks span **image classification** ("what is this a picture of?"), **object detection** (boxes around objects), **semantic** and **instance segmentation** (per-pixel labels, distinguishing individual objects), **pose estimation**, **OCR**, **image generation**, **video analysis**, **3D reconstruction** (NeRF, Gaussian Splatting), and **optical flow**. The methods went through clear eras: hand-crafted features (SIFT, HOG) plus classifiers before ~2012; **CNNs** (AlexNet 2012 → VGG → ResNet → EfficientNet) for a decade; **Vision Transformers** from 2020, treating image patches as tokens; **CLIP** (2021), jointly training image and text encoders for transferable embeddings; **diffusion models** (2022+) for generation; and **multimodal LLMs** (2023+) that reason fluently about images.
 
-- **Image classification** — "what is this a picture of?" One label per image.
-- **Object detection** — "what is in this image and where?" Bounding boxes around objects.
-- **Semantic segmentation** — pixel-level labels: every pixel gets a class.
-- **Instance segmentation** — like semantic but distinguishes individual objects of the same class.
-- **Pose estimation** — locate body joints / facial landmarks.
-- **OCR (Optical Character Recognition)** — extract text from images.
-- **Image generation** — produce new images from prompts (Stable Diffusion, Midjourney, DALL-E, Imagen).
-- **Video analysis** — action recognition, tracking, motion estimation.
-- **3D reconstruction / NeRF / Gaussian Splatting** — build 3D scenes from 2D images.
-- **Optical flow** — estimate per-pixel motion between frames.
+The field was driven by datasets — **ImageNet** (14M labelled images, the benchmark that triggered the deep-learning revolution), **COCO** (detection and segmentation), and **LAION-5B** (5 billion image-text pairs that trained CLIP and Stable Diffusion). The hardware story is simple: vision is matrix multiplication, so GPUs win, and Vision Transformers benefit from the same matmul-heavy patterns as LLMs, letting the same GPUs serve both. Computer vision is now in every pocket — phone photos pass through neural enhancement, autofocus, scene detection, background removal, and generative fill — and in self-driving, medical imaging, satellite analysis, manufacturing QA, and moderation.
 
-Architectural eras:
+## Under the Hood
 
-- **Pre-deep-learning** (~2012): hand-crafted features (SIFT, HOG) + classifiers.
-- **CNNs** (AlexNet 2012 → VGG → ResNet → EfficientNet): the workhorse for a decade.
-- **Vision Transformers (ViT)**, 2020+: apply transformers to images by treating image patches as tokens. Now dominant for most tasks.
-- **CLIP** (2021): joint image-text training that learns transferable embeddings — opened the door to "describe what you want, get the picture / match the picture".
-- **Diffusion models** (2022+): iteratively denoise random noise into a target image. Basis of Stable Diffusion, Midjourney, DALL-E 3.
-- **Multimodal LLMs** (2023+): GPT-4V, Claude 3, Gemini, Llama 4 — text+image input, fluent reasoning about images.
+Before deep learning, vision *was* hand-coded operations on pixel grids — and those operations still underpin everything. Thresholding turns a greyscale image into a segmentation mask in one line per pixel; it's the simplest "what is foreground?" a vision system can do:
 
-Datasets that drove the field:
+```python
+# A 6x8 greyscale "image" with a bright blob on a dark background
+img = [
+    [10,10,12,11,10,10,10,10],
+    [10,11,90,95,92,10,10,10],
+    [11,12,93,99,94,11,10,10],
+    [10,11,91,96,90,10,11,10],
+    [10,10,12,11,10,10,10,10],
+    [10,10,10,11,10,10,10,10],
+]
+threshold = 50                          # Otsu-style cutoff, here picked by hand
+print("segmentation mask (foreground = #):")
+for row in img:
+    print("".join("#" if px > threshold else "." for px in row))
 
-- **ImageNet** (2009) — 14M labelled images; the benchmark that triggered the deep learning revolution.
-- **COCO** — common objects in context, with detection and segmentation labels.
-- **LAION-5B** — 5 billion image-text pairs from the web; trained CLIP, Stable Diffusion, and most open multimodal models.
+area = sum(px > threshold for row in img for px in row)
+print(f"foreground pixels: {area}")
+```
 
-The hardware story: vision is matrix multiplication; GPUs win. Vision Transformers especially benefit from the same matmul-heavy patterns LLMs use, so the same GPUs serve both.
+Detection, segmentation, and classification are vastly more sophisticated, but they answer the same shape of question — *which pixels belong to what* — that this threshold answers in miniature.
 
-## Why it matters
+## Engineering Trade-offs
 
-Computer vision is in your pocket — every smartphone photo passes through neural-net-driven enhancement, autofocus, scene detection, and increasingly background removal and generative fill. It's in self-driving cars, medical imaging, satellite analysis, manufacturing QA, content moderation, security cameras, and most modern user-facing AI products.
+- **Accuracy vs latency/power.** Big transformer vision models top benchmarks but a phone or car needs real-time inference on a power budget, favouring compact CNNs or distilled models.
+- **Labelled data vs capability.** Detection and segmentation need expensive pixel/box annotations; self-supervised and CLIP-style training reduce that need at the cost of more compute.
+- **Generality vs robustness.** Models excel on in-distribution images but degrade on unusual angles, lighting, or adversarial pixels — robustness is still an open problem.
+- **2D recognition vs 3D/temporal understanding.** Single-image classification is largely solved; video reasoning and 3D reconstruction remain active research.
 
 ## Real-world examples
 
-- **iPhone photography** runs many neural networks per shot — semantic segmentation for portrait mode, denoising for low light, scene detection for exposure.
-- **Tesla / Waymo** stacks fuse camera, radar, and lidar; vision models classify and track every object on the road in real time.
-- **AlphaFold-2** (Nobel Prize 2024) is technically protein structure prediction, but it borrowed heavily from vision-style attention architectures.
-- **Midjourney v6** and **Stable Diffusion 3** generate photorealistic images from short prompts — the artistic side of computer vision.
-- **MRI analysis** with deep CV models now matches or exceeds radiologists on specific tasks, deployed in many clinics in 2026.
+- iPhone photography runs many neural networks per shot — segmentation for portrait mode, denoising for low light, scene detection for exposure.
+- Tesla/Waymo stacks fuse camera (and radar/lidar); vision models classify and track every road object in real time.
+- Midjourney and Stable Diffusion generate photorealistic images from short prompts — the generative side of CV.
+- Deep CV models for MRI/CT analysis now match or exceed radiologists on specific narrow tasks.
 
 ## Common misconceptions
 
-- **"Computer vision is solved."** Image classification on benchmarks is, but real-world robustness, 3D understanding, video reasoning, and out-of-distribution generalisation are very much active research.
-- **"Vision Transformers replaced CNNs."** ViTs dominate large-scale; CNNs are still best for many edge / low-resource deployments because they're parameter-efficient.
+- **"Computer vision is solved."** Benchmark image classification largely is, but real-world robustness, 3D understanding, video reasoning, and out-of-distribution generalisation are very much active research.
+- **"Vision Transformers replaced CNNs."** ViTs dominate large-scale; CNNs remain best for many edge and low-resource deployments because they're parameter-efficient.
+
+## Try it yourself
+
+Segment a bright blob from its background by thresholding — the simplest "which pixels are foreground?" (`python3` only):
+
+```bash
+python3 - <<'EOF'
+img=[[10,10,12,11,10,10],[10,90,95,92,10,10],[11,93,99,94,11,10],
+     [10,91,96,90,10,11],[10,12,11,10,10,10]]
+thr=50
+for row in img:
+    print("".join("#" if p>thr else "." for p in row))
+print("foreground pixels:", sum(p>thr for row in img for p in row))
+EOF
+```
 
 ## Learn next
 
-The dominant model family today: [transformer](/t/transformer). The representation step at the heart of CLIP-style models: [embedding](/t/embedding).
+- [Convolutional neural network](/t/convolutional-neural-network) — the architecture that long powered vision
+- [Transformer](/t/transformer) — the model family dominant in vision today
+- [Embedding](/t/embedding) — the representation at the heart of CLIP-style models
+- [Neural network](/t/neural-network) — the foundation all modern CV is built on
