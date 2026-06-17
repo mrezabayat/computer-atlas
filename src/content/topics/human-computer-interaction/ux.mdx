@@ -11,12 +11,28 @@ status: reviewed
 importance: core
 tags: ["ux", "design"]
 related: ["user-interface", "accessibility", "design-system", "usability-test"]
-updated: 2026-06-07
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
 **UX** (user experience) is everything about how someone *experiences* a product: how easy it is to figure out, how it feels to use, how well it fits the job they came for. The *interface* — buttons, screens — is one part of UX; the rest is flow, copywriting, performance, error states, even brand.
+
+## The Visual Map
+
+```mermaid
+graph TD
+    ux["UX — the whole experience"] --> research["User research\ninterviews, analytics, tests"]
+    ux --> ia["Information architecture\nnaming, grouping, navigation"]
+    ux --> ixd["Interaction design\nclick, type, scroll"]
+    ux --> visual["Visual design\ntype, colour, hierarchy"]
+    ux --> content["UX writing\nlabels, errors, microcopy"]
+    ux --> a11y["Accessibility"]
+    research --> loop{"Continuous loop:\nship → observe → fix → repeat"}
+    ixd --> loop
+    loop --> ux
+```
 
 ## More detail
 
@@ -30,28 +46,22 @@ UX work draws from several disciplines:
 - **Accessibility** — making the product usable by people with diverse abilities.
 - **Measurement** — usability metrics, task success rates, satisfaction scores.
 
-Heuristics that get reused a lot (Nielsen, Norman):
+Heuristics that get reused a lot (Nielsen, Norman): match the system to the real world (use the user's language); show system status so the user is never left wondering; give easy undo and exit; stay consistent within the product and with platform conventions; help users recognise, diagnose, and recover from errors; and prevent errors in the first place where possible.
 
-- Match the system to the real world (use the user's language).
-- Show system status — never leave the user wondering.
-- User control — easy undo, easy exit.
-- Consistency — within product and with platform conventions.
-- Help users recognise, diagnose, and recover from errors.
-- Prevent errors in the first place where possible.
+UX is most useful when treated as a continuous loop: ship something, observe how real people use it, fix the worst friction, repeat. Software that's technically capable but a pain to use loses to less powerful competitors that respect the user's time — UX is what turns capability into adoption.
 
-UX is most useful when treated as a continuous loop: ship something, observe how real people use it, fix the worst friction, repeat.
+## Engineering Trade-offs
 
-## Why it matters
-
-Software that's technically capable but a pain to use loses to less powerful competitors that respect the user's time. UX is what turns capability into adoption.
+- **Research depth vs shipping speed.** Deep upfront research de-risks big bets but delays release; lightweight continuous testing learns faster but in smaller increments. Most teams blend a little of both.
+- **Designer taste vs measured behaviour.** Strong opinions move fast but drift from reality; grounding decisions in observed behaviour is more reliable but slower and costs research time.
+- **Consistency vs delight.** Following platform conventions is safe and learnable; novel interactions can delight but risk confusing users and breaking muscle memory.
+- **Defaults vs control.** Most users only ever see the defaults, so a good default is a high-leverage UX decision — but over-simplifying frustrates power users who need the knobs.
 
 ## Real-world examples
 
-- A "Forgot password" link saved more accounts than any marketing campaign.
-- An e-commerce site that adds a guest checkout option often sees double-digit conversion improvements.
+- A "Forgot password" link has saved more accounts than most marketing campaigns.
+- Adding a **guest checkout** option to e-commerce is a famous intervention measured to lift conversion by 10–30% — usually more than any visual redesign.
 - The default settings of an app are, in practice, the only ones most users ever see — defaults are a UX decision.
-
-- Adding a guest checkout option to e-commerce sites is a famous UX intervention that has been measured to increase conversion by 10-30% — usually more than any visual redesign.
 
 ## Common misconceptions
 
@@ -60,4 +70,7 @@ Software that's technically capable but a pain to use loses to less powerful com
 
 ## Learn next
 
-The visible layer: [user interface](/t/user-interface). The often-forgotten audience: [accessibility](/t/accessibility).
+- [User interface](/t/user-interface) — the visible layer UX shapes and measures
+- [Usability testing](/t/usability-test) — the core research method for finding where the experience breaks
+- [Accessibility](/t/accessibility) — the often-forgotten audience that good UX serves by default
+- [Design system](/t/design-system) — how UX decisions are encoded once and reused at scale

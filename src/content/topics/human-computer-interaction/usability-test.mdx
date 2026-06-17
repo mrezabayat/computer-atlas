@@ -12,12 +12,26 @@ importance: important
 tags: ["ux", "research", "design"]
 prerequisites: ["ux"]
 related: ["user-interface"]
-updated: 2026-06-08
+nextSteps: ["accessibility"]
+updated: 2026-06-17
+structure: 2
 ---
 
 ## In simple terms
 
-**Usability testing** is the simple, powerful practice of *watching real people use your product* and seeing where they get stuck. You give a participant a realistic task — "buy this item," "find your account settings" — and observe, without helping, where they hesitate, click the wrong thing, or give up. It cuts through assumptions and opinions: the team may be sure a design is obvious, but watching five real users fumble with it tells the truth. It's the difference between guessing whether a design works and *knowing*.
+**Usability testing** is the simple, powerful practice of *watching real people use your product* and seeing where they get stuck. You give a participant a realistic task — "buy this item", "find your account settings" — and observe, without helping, where they hesitate, click the wrong thing, or give up. It cuts through assumptions and opinions: the team may be sure a design is obvious, but watching five real users fumble with it tells the truth. It's the difference between guessing whether a design works and *knowing*.
+
+## The Visual Map
+
+```mermaid
+graph LR
+    task["Define realistic tasks"] --> recruit["Recruit ~5 representative users"]
+    recruit --> observe["Observe (think-aloud)\ndon't help, don't lead"]
+    observe --> find["Note where they struggle"]
+    find --> fix["Fix the worst friction"]
+    fix -->|"repeat early & often"| task
+    find --> why["Tells you WHY users fail\n(A/B tests tell you WHICH option wins)"]
+```
 
 ## More detail
 
@@ -26,14 +40,33 @@ The core method is **task-based observation**: define realistic tasks, recruit r
 A few important principles:
 
 - **Small numbers reveal most problems.** A famous finding (Nielsen) is that around **five users** typically surface the large majority of usability issues — so testing is cheap and worth doing early and often, not once at the end.
-- **Watch behavior, not opinions.** What people *do* is far more revealing than what they *say*; users will route around a confusing design and still rate it "fine."
+- **Watch behaviour, not opinions.** What people *do* is far more revealing than what they *say*; users will route around a confusing design and still rate it "fine".
 - **Don't lead.** The facilitator stays quiet and resists helping, or the test just measures how well you can give hints.
 
-Variations include **moderated** (a facilitator guides a session live) vs. **unmoderated** (users complete tasks alone, recorded), **in-person** vs. **remote**, and testing anything from a paper sketch to a finished product. It complements other research: A/B tests tell you *which* option performs better at scale; usability testing tells you *why* people struggle and *how* to fix it.
+Variations include **moderated** (a facilitator guides a live session) vs **unmoderated** (users complete tasks alone, recorded), **in-person** vs **remote**, and testing anything from a paper sketch to a finished product. It complements other research: A/B tests tell you *which* option performs better at scale; usability testing tells you *why* people struggle and *how* to fix it. Because even a handful of sessions exposes most major issues cheaply, it's one of the highest-return activities in product design — catching confusing flows before they ship, when they're cheap to fix.
 
-## Why it matters
+## Under the Hood
 
-Usability testing is the most reliable, grounded way to improve a [user interface](/t/user-interface), and it routinely uncovers problems the team is too close to see. Because even a handful of sessions exposes most major issues cheaply, it's one of the highest-return activities in product design — catching confusing flows before they ship, when they're cheap to fix, rather than after they've frustrated thousands of real users.
+Nielsen's "five users" rule isn't folklore — it falls out of a simple model. If each user independently has probability `L` (~0.31 in Nielsen's data) of hitting any given problem, the fraction of problems found with `n` users is `1 − (1 − L)ⁿ`. That curve is why returns diminish so fast:
+
+```python
+def found_fraction(n, L=0.31):
+    return 1 - (1 - L) ** n
+
+print(f"{'users':>5}{'% problems found':>18}")
+for n in range(0, 16, 1):
+    if n in (1, 2, 3, 5, 10, 15):
+        print(f"{n:>5}{found_fraction(n)*100:>17.0f}%")
+```
+
+By 5 users you're near 85%; the 6th through 15th users add little — so the cost-effective move is to run **several small rounds** (test 5, fix, test 5 again) rather than one large study.
+
+## Engineering Trade-offs
+
+- **Few users, fix fast vs many users, measure.** Five users find most *qualitative* problems cheaply; large samples are needed only for *quantitative* metrics (conversion, task-time distributions).
+- **Moderated vs unmoderated.** A live facilitator can probe "why did you do that?" but is slow and scheduling-heavy; unmoderated remote tests scale to dozens overnight but can't ask follow-ups.
+- **Realism vs control.** Testing the real product in real conditions surfaces genuine friction but is noisy; a scripted lab task isolates one flow but may miss context.
+- **Speed vs rigour.** Quick guerrilla tests catch glaring issues in an afternoon; statistically defensible studies cost far more for incremental certainty.
 
 ## Real-world examples
 
@@ -44,8 +77,24 @@ Usability testing is the most reliable, grounded way to improve a [user interfac
 ## Common misconceptions
 
 - **"You need many participants to learn anything."** A small handful (around five) reveals most major usability problems; huge samples are for quantitative metrics, not for finding what confuses people.
-- **"Asking users if they liked it is usability testing."** Opinions are weak evidence — usability testing is about *observing behavior* on real tasks, not collecting satisfaction ratings.
+- **"Asking users if they liked it is usability testing."** Opinions are weak evidence — usability testing is about *observing behaviour* on real tasks, not collecting satisfaction ratings.
+
+## Try it yourself
+
+Plot the problem-discovery curve and see why testing stops paying off after ~5 users (`python3` only):
+
+```bash
+python3 - <<'EOF'
+def found(n, L=0.31): return 1-(1-L)**n
+for n in range(1, 16):
+    bar = "#" * round(found(n)*40)
+    print(f"{n:>2} users |{bar:<40}| {found(n)*100:3.0f}%")
+EOF
+```
 
 ## Learn next
 
-Usability testing is a core method of [UX](/t/ux) research aimed at improving the [user interface](/t/user-interface).
+- [UX](/t/ux) — the research discipline usability testing is the core method of
+- [User interface](/t/user-interface) — what testing reveals is confusing and needs fixing
+- [Accessibility](/t/accessibility) — testing with disabled users finds friction automated tools miss
+- [Design system](/t/design-system) — fixes found in testing are encoded back into shared components
