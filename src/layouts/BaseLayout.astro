@@ -1,6 +1,7 @@
 ---
 import "~/styles/global.css";
 import AuthMenu from "~/components/AuthMenu";
+import { SITE } from "~/site.config";
 
 interface Props {
   title: string;
@@ -9,7 +10,7 @@ interface Props {
 }
 
 const { title, description, canonical } = Astro.props;
-const siteName = "Computer Atlas";
+const siteName = SITE.name;
 const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 const defaultDescription =
   "A browsable, searchable map of computer science and computing topics — built for beginners, students, and curious engineers.";
@@ -31,7 +32,7 @@ const canonicalUrl = canonical
     <link
       rel="alternate"
       type="application/rss+xml"
-      title="Computer Atlas — recently updated topics"
+      title={`${siteName} — recently updated topics`}
       href="/rss.xml"
     />
     <link rel="sitemap" href="/sitemap-index.xml" />

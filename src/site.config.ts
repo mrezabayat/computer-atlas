@@ -1,7 +1,7 @@
 export const SITE = {
-  name: "Computer Atlas",
-  url: "https://computer-atlas.mrb-bayat.workers.dev/",
-  repo: "https://github.com/mrezabayat/computer-atlas/",
+  name: "CS Map",
+  url: "https://csmap.mycodingdays.com/",
+  repo: "https://github.com/mrezabayat/csmap/",
   defaultBranch: "main",
 } as const;
 

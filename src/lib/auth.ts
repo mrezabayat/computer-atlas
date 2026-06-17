@@ -27,7 +27,7 @@ export function createAuth(env: CloudflareEnv) {
   }
 
   return betterAuth({
-    appName: "Computer Atlas",
+    appName: "CS Map",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {

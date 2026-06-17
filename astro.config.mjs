@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://computer-atlas.mrb-bayat.workers.dev",
+  site: "https://csmap.mycodingdays.com",
   adapter: cloudflare({
     imageService: "compile",
   }),

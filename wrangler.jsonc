@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "computer-atlas",
+  "name": "csmap",
   "main": "dist/_worker.js/index.js",
   "compatibility_date": "2026-06-05",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -13,7 +13,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "computer-atlas",
+      "database_name": "csmap",
       "database_id": "75e609c7-9a77-4d5a-926b-8951f1dca74b"
     }
   ],

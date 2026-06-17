@@ -1,4 +1,4 @@
-# Computer Atlas
+# CS Map (Computer Science Map)
 
 A browsable, searchable map of computer science and computing topics — built as a static site with [Astro](https://astro.build) and MDX.
 

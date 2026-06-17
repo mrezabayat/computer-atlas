@@ -10,10 +10,10 @@ export async function GET(context: APIContext) {
   );
 
   return rss({
-    title: "Computer Atlas",
+    title: "CS Map",
     description:
       "A browsable, searchable map of computer science and computing topics.",
-    site: context.site ?? "https://computer-atlas.example.com",
+    site: context.site ?? "https://csmap.mycodingdays.com",
     items: sorted.map((t) => ({
       title: t.data.title,
       pubDate: t.data.updated,

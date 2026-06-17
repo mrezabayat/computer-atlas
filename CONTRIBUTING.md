@@ -1,6 +1,6 @@
-# Contributing to Computer Atlas
+# Contributing to CS Map
 
-Computer Atlas is content-first and open. Adding or improving a topic is just editing a Markdown/MDX file in this repo. This guide explains how.
+CS Map is content-first and open. Adding or improving a topic is just editing a Markdown/MDX file in this repo. This guide explains how.
 
 ## Ways to help
 
